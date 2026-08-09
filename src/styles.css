@@ -1,0 +1,453 @@
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * Design system definition.
+ *
+ * The @theme inline block maps CSS custom properties to Tailwind utility
+ * classes (e.g. --color-primary -> bg-primary, text-primary).
+ *
+ * The :root and .dark blocks define the actual color values using oklch.
+ * All colors MUST use oklch format.
+ *
+ * To add a new semantic color:
+ * 1. Add the variable to :root (light value) and .dark (dark value)
+ * 2. Register it in @theme inline as --color-<name>: var(--<name>)
+ */
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-4xl: calc(var(--radius) + 16px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-ring-offset-background: var(--background);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+:root {
+  --radius: 0.625rem;
+
+  /*
+   * --- Story design system: saturated colour canvas, light foreground ---
+   *
+   * The page is neither white nor black. Each act owns a vivid jewel-tone
+   * canvas and the background grades between them as the story moves, so the
+   * site changes mood with the narrative.
+   *
+   * Everything downstream flows from --ink and --paper:
+   *   --ink   = foreground (now light)
+   *   --paper = the current act's canvas (set on <html> by StoryCanvas)
+   * The TONE() helper mixes --ink, so inverting these two flips the whole
+   * story's typography in one place.
+   */
+  --ink: oklch(0.97 0.012 300);
+  --ink-soft: oklch(0.85 0.03 300);
+  --ink-faint: oklch(0.7 0.045 300);
+  --paper: var(--act-setup);
+  --paper-deep: oklch(0.26 0.09 295);
+  /* translucent light for chips and cards sitting over the canvas */
+  --surface: oklch(1 0 0 / 0.14);
+  --hairline: oklch(1 0 0 / 0.18);
+  --hairline-strong: oklch(1 0 0 / 0.38);
+
+  /*
+   * Three canvases, not seven. Each one has to mean something — a hue that
+   * only decorates gets cut. This is the brief's "Problem → Hope" arc:
+   *
+   *   setup  the clinical calm before anything goes wrong
+   *   alarm  the drug, the accumulation, the silence  (--night overlays here)
+   *   hope   test first, the results, the future
+   *
+   * Chroma stays restrained on setup so it reads medical rather than candied.
+   */
+  --act-setup: oklch(0.32 0.062 272);
+  /*
+   * The alarm act is DARK, not red. Everything that happens here is already
+   * red — the drug stacking up, the pulse, "Unless it can't.", the toxicity
+   * metrics. On a red canvas all of that disappears, which kills the one
+   * moment the reader is supposed to feel. Cool and near-neutral gives the
+   * red something to burn against.
+   */
+  --act-alarm: oklch(0.21 0.034 285);
+  /* The lights come on. Everything from "Test first" onward is warm paper —
+     the second half is meant to be read, not just felt. */
+  --act-hope: oklch(0.958 0.014 84);
+
+  /* accents ported from the gene-story hero */
+  --signal: oklch(0.585 0.205 25);
+  --coral: oklch(0.72 0.16 30);
+  --violet: oklch(0.505 0.12 300);
+  --violet-soft: oklch(0.66 0.1 300);
+  --cyan: oklch(0.68 0.1 235);
+  --blush: oklch(0.9 0.04 15);
+
+  --clinical: oklch(0.62 0.12 220);
+  --clinical-deep: oklch(0.42 0.11 235);
+  /* the toxicity red — one token so the whole story alarms in unison */
+  --alarm: var(--signal);
+  --vital: oklch(0.72 0.15 155);
+  /* the single dark beat — the pause, and the darkest point in the film */
+  /* the silence — the floor of the story, below even the alarm act */
+  --night: oklch(0.12 0.028 300);
+
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.129 0.042 264.695);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.129 0.042 264.695);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.129 0.042 264.695);
+  --primary: oklch(0.208 0.042 265.755);
+  --primary-foreground: oklch(0.984 0.003 247.858);
+  --secondary: oklch(0.968 0.007 247.896);
+  --secondary-foreground: oklch(0.208 0.042 265.755);
+  --muted: oklch(0.968 0.007 247.896);
+  --muted-foreground: oklch(0.554 0.046 257.417);
+  --accent: oklch(0.968 0.007 247.896);
+  --accent-foreground: oklch(0.208 0.042 265.755);
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(0.984 0.003 247.858);
+  --border: oklch(0.929 0.013 255.508);
+  --input: oklch(0.929 0.013 255.508);
+  --ring: oklch(0.704 0.04 256.788);
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+  --sidebar: oklch(0.984 0.003 247.858);
+  --sidebar-foreground: oklch(0.129 0.042 264.695);
+  --sidebar-primary: oklch(0.208 0.042 265.755);
+  --sidebar-primary-foreground: oklch(0.984 0.003 247.858);
+  --sidebar-accent: oklch(0.968 0.007 247.896);
+  --sidebar-accent-foreground: oklch(0.208 0.042 265.755);
+  --sidebar-border: oklch(0.929 0.013 255.508);
+  --sidebar-ring: oklch(0.704 0.04 256.788);
+}
+
+/*
+ * Light-canvas mode. StoryCanvas puts this on <html> for the hope act, where
+ * the page turns to cream — near-white type would vanish there. Everything
+ * downstream reads --ink (directly or through TONE()), so flipping these few
+ * tokens flips the entire second half from light-on-dark to dark-on-light.
+ * The accents darken too: --vital and --clinical are legible on a dark canvas
+ * but wash out on paper.
+ */
+:root.act-light {
+  --ink: oklch(0.24 0.022 300);
+  --ink-soft: oklch(0.44 0.03 296);
+  --ink-faint: oklch(0.62 0.028 296);
+  --hairline: oklch(0.24 0.02 300 / 0.16);
+  --hairline-strong: oklch(0.24 0.02 300 / 0.34);
+  --surface: oklch(1 0 0 / 0.6);
+  --clinical: oklch(0.5 0.13 240);
+  --vital: oklch(0.52 0.13 155);
+}
+
+.dark {
+  --background: oklch(0.129 0.042 264.695);
+  --foreground: oklch(0.984 0.003 247.858);
+  --card: oklch(0.208 0.042 265.755);
+  --card-foreground: oklch(0.984 0.003 247.858);
+  --popover: oklch(0.208 0.042 265.755);
+  --popover-foreground: oklch(0.984 0.003 247.858);
+  --primary: oklch(0.929 0.013 255.508);
+  --primary-foreground: oklch(0.208 0.042 265.755);
+  --secondary: oklch(0.279 0.041 260.031);
+  --secondary-foreground: oklch(0.984 0.003 247.858);
+  --muted: oklch(0.279 0.041 260.031);
+  --muted-foreground: oklch(0.704 0.04 256.788);
+  --accent: oklch(0.279 0.041 260.031);
+  --accent-foreground: oklch(0.984 0.003 247.858);
+  --destructive: oklch(0.704 0.191 22.216);
+  --destructive-foreground: oklch(0.984 0.003 247.858);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.551 0.027 264.364);
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+  --sidebar: oklch(0.208 0.042 265.755);
+  --sidebar-foreground: oklch(0.984 0.003 247.858);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.984 0.003 247.858);
+  --sidebar-accent: oklch(0.279 0.041 260.031);
+  --sidebar-accent-foreground: oklch(0.984 0.003 247.858);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.551 0.027 264.364);
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+
+  body {
+    /* Match the story canvas so overscroll rubber-banding doesn't flash white. */
+    background-color: var(--paper);
+    color: var(--ink);
+  }
+}
+
+/* --- Story typography + motion primitives --- */
+@theme inline {
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-ink-faint: var(--ink-faint);
+  --color-paper: var(--paper);
+  --color-paper-deep: var(--paper-deep);
+  --color-surface: var(--surface);
+  --color-hairline: var(--hairline);
+  --color-hairline-strong: var(--hairline-strong);
+  --color-act-setup: var(--act-setup);
+  --color-act-alarm: var(--act-alarm);
+  --color-act-hope: var(--act-hope);
+  --color-signal: var(--signal);
+  --color-coral: var(--coral);
+  --color-violet: var(--violet);
+  --color-violet-soft: var(--violet-soft);
+  --color-cyan: var(--cyan);
+  --color-blush: var(--blush);
+  --color-clinical: var(--clinical);
+  --color-clinical-deep: var(--clinical-deep);
+  --color-alarm: var(--alarm);
+  --color-vital: var(--vital);
+  --color-night: var(--night);
+  --font-display: "Instrument Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-quiet: "Newsreader", ui-serif, Georgia, serif;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+  }
+  body {
+    font-family: "Instrument Sans", ui-sans-serif, system-ui, sans-serif;
+    letter-spacing: -0.015em;
+  }
+}
+
+@utility story-line {
+  font-size: clamp(2.25rem, 7.5vw, 6.5rem);
+  line-height: 0.98;
+  letter-spacing: -0.04em;
+  font-weight: 500;
+  text-wrap: balance;
+}
+
+/*
+ * A size step down from story-line, for beats whose longest line is too many
+ * characters to survive at 6.5rem. Same voice, just set to fit — use it
+ * whenever a two-line beat is wrapping to three.
+ */
+@utility story-line-sm {
+  font-size: clamp(1.8rem, 5.4vw, 4.5rem);
+  line-height: 1.02;
+  letter-spacing: -0.035em;
+  font-weight: 500;
+  text-wrap: balance;
+}
+
+@utility quiet-line {
+  font-family: "Newsreader", ui-serif, Georgia, serif;
+  font-weight: 300;
+  font-style: italic;
+  letter-spacing: -0.02em;
+}
+
+@utility eyebrow {
+  font-size: 0.6875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.24em;
+  font-weight: 500;
+}
+
+/* Film grain: static noise tile, drifted so it shimmers like emulsion. */
+@utility grain {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.42'/%3E%3C/svg%3E");
+  mix-blend-mode: soft-light;
+  animation: grain-drift 700ms steps(3) infinite;
+}
+
+@keyframes grain-drift {
+  0% {
+    background-position: 0 0;
+  }
+  33% {
+    background-position: -30px 20px;
+  }
+  66% {
+    background-position: 20px -30px;
+  }
+  100% {
+    background-position: 0 0;
+  }
+}
+
+/* The cold open breathes — a slow swell behind the words so the screen reads
+   as a space the story is about to happen in, not a flat holding colour. */
+@keyframes loader-breathe {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 1;
+  }
+}
+
+.loader-breathe {
+  animation: loader-breathe 7.5s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+
+/* Indeterminate hairline sweep for the loading note. */
+@keyframes sweep {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(300%);
+  }
+}
+
+.sweep {
+  animation: sweep 1.4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+/* Headline words rising into place. Pure CSS so it plays at first paint,
+   before hydration — the hero must never be a blank screen waiting on JS. */
+@keyframes word-in {
+  from {
+    transform: translateY(105%) rotate(2.4deg) scale(0.96);
+    opacity: 0.1;
+    filter: blur(6px);
+  }
+  to {
+    transform: none;
+    opacity: 1;
+    filter: none;
+  }
+}
+
+.word-in {
+  display: inline-block;
+  animation: word-in 900ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  will-change: transform, filter;
+}
+
+/* Aurora drift behind the hero helix — transform only, so it stays off the main thread. */
+@keyframes aurora-a {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(5%, -4%, 0) scale(1.12);
+  }
+}
+@keyframes aurora-b {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1.05);
+  }
+  50% {
+    transform: translate3d(-6%, 3%, 0) scale(1);
+  }
+}
+@keyframes aurora-c {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(3%, 5%, 0) scale(1.1);
+  }
+}
+
+.aurora-a {
+  animation: aurora-a 19s ease-in-out infinite;
+}
+.aurora-b {
+  animation: aurora-b 23s ease-in-out infinite;
+}
+.aurora-c {
+  animation: aurora-c 27s ease-in-out infinite;
+}
+
+@keyframes pulse-soft {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .grain,
+  .aurora-a,
+  .aurora-b,
+  .aurora-c {
+    animation: none;
+  }
+  /* The headline still arrives — it just arrives already in place. */
+  .word-in {
+    animation-duration: 1ms;
+    animation-delay: 0ms !important;
+  }
+  .sweep {
+    animation: none;
+    width: 100%;
+    opacity: 0.5;
+  }
+  .loader-breathe {
+    animation: none;
+  }
+}
+
