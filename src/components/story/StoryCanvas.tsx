@@ -53,8 +53,8 @@ export function StoryCanvas() {
     const root = document.documentElement;
     const value = getComputedStyle(root).getPropertyValue(token).trim();
     if (value) root.style.setProperty("--paper", value);
-    // The hope act is cream, so the foreground has to invert with it.
-    root.classList.toggle("act-light", token === "--act-hope");
+    // Light-first: only the alarm act inverts the foreground.
+    root.classList.toggle("act-dark", token === "--act-alarm");
   }, [token]);
 
   return (

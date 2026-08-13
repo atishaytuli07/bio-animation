@@ -227,7 +227,10 @@ export function ChapterSplit() {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-hairline bg-hairline">
+        <div
+          className="grid grid-cols-2 gap-px overflow-hidden rounded-2xl border bg-hairline"
+          style={{ borderColor: "var(--glass-line)", boxShadow: "var(--glass-shadow)" }}
+        >
           {[LEFT, right].map((col, ci) => (
             <div key={ci} className="relative bg-paper p-5 md:p-10">
               <p className="eyebrow mb-6 text-ink-faint">

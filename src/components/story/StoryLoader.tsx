@@ -88,7 +88,7 @@ export function StoryLoader({ ready }: { ready: boolean }) {
         // --night. The centre sits at the setup colour and the edges fall away,
         // so the fade-out lands continuously on the hero instead of cutting.
         background:
-          "radial-gradient(125% 95% at 50% 42%, var(--act-setup), color-mix(in oklab, var(--act-setup) 48%, black) 100%)",
+          "radial-gradient(125% 95% at 50% 42%, var(--act-setup), color-mix(in oklab, var(--act-setup) 72%, var(--ink)) 100%)",
         opacity: phase === "exit" ? 0 : 1,
         transition: "opacity 750ms ease",
         pointerEvents: phase === "exit" ? "none" : "auto",
@@ -100,7 +100,7 @@ export function StoryLoader({ ready }: { ready: boolean }) {
         className="loader-breathe pointer-events-none absolute inset-0"
         style={{
           background:
-            "radial-gradient(46% 32% at 50% 45%, color-mix(in oklab, var(--violet) 34%, transparent), transparent 72%), radial-gradient(38% 26% at 62% 60%, color-mix(in oklab, var(--coral) 16%, transparent), transparent 74%)",
+            "radial-gradient(46% 32% at 50% 45%, color-mix(in oklab, var(--glow-amber) 30%, transparent), transparent 72%), radial-gradient(38% 26% at 62% 60%, color-mix(in oklab, var(--glow-cyan) 14%, transparent), transparent 74%)",
         }}
       />
       <div

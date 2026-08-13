@@ -27,12 +27,17 @@ export const sceneState = {
  * light grey so the coloured bases carry all the contrast, and the variant
  * red is the only fully saturated thing on screen.
  */
+/**
+ * Warm palette for the cream canvas. The old near-white strands (#DCD5DE)
+ * disappeared the moment the page went light — strand hardware is now warm
+ * sand, and the bases are saturated enough to carry on paper.
+ */
 export const PALETTE = {
-  mistDeep: "#DCD5DE",
+  mistDeep: "#C9BA9B",
   signal: "#E03A3E",
-  coral: "#FF7A6B",
-  blush: "#FFD9DB",
-  violet: "#7B5EA7",
-  violetSoft: "#A88BD0",
-  cyan: "#4FA8D8",
+  coral: "#F06D4F",
+  blush: "#FFD48A",
+  violet: "#6D7FDB",
+  violetSoft: "#98A6E8",
+  cyan: "#2E96B8",
 } as const;

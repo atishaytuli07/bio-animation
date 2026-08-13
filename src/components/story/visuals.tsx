@@ -47,7 +47,7 @@ export function Atmosphere() {
         className="absolute inset-0"
         style={{
           background:
-            "radial-gradient(120% 90% at 50% 45%, transparent 55%, color-mix(in oklab, black 34%, transparent) 100%)",
+            "radial-gradient(120% 90% at 50% 45%, transparent 60%, color-mix(in oklab, var(--ink) 14%, transparent) 100%)",
         }}
       />
     </div>
@@ -385,7 +385,7 @@ export function Vessel({
 /** Key for the two populations above — the animation has to teach, not decorate. */
 export function VesselLegend() {
   return (
-    <div className="mt-3 flex flex-wrap items-center gap-x-6 gap-y-2 text-[11px] uppercase tracking-[0.18em]">
+    <div className="hand-note mt-3 flex flex-wrap items-center gap-x-6 gap-y-2">
       <span className="flex items-center gap-2" style={{ color: "var(--ink-faint)" }}>
         <svg viewBox="-9 -9 18 18" className="h-3 w-3">
           <ellipse

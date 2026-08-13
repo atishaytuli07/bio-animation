@@ -77,7 +77,7 @@ function VariantCallout({ on }: { on: number }) {
         className="pointer-events-none absolute inset-x-0 -inset-y-20"
         style={{
           background:
-            "radial-gradient(66% 76% at 50% 50%, color-mix(in oklab, black 92%, transparent), color-mix(in oklab, black 66%, transparent) 46%, transparent 78%)",
+            "radial-gradient(66% 76% at 50% 50%, color-mix(in oklab, var(--paper) 92%, transparent), color-mix(in oklab, var(--paper) 62%, transparent) 46%, transparent 78%)",
           maskImage: "linear-gradient(to bottom, transparent, black 26%, black 74%, transparent)",
           WebkitMaskImage:
             "linear-gradient(to bottom, transparent, black 26%, black 74%, transparent)",
@@ -198,8 +198,8 @@ function LoadingNote({ show }: { show: boolean }) {
       >
         <span className="sweep absolute inset-y-0 w-1/3" style={{ background: "var(--violet)" }} />
       </span>
-      <span className="eyebrow" style={{ color: "var(--ink-soft)" }}>
-        Rendering helix
+      <span className="hand-note" style={{ color: "var(--ink-soft)" }}>
+        rendering helix…
       </span>
     </div>
   );
@@ -228,7 +228,7 @@ function Aurora({ intensity }: { intensity: number }) {
           key={b.cls}
           className={`absolute inset-0 ${b.cls}`}
           style={{
-            background: `radial-gradient(${b.size}% ${b.size * 0.8}% at ${b.x}% ${b.y}%, color-mix(in oklab, ${b.c} 42%, transparent), transparent 68%)`,
+            background: `radial-gradient(${b.size}% ${b.size * 0.8}% at ${b.x}% ${b.y}%, color-mix(in oklab, ${b.c} 24%, transparent), transparent 68%)`,
             willChange: "transform",
           }}
         />
@@ -355,11 +355,10 @@ export function ChapterHero({ onStageReady }: { onStageReady?: () => void }) {
           className="pointer-events-none absolute inset-0"
           style={{
             opacity: scrim * 0.92,
-            // A pool of shadow, not a pool of paper. The strands are near-white
-            // and so is the type, so the scrim has to deepen whatever act
-            // colour is behind rather than tint it.
+            // Light-first: the type is deep ink on cream, so the scrim pools
+            // PAPER behind it — a soft wash of the page colour over the helix.
             background:
-              "radial-gradient(50% 38% at 50% 50%, color-mix(in oklab, black 66%, transparent) 22%, color-mix(in oklab, black 38%, transparent) 56%, transparent 78%)",
+              "radial-gradient(50% 38% at 50% 50%, color-mix(in oklab, var(--paper) 80%, transparent) 26%, color-mix(in oklab, var(--paper) 48%, transparent) 58%, transparent 78%)",
           }}
         />
 
@@ -411,8 +410,8 @@ export function ChapterHero({ onStageReady }: { onStageReady?: () => void }) {
           className="pointer-events-none absolute bottom-10 left-1/2 flex -translate-x-1/2 flex-col items-center gap-3"
           style={{ opacity: cue }}
         >
-          <span className="eyebrow" style={{ color: "var(--ink-faint)" }}>
-            Scroll
+          <span className="hand-note" style={{ color: "var(--ink-faint)" }}>
+            scroll
           </span>
           <span
             className="block h-10 w-px"

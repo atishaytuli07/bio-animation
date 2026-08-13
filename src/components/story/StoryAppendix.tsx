@@ -87,19 +87,9 @@ function Section({ section }: { section: (typeof SECTIONS)[number] }) {
           </p>
         </div>
 
-        <div
-          className="grid gap-px overflow-hidden rounded-sm"
-          style={{ background: "var(--hairline)" }}
-        >
+        <div className="grid gap-2 overflow-hidden rounded-sm">
           {section.panels.map((p) => (
-            <details
-              key={p.title}
-              className="group"
-              // --surface is mode-aware: a light lift on the dark canvases, a
-              // soft white card on cream. Mixing paper with black went muddy
-              // grey-brown the moment the second half turned light.
-              style={{ background: "var(--surface)" }}
-            >
+            <details key={p.title} className="group glass-card">
               <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-5 py-4 text-sm text-ink transition-colors hover:bg-[color-mix(in_oklab,var(--ink)_6%,transparent)] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ink md:text-base">
                 <span>{p.title}</span>
                 <span

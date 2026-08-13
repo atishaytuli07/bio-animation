@@ -40,7 +40,8 @@ function desaturate(hex: string) {
   const c = new THREE.Color(hex);
   const hsl = { h: 0, s: 0, l: 0 };
   c.getHSL(hsl);
-  return new THREE.Color().setHSL(hsl.h, hsl.s * 0.18, Math.min(0.88, hsl.l + 0.22));
+  // Cap below the cream canvas (~0.95 sRGB) or desaturated bases vanish.
+  return new THREE.Color().setHSL(hsl.h, hsl.s * 0.22, Math.min(0.76, hsl.l + 0.1));
 }
 
 function useHelixData() {

@@ -81,8 +81,8 @@ export function ChapterOpen() {
         className="absolute bottom-10 left-1/2 flex -translate-x-1/2 flex-col items-center gap-3"
         style={{ opacity: 1 - range(p, 0, 0.06) }}
       >
-        <span className="eyebrow" style={{ color: TONE(0.38) }}>
-          Scroll
+        <span className="hand-note" style={{ color: TONE(0.45) }}>
+          scroll
         </span>
         <span
           className="block h-10 w-px"
@@ -190,8 +190,8 @@ export function ChapterDrug() {
           </div>
           <div>
             <Liver fill={arrive} alarm={fail} />
-            <p className="mt-3 text-center eyebrow" style={{ color: TONE(0.4) }}>
-              Liver — where 5-FU is broken down
+            <p className="hand-note mt-3 text-center" style={{ color: TONE(0.55) }}>
+              the liver — where 5-FU is broken down
             </p>
           </div>
         </div>
@@ -415,7 +415,9 @@ export function ChapterAccumulation() {
           transform: `translate(${Math.sin(load * 90) * shake}px, ${Math.cos(load * 70) * shake * 0.6}px)`,
         }}
       >
-        <Eyebrow>Every scroll is another dose</Eyebrow>
+        <p className="hand-note" style={{ color: TONE(0.5) }}>
+          every scroll is another dose
+        </p>
         <p className="story-line mt-6" style={{ color: TONE(0.97) }}>
           {load < 0.45 ? "The difference is invisible." : "Until it's too late."}
         </p>
