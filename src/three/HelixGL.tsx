@@ -19,7 +19,8 @@ const VARIANT_REGION = [28, 29, 30, 31, 32];
  */
 const VARIANT_FACING_ANGLE = 1.01;
 
-const BASE_COLORS = [PALETTE.violet, PALETTE.cyan, PALETTE.coral, PALETTE.violetSoft];
+// Red/white brand core with blush between — the mockup's helix, in 3D.
+const BASE_COLORS = [PALETTE.signal, PALETTE.pale, PALETTE.coral, PALETTE.blush];
 
 type NodeData = {
   position: THREE.Vector3;
@@ -139,7 +140,7 @@ function Particles({ animate }: { animate: boolean }) {
     <Instances limit={seeds.length} range={seeds.length} frustumCulled={false}>
       {/* Motes are a few pixels across — 6×4 is beyond enough. */}
       <sphereGeometry args={[0.06, 6, 4]} />
-      <meshStandardMaterial color={PALETTE.violet} transparent opacity={0.4} roughness={0.6} />
+      <meshStandardMaterial color={PALETTE.violet} transparent opacity={0.5} roughness={0.6} />
       {seeds.map((s, i) => (
         <Instance
           key={i}

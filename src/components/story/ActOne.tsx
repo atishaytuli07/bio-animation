@@ -1,17 +1,5 @@
 import { useSmoothProgress, range, band, lerp, clamp01 } from "@/hooks/use-scroll-progress";
-import {
-  TONE,
-  Tall,
-  VesselLegend,
-  Reveal,
-  BodyFigure,
-  ECG,
-  Vessel,
-  Liver,
-  Cell,
-  Helix,
-  Sequence,
-} from "./visuals";
+import { TONE, Tall, VesselLegend, Reveal, BodyFigure, ECG, Vessel, Liver, Cell } from "./visuals";
 
 /* ---------------------------------------------------------------- helpers */
 
@@ -241,10 +229,7 @@ const ZOOM = [
   { label: "Human", note: "Emma — one body among millions" },
   { label: "Blood", note: "The drug, circulating" },
   { label: "Liver", note: "Where the breakdown is supposed to happen" },
-  { label: "Cell", note: "One of two hundred billion" },
-  { label: "DNA", note: "The instruction manual inside it" },
-  { label: "DPYD", note: "One gene — the recipe for the DPD enzyme" },
-  { label: "Mutation", note: "One letter changed. The recipe breaks." },
+  { label: "Cell", note: "One of two hundred billion — and inside it, the instruction manual" },
 ];
 
 function ZoomArt({ i, spin, animate }: { i: number; spin: number; animate: boolean }) {
@@ -293,28 +278,11 @@ function ZoomArt({ i, spin, animate }: { i: number; spin: number; animate: boole
           <Liver fill={0.35} />
         </div>
       );
-    case 3:
+    default:
       return (
         <div className="w-[220px]">
           <Cell stroke={s} />
         </div>
-      );
-    case 4:
-      return <Helix spin={spin} className="h-[230px]" stroke={s} animate={animate} />;
-    case 5:
-      return (
-        <Helix
-          spin={spin}
-          rungs={16}
-          flag={-1}
-          className="h-[230px]"
-          stroke={s}
-          animate={animate}
-        />
-      );
-    default:
-      return (
-        <Helix spin={spin} rungs={16} flag={8} className="h-[230px]" stroke={s} animate={animate} />
       );
   }
 }
@@ -325,7 +293,7 @@ export function ChapterZoom() {
   const idx = Math.min(ZOOM.length - 1, Math.round(pos));
 
   return (
-    <Tall id="discovery" vh={560} refFn={ref}>
+    <Tall vh={480} refFn={ref}>
       <div className="w-full max-w-6xl px-6">
         <Eyebrow>Keep scrolling — we go closer</Eyebrow>
 
@@ -368,10 +336,6 @@ export function ChapterZoom() {
         >
           {ZOOM[idx]!.note}
         </p>
-
-        <div className="mt-8" style={{ opacity: range(p, 0.82, 0.95) }}>
-          <Sequence reveal={range(p, 0.8, 0.95)} mutate={range(p, 0.9, 1)} />
-        </div>
 
         {/* depth rail */}
         <div className="mt-8 flex items-center justify-center gap-2">

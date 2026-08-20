@@ -75,36 +75,37 @@
    * inversion (StoryCanvas puts .act-dark on <html> there). Everything reads
    * --ink directly or through TONE(), so the flip is total in one class.
    */
-  --ink: oklch(0.32 0.055 235);
-  --ink-soft: oklch(0.47 0.05 230);
-  --ink-faint: oklch(0.62 0.038 228);
+  --ink: oklch(0.27 0.02 30);
+  --ink-soft: oklch(0.44 0.028 28);
+  --ink-faint: oklch(0.6 0.03 26);
   --paper: var(--act-setup);
-  --paper-deep: oklch(0.93 0.028 88);
+  --paper-deep: oklch(0.93 0.022 35);
   /* glass card language, straight from the reference */
   --surface: oklch(1 0 0 / 0.55);
   --glass-line: oklch(0.78 0.07 235 / 0.42);
   --glass-shadow: 0 24px 70px oklch(0.55 0.09 240 / 0.16);
-  --hairline: oklch(0.32 0.05 235 / 0.16);
-  --hairline-strong: oklch(0.32 0.05 235 / 0.34);
+  --hairline: oklch(0.3 0.03 30 / 0.16);
+  --hairline-strong: oklch(0.3 0.03 30 / 0.34);
 
   /*
    * Three canvases: warm cream setup, near-black teal alarm, brighter cream
    * hope. The alarm act stays DARK — everything that happens there is already
    * red, and red needs something to burn against.
    */
-  --act-setup: oklch(0.955 0.022 85);
-  --act-alarm: oklch(0.19 0.02 220);
-  --act-hope: oklch(0.975 0.016 88);
+  --act-setup: oklch(0.958 0.018 35);
+  --act-alarm: oklch(0.2 0.025 25);
+  --act-hope: oklch(0.975 0.012 40);
 
   /* accents: soft glows over the paper, mCherry-adjacent signal red */
   --signal: oklch(0.585 0.205 25);
   --coral: oklch(0.72 0.16 30);
-  --glow-amber: oklch(0.82 0.13 75);
-  --glow-cyan: oklch(0.7 0.12 250);
-  --violet: oklch(0.62 0.14 275);
-  --violet-soft: oklch(0.74 0.09 275);
-  --cyan: oklch(0.6 0.1 230);
-  --blush: oklch(0.9 0.05 60);
+  --glow-amber: oklch(0.83 0.12 70);
+  --glow-cyan: oklch(0.74 0.1 255);
+  --violet: oklch(0.62 0.16 300);
+  --violet-soft: oklch(0.75 0.1 300);
+  --cyan: oklch(0.66 0.1 240);
+  --blush: oklch(0.87 0.07 25);
+  --pink: oklch(0.78 0.13 15);
 
   --clinical: oklch(0.5 0.12 240);
   --clinical-deep: oklch(0.4 0.11 238);
@@ -112,7 +113,7 @@
   --alarm: var(--signal);
   --vital: oklch(0.52 0.13 155);
   /* the silence — the floor of the story, below even the alarm act */
-  --night: oklch(0.13 0.015 220);
+  --night: oklch(0.13 0.018 25);
 
   --background: oklch(1 0 0);
   --foreground: oklch(0.129 0.042 264.695);
@@ -154,9 +155,9 @@
  * the accents brighten because the deep-teal values vanish on near-black.
  */
 :root.act-dark {
-  --ink: oklch(0.96 0.02 85);
-  --ink-soft: oklch(0.84 0.03 85);
-  --ink-faint: oklch(0.68 0.03 90);
+  --ink: oklch(0.97 0.012 40);
+  --ink-soft: oklch(0.85 0.025 35);
+  --ink-faint: oklch(0.68 0.03 30);
   --hairline: oklch(1 0 0 / 0.16);
   --hairline-strong: oklch(1 0 0 / 0.36);
   --surface: oklch(1 0 0 / 0.09);
@@ -229,6 +230,7 @@
   --color-act-hope: var(--act-hope);
   --color-signal: var(--signal);
   --color-glow-amber: var(--glow-amber);
+  --color-pink: var(--pink);
   --color-glow-cyan: var(--glow-cyan);
   --color-coral: var(--coral);
   --color-violet: var(--violet);

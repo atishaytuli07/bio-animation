@@ -159,7 +159,7 @@ function VariantCallout({ on }: { on: number }) {
             textWrap: "balance",
           }}
         >
-          <span className="font-mono" style={{ color: "var(--signal)" }}>
+          <span className="font-mono" style={{ color: "var(--coral)" }}>
             c.1905+1G&gt;A
           </span>{" "}
           — one letter. The enzyme that clears the drug is never built.
@@ -307,7 +307,7 @@ export function ChapterHero({ onStageReady }: { onStageReady?: () => void }) {
 
   // Shorter on phones: the same choreography over less thumb-travel.
   return (
-    <section ref={ref} className="relative h-[300vh] md:h-[420vh]">
+    <section id="discovery" ref={ref} className="relative h-[300vh] md:h-[420vh]">
       <div className="sticky top-0 h-screen overflow-hidden">
         <Aurora intensity={1 - range(p, 0.7, 1) * 0.45} />
 
@@ -366,7 +366,7 @@ export function ChapterHero({ onStageReady }: { onStageReady?: () => void }) {
         <div className="pointer-events-none relative flex h-full flex-col items-center justify-center px-6 text-center">
           <div style={{ opacity: titleOut, visibility: titleOut > 0.01 ? "visible" : "hidden" }}>
             <p className="eyebrow mb-6" style={{ color: "var(--ink-soft)" }}>
-              iGEM 2026 · Diagnostics
+              The Discovery — inside the nucleus
             </p>
             <RevealCSS
               text={"Precision starts\nin your DNA."}

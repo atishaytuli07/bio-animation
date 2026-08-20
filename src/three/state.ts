@@ -33,11 +33,13 @@ export const sceneState = {
  * sand, and the bases are saturated enough to carry on paper.
  */
 export const PALETTE = {
-  mistDeep: "#C9BA9B",
+  /* strand tubes + rungs: warm near-white, reads as the mockup's candy helix */
+  mistDeep: "#F4E8E2",
   signal: "#E03A3E",
   coral: "#F06D4F",
-  blush: "#FFD48A",
-  violet: "#6D7FDB",
-  violetSoft: "#98A6E8",
-  cyan: "#2E96B8",
+  blush: "#F6B3A5",
+  pale: "#FBF4F0",
+  violet: "#8FA7E8",
+  violetSoft: "#B9C6F0",
+  cyan: "#7FB6D9",
 } as const;

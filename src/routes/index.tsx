@@ -6,6 +6,7 @@ import { StoryLoader } from "@/components/story/StoryLoader";
 import { StoryAppendix } from "@/components/story/StoryAppendix";
 import { Atmosphere } from "@/components/story/visuals";
 import { ChapterHero } from "@/components/story/ChapterHero";
+import { ChapterOpening } from "@/components/story/ChapterOpening";
 import {
   ChapterOpen,
   ChapterEmma,
@@ -75,7 +76,9 @@ function FilmProgress() {
 function Story() {
   // True once the hero's stage exists — GL context live, or the SVG fallback
   // confirmed as the stage on machines that won't get WebGL.
-  const [stageReady, setStageReady] = useState(false);
+  // The opening scene is SVG — nothing heavy to wait for. The 3D dive is
+  // mid-page and mounts on approach, so the gate opens on the min-hold alone.
+  const [stageReady, setStageReady] = useState(true);
   const onStageReady = useCallback(() => setStageReady(true), []);
 
   return (
@@ -86,12 +89,17 @@ function Story() {
       <FilmProgress />
       <ProgressRail />
 
-      <ChapterHero onStageReady={onStageReady} />
+      {/* Visual-first opening: two patients, same dose, diverging outcomes.
+          Zero jargon — the science is earned chapter by chapter. */}
+      <ChapterOpening />
 
       <ChapterOpen />
       <ChapterEmma />
       <ChapterDrug />
       <ChapterZoom />
+      {/* The 3D dive now lives at The Discovery — the payoff of travelling
+          into the body, not an abstract splash. */}
+      <ChapterHero onStageReady={onStageReady} />
       <ChapterAccumulation />
       <ChapterSilence />
 
