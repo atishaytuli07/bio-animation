@@ -353,7 +353,7 @@ function HeroConcept() {
             Chemo<span style={{ color: C.red }}>Guard</span>
           </span>
           <span
-            className="hidden text-[10px] uppercase tracking-[0.22em] text-[color:var(--mark)] opacity-60 [--mark:var(--paper-c)] sm:inline md:[--mark:var(--ink-c)]"
+            className="hidden text-[10px] tracking-[0.22em] text-[color:var(--mark)] opacity-60 [--mark:var(--paper-c)] sm:inline md:[--mark:var(--ink-c)]"
             style={{ fontFamily: DISPLAY }}
           >
             iGEM 2026
@@ -366,14 +366,15 @@ function HeroConcept() {
           style={{ color: C.paper, fontFamily: DISPLAY }}
         >
           {["Project", "Wet Lab", "Dry Lab", "Human Practices", "Team"].map((l, i) => (
-            <span
+            <button
               key={l}
-              className="group relative cursor-pointer whitespace-nowrap pb-2 text-[16px] font-bold"
-              style={{ letterSpacing: "0.01em" }}
+              type="button"
+              className="group relative cursor-pointer whitespace-nowrap pb-2 text-[16px] font-bold focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-current"
+              style={{ letterSpacing: "0.01em", fontFamily: "inherit", color: "inherit" }}
             >
               {l}
               <Underline index={i} active={i === 0} />
-            </span>
+            </button>
           ))}
         </nav>
 
@@ -421,9 +422,10 @@ function HeroConcept() {
           }}
         >
           {["Project", "Wet Lab", "Dry Lab", "Human Practices", "Team"].map((l, i) => (
-            <span
+            <button
               key={l}
-              className="block cursor-pointer px-5 py-3 text-[15px] font-bold"
+              type="button"
+              className="block w-full cursor-pointer px-5 py-3 text-left text-[15px] font-bold"
               style={{
                 fontFamily: DISPLAY,
                 color: C.ink,
@@ -431,7 +433,7 @@ function HeroConcept() {
               }}
             >
               {l}
-            </span>
+            </button>
           ))}
         </div>
       )}
@@ -473,8 +475,8 @@ function HeroConcept() {
             className="mt-4 max-w-md text-[16px] font-medium leading-relaxed md:mt-6 md:text-[17px]"
             style={{ color: `${C.ink}c4` }}
           >
-            One gene decides how your body clears chemotherapy. For some people, the standard dose
-            is the danger.
+            One gene decides how your body clears a widely used chemotherapy drug. For some people,
+            the standard dose is the danger.
           </p>
 
           <div className="mt-5 flex flex-wrap items-center gap-3 md:mt-8">
