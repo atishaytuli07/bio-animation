@@ -49,6 +49,7 @@ export function Helix({ onFirstDrag }: { onFirstDrag: () => void }) {
   const labelText = useRef<SVGTextElement>(null);
 
   const leader = useRef<SVGPathElement>(null);
+  const castRef = useRef<SVGPathElement>(null);
 
   const hover = useRef<number | null>(null);
   // `pending` accumulates raw pointer movement between frames. While the
@@ -179,6 +180,7 @@ export function Helix({ onFirstDrag }: { onFirstDrag: () => void }) {
       }
 
       pathA.current?.setAttribute("d", da);
+      castRef.current?.setAttribute("d", da);
       pathB.current?.setAttribute("d", db);
       raf = requestAnimationFrame(tick);
     };
@@ -265,11 +267,6 @@ export function Helix({ onFirstDrag }: { onFirstDrag: () => void }) {
           <stop offset="50%" stopColor="#E8DCFB" />
           <stop offset="100%" stopColor={C.paper} />
         </linearGradient>
-        {/* The near strand casts onto the far one — the cheapest honest depth
-            cue there is, and it keeps the illustration flat. */}
-        <filter id="nearCast" x="-30%" y="-10%" width="180%" height="130%">
-          <feDropShadow dx="0" dy="4" stdDeviation="7" floodColor="#2A1857" floodOpacity="0.4" />
-        </filter>
         <filter id="variantGlow" x="-160%" y="-160%" width="420%" height="420%">
           <feGaussianBlur stdDeviation="9" result="b" />
           <feMerge>
@@ -353,6 +350,23 @@ export function Helix({ onFirstDrag }: { onFirstDrag: () => void }) {
           );
         })}
 
+        {/*
+          The near strand's cast shadow, drawn rather than filtered: the same
+          path offset down and painted dark underneath. An SVG drop-shadow on
+          geometry that is rewritten every frame re-rasterises the filter every
+          frame; a second stroke costs nothing.
+        */}
+        <path
+          ref={castRef}
+          d={initial.map((p, i) => `${i ? "L" : "M"}${p.xa},${p.y}`).join("")}
+          fill="none"
+          stroke="#2A1857"
+          strokeWidth={13}
+          strokeLinecap="round"
+          opacity={0.22}
+          transform="translate(0 7)"
+        />
+
         {/* near backbone */}
         <path
           ref={pathA}
@@ -361,7 +375,6 @@ export function Helix({ onFirstDrag }: { onFirstDrag: () => void }) {
           stroke="url(#strand)"
           strokeWidth={12}
           strokeLinecap="round"
-          filter="url(#nearCast)"
         />
 
         {/*

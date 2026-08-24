@@ -247,19 +247,31 @@ function HeroConcept() {
     let ty = 0;
     const target = { x: 0, y: 0 };
 
+    // The loop stops once the easing has caught up with the pointer and
+    // restarts on the next move. A rAF that runs forever writing values that
+    // are not changing is pure waste, and this page already runs one for the
+    // strand.
+    const start = () => {
+      if (!raf) raf = requestAnimationFrame(tick);
+    };
     const onMove = (e: PointerEvent) => {
       target.x = (e.clientX / window.innerWidth) * 2 - 1;
       target.y = (e.clientY / window.innerHeight) * 2 - 1;
+      start();
     };
     const tick = () => {
       tx += (target.x - tx) * 0.05;
       ty += (target.y - ty) * 0.05;
       el.style.setProperty("--px", (tx * 26).toFixed(2) + "px");
       el.style.setProperty("--py", (ty * 18).toFixed(2) + "px");
+      if (Math.abs(target.x - tx) < 0.001 && Math.abs(target.y - ty) < 0.001) {
+        raf = 0; // settled — nothing left to write until the pointer moves
+        return;
+      }
       raf = requestAnimationFrame(tick);
     };
     window.addEventListener("pointermove", onMove, { passive: true });
-    raf = requestAnimationFrame(tick);
+    start();
     return () => {
       cancelAnimationFrame(raf);
       window.removeEventListener("pointermove", onMove);
@@ -277,7 +289,12 @@ function HeroConcept() {
       className="relative min-h-screen overflow-hidden [&_*]:[-webkit-tap-highlight-color:transparent]"
       style={
         {
-          background: C.paper,
+          // Grain as a background LAYER, not a blended overlay. A
+          // mix-blend-mode across the viewport measured at ~19fps of cost,
+          // because it forces the whole stacking context to re-composite
+          // every frame. As a background image it costs nothing.
+          backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='0.1'/%3E%3C/svg%3E")`,
+          backgroundColor: C.paper,
           color: C.ink,
           "--paper-c": C.paper,
           "--ink-c": C.ink,
@@ -307,30 +324,22 @@ function HeroConcept() {
           // moving reads as LIGHT passing over the scene, where discrete
           // objects bobbing read as things jiggling. 48s per cycle, so you
           // register it as atmosphere rather than as animation.
-          backgroundImage: `repeating-linear-gradient(102deg, rgba(255,255,255,0.05) 0 3px, transparent 3px 26px), linear-gradient(160deg, ${C.lavender}, ${C.lavenderDeep})`,
-          backgroundSize: "180px 180px, 100% 100%",
-          animation: "sheen 48s linear infinite",
+          backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='0.1'/%3E%3C/svg%3E"), linear-gradient(160deg, ${C.lavender}, ${C.lavenderDeep})`,
         }}
-      />
+      >
+        {/*
+          The drifting stripes live on their own child and move by transform.
+          Animating background-position repaints the entire field every frame
+          (~9fps); a transform is composited and repaints nothing.
+        */}
+        <span className="sheen absolute inset-x-0 top-0 block h-[300%]" />
+      </div>
       {/* a thin ink keyline along the field edge — the reference wikis all
           outline their shapes rather than letting them dissolve */}
       <div
         aria-hidden="true"
         className="field pointer-events-none absolute"
         style={{ border: `3px solid ${C.ink}`, opacity: 0.14 }}
-      />
-
-      {/* Grain over everything. Every reference wiki has surface texture; a
-          perfectly clean gradient is the giveaway of a generated page. */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 z-[1]"
-        style={{
-          backgroundImage:
-            "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E\")",
-          mixBlendMode: "soft-light",
-          opacity: 0.5,
-        }}
       />
 
       {/* the scientific world, drifting */}
@@ -347,7 +356,6 @@ function HeroConcept() {
               // this object travels with the pointer.
               ["--rot" as string]: `${f.r}deg`,
               ["--d" as string]: f.depth,
-              transform: `translate(-50%,-50%) rotate(${f.r}deg)`,
               animationDelay: `${240 + i * 90}ms`,
               // Far objects sit back: softer, slightly desaturated, blurred a
               // touch. Near objects are sharp and cast a shadow.
@@ -606,10 +614,24 @@ function HeroConcept() {
           everywhere is what makes a page read as generated; the reference
           wikis hold still and move one thing deliberately.
         */
+        /*
+          The entrance carries the parallax offset as well, so an object does
+          not jump the instant the animation hands back to the static rule.
+          var() resolves at use time, so the live pointer values apply here.
+        */
         @keyframes enter {
-          0%   { opacity: 0; transform: translate(-50%,-50%) rotate(var(--rot,0deg)) scale(0.6); }
-          70%  { opacity: 1; transform: translate(-50%,-50%) rotate(var(--rot,0deg)) scale(1.06); }
-          100% { opacity: 1; transform: translate(-50%,-50%) rotate(var(--rot,0deg)) scale(1); }
+          0% {
+            opacity: 0;
+            transform: translate(-50%, -50%) var(--par) rotate(var(--rot, 0deg)) scale(0.6);
+          }
+          70% {
+            opacity: 1;
+            transform: translate(-50%, -50%) var(--par) rotate(var(--rot, 0deg)) scale(1.06);
+          }
+          100% {
+            opacity: 1;
+            transform: translate(-50%, -50%) var(--par) rotate(var(--rot, 0deg)) scale(1);
+          }
         }
 
         /*
@@ -619,10 +641,8 @@ function HeroConcept() {
           the two never fight over the same property.
         */
         .parallax {
-          transform: translate(-50%, -50%)
-            translate(calc(var(--px, 0px) * var(--d, 0.5)), calc(var(--py, 0px) * var(--d, 0.5)))
-            rotate(var(--rot, 0deg));
-          transition: none;
+          --par: translate(calc(var(--px, 0px) * var(--d, 0.5)), calc(var(--py, 0px) * var(--d, 0.5)));
+          transform: translate(-50%, -50%) var(--par) rotate(var(--rot, 0deg));
         }
         .parallax.enter { animation-fill-mode: backwards; }
         .enter {
@@ -660,9 +680,17 @@ function HeroConcept() {
         }
 
         /* The field's stripes drift — light moving across the scene. */
+        .sheen {
+          background-image: repeating-linear-gradient(
+            102deg,
+            rgba(255, 255, 255, 0.05) 0 3px,
+            transparent 3px 26px
+          );
+          animation: sheen 60s linear infinite;
+        }
         @keyframes sheen {
-          from { background-position: 0 0, 0 0; }
-          to   { background-position: 180px -180px, 0 0; }
+          from { transform: translate3d(0, -33.333%, 0); }
+          to   { transform: translate3d(0, 0, 0); }
         }
 
         /* Hover paints the marker stroke on, left to right. */
@@ -677,7 +705,7 @@ function HeroConcept() {
 
         @media (prefers-reduced-motion: reduce) {
           .enter, .float { animation: none; }
-          [style*="sheen"] { animation: none !important; }
+          .sheen { animation: none; }
         }
       `}</style>
     </main>
