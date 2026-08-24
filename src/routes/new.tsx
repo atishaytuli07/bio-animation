@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 
 import { Helix } from "@/components/hero/Helix";
+import { range, useSmoothProgress } from "@/hooks/use-scroll-progress";
 import { C } from "@/components/hero/palette";
 
 /**
@@ -83,6 +84,59 @@ function Underline({ index, active = false }: { index: number; active?: boolean 
         vectorEffect="non-scaling-stroke"
       />
     </svg>
+  );
+}
+
+/**
+ * The journey, as the client described it: "follow the highlighted DPYD region
+ * into the DNA and gradually discover why two people can respond differently
+ * to the same treatment, then move into detection and finally ChemoGuard."
+ *
+ * Only the first stop is built. The rest are listed because the progress rail
+ * has to show a whole journey to mean anything — a reader needs to see where
+ * they are going, not just where they are.
+ */
+const JOURNEY = ["The gene", "Two people", "Why", "Detection", "ChemoGuard"] as const;
+
+/**
+ * The story progress rail. Deliberately quiet: a hairline that fills, and
+ * named stops that only the current one states out loud. The client asked for
+ * "a subtle story progress system at the top so users always understand where
+ * they are" — subtle being the operative word, so this is not a navbar.
+ */
+function StoryProgress({ p, stop }: { p: number; stop: number }) {
+  return (
+    <div className="pointer-events-none fixed inset-x-0 top-0 z-40">
+      <div className="h-[3px] w-full" style={{ background: `${C.ink}12` }}>
+        <div
+          className="h-full origin-left"
+          style={{
+            // Progress through the WHOLE journey, not through this one
+            // section. Filling to 100% at the end of stop one of five would
+            // tell the reader they had finished when they had barely started.
+            width: `${((p / JOURNEY.length) * 100).toFixed(2)}%`,
+            background: `linear-gradient(90deg, ${C.lavender}, ${C.coral}, ${C.red})`,
+          }}
+        />
+      </div>
+      <div className="mx-auto hidden max-w-[92rem] justify-between px-10 pt-2 md:flex">
+        {JOURNEY.map((label, i) => (
+          <span
+            key={label}
+            className="text-[9px] font-bold uppercase tracking-[0.2em] transition-opacity duration-500"
+            style={{
+              fontFamily: DISPLAY,
+              // Stops ahead of the reader are barely there; the one they are
+              // standing in is the only one that speaks.
+              color: i === stop ? C.redDeep : C.ink,
+              opacity: i === stop ? 1 : i < stop ? 0.35 : 0.18,
+            }}
+          >
+            {label}
+          </span>
+        ))}
+      </div>
+    </div>
   );
 }
 
@@ -202,7 +256,7 @@ const FIELD = [
     depth: 0 = far (small, soft, barely moves) … 1 = near (large, sharp, moves most)
   */
   { k: "cell", x: 11, y: 87, s: 0.86, r: -6, tone: C.pink, depth: 1, hideSm: true },
-  { k: "mol", x: 30, y: 94, s: 0.6, r: 12, tone: C.coral, depth: 0.82 },
+  { k: "mol", x: 22, y: 97, s: 0.6, r: 12, tone: C.coral, depth: 0.82 },
   { k: "enz", x: 15, y: 15, s: 0.5, r: 10, tone: C.green, depth: 0.5 },
   { k: "cell", x: 34, y: 12, s: 0.44, r: -8, tone: C.blue, depth: 0.28 },
 
@@ -218,7 +272,7 @@ const FIELD = [
   { k: "enz", x: 56, y: 47, s: 0.42, r: 16, tone: C.green, depth: 0.36, hideSm: true },
 
   // deep in the field: small, soft, slow
-  { k: "cell", x: 95, y: 72, s: 0.5, r: -8, tone: C.blue, depth: 0.3 },
+  { k: "cell", x: 95, y: 72, s: 0.5, r: -8, tone: C.blue, depth: 0.3, hideSm: true },
   { k: "mol", x: 90, y: 16, s: 0.38, r: 20, tone: C.coral, depth: 0.2 },
 ] as const;
 
@@ -237,6 +291,26 @@ const DOTS = Array.from({ length: 7 }, (_, i) => ({
 
 function HeroConcept() {
   const stage = useRef<HTMLElement>(null);
+  const [track, p] = useSmoothProgress<HTMLElement>(0.1);
+
+  /* ---- one section, four beats -----------------------------------------
+     The hero holds, its words step aside, the strand grows until the variant
+     fills the frame, and the rest of the genome fades out around it. This is
+     the transition mechanic for the whole site; if it works here it works
+     everywhere, which is why it is built once before anything else.        */
+  const heroOut = 1 - range(p, 0.1, 0.3);
+  const zoom = range(p, 0.16, 0.66);
+  const focus = range(p, 0.52, 0.9);
+  const followIn = range(p, 0.3, 0.44) * (1 - range(p, 0.56, 0.68));
+  const revealIn = range(p, 0.72, 0.88);
+  // The cream side gives way as we travel in, so the two halves become one
+  // space rather than staying a split screen.
+  const merge = range(p, 0.14, 0.6);
+  // How far inward the reader has travelled; the ambient scene defers to it.
+  const travel = range(p, 0.14, 0.66);
+  // Objects clear out well before the first copy beat peaks (0.44); otherwise
+  // they sit at ~45% underneath the words and the scrim has to fight them.
+  const ambientOut = range(p, 0.1, 0.34);
 
   useEffect(() => {
     if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
@@ -286,7 +360,7 @@ function HeroConcept() {
   return (
     <main
       ref={stage}
-      className="relative min-h-screen overflow-hidden [&_*]:[-webkit-tap-highlight-color:transparent]"
+      className="relative [&_*]:[-webkit-tap-highlight-color:transparent]"
       style={
         {
           // Grain as a background LAYER, not a blended overlay. A
@@ -301,7 +375,17 @@ function HeroConcept() {
         } as React.CSSProperties
       }
     >
+      <StoryProgress p={p} stop={0} />
+
       {/*
+        ONE section. The client asked to follow the gene as the homepage's
+        central idea, so this is that transition built once and proven before
+        anything downstream is committed to: a tall track with a pinned stage,
+        and every beat driven by scroll position rather than by a timer.
+      */}
+      <section ref={track} style={{ height: "300vh" }} className="relative">
+        <div className="sticky top-0 h-screen overflow-hidden">
+          {/*
         A committed colour field with a hard edge, not a gradient mesh. Every
         reference wiki does this — GlycoGarden meets green to blue on a crisp
         horizon, KCIS is one flat blue, Wuxi is flat cream. A soft pastel wash
@@ -311,202 +395,224 @@ function HeroConcept() {
         The field is lavender because lavender means genetics everywhere on
         this site — so the strand sits literally inside its own meaning.
       */}
-      <div
-        aria-hidden="true"
-        className="field pointer-events-none absolute"
-        style={{
-          // Striping layered over the field, the way GlycoGarden stripes its
-          // green. It is barely visible and it is the difference between a
-          // colour and a surface.
-          //
-          // It also drifts, very slowly. This is the one exception to the
-          // "no ambient motion" rule and it earns it: a continuous surface
-          // moving reads as LIGHT passing over the scene, where discrete
-          // objects bobbing read as things jiggling. 48s per cycle, so you
-          // register it as atmosphere rather than as animation.
-          backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='0.1'/%3E%3C/svg%3E"), linear-gradient(160deg, ${C.lavender}, ${C.lavenderDeep})`,
-        }}
-      >
-        {/*
+          <div
+            aria-hidden="true"
+            className="field pointer-events-none absolute"
+            style={{
+              // Widening as the journey starts: the two halves stop being a split
+              // screen and become one space. This is the client's "the two sides
+              // feel more connected" taken to its conclusion.
+              ["--merge" as string]: merge,
+              // Striping layered over the field, the way GlycoGarden stripes its
+              // green. It is barely visible and it is the difference between a
+              // colour and a surface.
+              //
+              // It also drifts, very slowly. This is the one exception to the
+              // "no ambient motion" rule and it earns it: a continuous surface
+              // moving reads as LIGHT passing over the scene, where discrete
+              // objects bobbing read as things jiggling. 48s per cycle, so you
+              // register it as atmosphere rather than as animation.
+              backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='0.1'/%3E%3C/svg%3E"), linear-gradient(160deg, ${C.lavender}, ${C.lavenderDeep})`,
+            }}
+          >
+            {/*
           The drifting stripes live on their own child and move by transform.
           Animating background-position repaints the entire field every frame
           (~9fps); a transform is composited and repaints nothing.
         */}
-        <span className="sheen absolute inset-x-0 top-0 block h-[300%]" />
-      </div>
-      {/* a thin ink keyline along the field edge — the reference wikis all
-          outline their shapes rather than letting them dissolve */}
-      <div
-        aria-hidden="true"
-        className="field pointer-events-none absolute"
-        style={{ border: `3px solid ${C.ink}`, opacity: 0.14 }}
-      />
-
-      {/* the scientific world, drifting */}
-      <div aria-hidden="true" className="absolute inset-0">
-        {FIELD.map((f, i) => (
-          <div
-            key={i}
-            className={`parallax absolute enter${"hideSm" in f && f.hideSm ? " max-md:hidden" : ""}`}
-            style={{
-              left: `${f.x}%`,
-              top: `${f.y}%`,
-              // Custom properties: the entrance keyframe restores the object's
-              // own rotation instead of flattening it, and --d drives how far
-              // this object travels with the pointer.
-              ["--rot" as string]: `${f.r}deg`,
-              ["--d" as string]: f.depth,
-              animationDelay: `${240 + i * 90}ms`,
-              // Far objects sit back: softer, slightly desaturated, blurred a
-              // touch. Near objects are sharp and cast a shadow.
-              opacity: 0.45 + f.depth * 0.55,
-              filter:
-                f.depth > 0.7
-                  ? `drop-shadow(0 ${(6 * f.depth).toFixed(1)}px ${(10 * f.depth).toFixed(1)}px rgba(36,28,46,0.22))`
-                  : `blur(${((1 - f.depth) * 1.6).toFixed(2)}px)`,
-            }}
-          >
-            {f.k === "cell" ? (
-              <Cell s={f.s} tone={f.tone} />
-            ) : f.k === "mol" ? (
-              <Molecule s={f.s} tone={f.tone} />
-            ) : (
-              <Enzyme s={f.s} tone={f.tone} />
-            )}
+            <span className="sheen absolute inset-x-0 top-0 block h-[300%]" />
           </div>
-        ))}
-        {DOTS.map((d, i) => (
-          <span
-            key={`d${i}`}
-            className="absolute block rounded-full float"
+          {/* a thin ink keyline along the field edge — the reference wikis all
+          outline their shapes rather than letting them dissolve */}
+          <div
+            aria-hidden="true"
+            className="field pointer-events-none absolute"
             style={{
-              left: `${d.x}%`,
-              top: `${d.y}%`,
-              width: d.r * 2,
-              height: d.r * 2,
-              background: d.tone,
-              opacity: 0.9,
-              animationDelay: `${d.delay}s`,
-              animationDuration: `${d.d}s`,
+              // Widening as the journey starts: the two halves stop being a split
+              // screen and become one space. This is the client's "the two sides
+              // feel more connected" taken to its conclusion.
+              ["--merge" as string]: merge,
+              border: `3px solid ${C.ink}`,
+              opacity: 0.14,
             }}
           />
-        ))}
-      </div>
 
-      {/* ---------------------------------------------------------- nav */}
-      <header className="relative z-20 mx-auto flex max-w-[92rem] items-center justify-between px-6 py-4 md:px-10 md:py-6">
-        <div className="flex items-center gap-2.5">
-          {/*
+          {/* the scientific world, drifting */}
+          <div aria-hidden="true" className="absolute inset-0">
+            {FIELD.map((f, i) => (
+              <div
+                key={i}
+                className={`parallax absolute enter${"hideSm" in f && f.hideSm ? " max-md:hidden" : ""}`}
+                style={{
+                  left: `${f.x}%`,
+                  top: `${f.y}%`,
+                  // Custom properties: the entrance keyframe restores the object's
+                  // own rotation instead of flattening it, and --d drives how far
+                  // this object travels with the pointer.
+                  ["--rot" as string]: `${f.r}deg`,
+                  ["--d" as string]: f.depth,
+                  animationDelay: `${240 + i * 90}ms`,
+                  // Far objects sit back: softer, slightly desaturated, blurred a
+                  // touch. Near objects are sharp and cast a shadow.
+                  // The ambient world thins as the journey goes inward: we are
+                  // leaving the bloodstream for the gene, and the nearest
+                  // objects — which would otherwise sail past the camera —
+                  // clear out first.
+                  opacity: (0.45 + f.depth * 0.55) * (1 - ambientOut),
+                  filter:
+                    f.depth > 0.7
+                      ? `drop-shadow(0 ${(6 * f.depth).toFixed(1)}px ${(10 * f.depth).toFixed(1)}px rgba(36,28,46,0.22))`
+                      : `blur(${((1 - f.depth) * 1.6).toFixed(2)}px)`,
+                }}
+              >
+                {f.k === "cell" ? (
+                  <Cell s={f.s} tone={f.tone} />
+                ) : f.k === "mol" ? (
+                  <Molecule s={f.s} tone={f.tone} />
+                ) : (
+                  <Enzyme s={f.s} tone={f.tone} />
+                )}
+              </div>
+            ))}
+            {DOTS.map((d, i) => (
+              <span
+                key={`d${i}`}
+                className="absolute block rounded-full float"
+                style={{
+                  left: `${d.x}%`,
+                  top: `${d.y}%`,
+                  width: d.r * 2,
+                  height: d.r * 2,
+                  background: d.tone,
+                  opacity: 0.9,
+                  animationDelay: `${d.delay}s`,
+                  animationDuration: `${d.d}s`,
+                }}
+              />
+            ))}
+          </div>
+
+          {/* ---------------------------------------------------------- nav */}
+          <header className="absolute inset-x-0 top-0 z-30 mx-auto flex max-w-[92rem] items-center justify-between px-6 py-4 md:px-10 md:py-6">
+            <div className="flex items-center gap-2.5">
+              {/*
             The team's own emblem — DNA dissolving into hexagons above a
             handheld reader, held in two hands. Note it already contains the
             same two ideas this hero is built on: the strand and the molecule.
             White keyed out of the supplied JPEG and un-premultiplied, so the
             edges stay red instead of going pink on a coloured ground.
           */}
-          <img
-            src="/logo.webp"
-            alt="ChemoGuard — NIS Kazakhstan, iGEM 2026"
-            width={34}
-            height={41}
-            className="h-[34px] w-auto shrink-0 md:h-[40px]"
-            style={{ filter: "drop-shadow(0 1px 0 rgba(255,255,255,0.35))" }}
-          />
-          <span
-            className="text-[21px] font-extrabold leading-none text-[color:var(--mark)] [--mark:var(--paper-c)] md:[--mark:var(--ink-c)]"
-            style={{ fontFamily: DISPLAY, letterSpacing: "-0.01em" }}
-          >
-            Chemo<span style={{ color: C.red }}>Guard</span>
-          </span>
-          <span
-            className="hidden text-[10px] tracking-[0.22em] text-[color:var(--mark)] opacity-60 [--mark:var(--paper-c)] sm:inline md:[--mark:var(--ink-c)]"
-            style={{ fontFamily: DISPLAY }}
-          >
-            iGEM 2026
-          </span>
-        </div>
-        {/* These links sit over the deep field, so they are paper-white, not
+              <img
+                src="/logo.webp"
+                alt="ChemoGuard — NIS Kazakhstan, iGEM 2026"
+                width={34}
+                height={41}
+                className="h-[34px] w-auto shrink-0 md:h-[40px]"
+                style={{ filter: "drop-shadow(0 1px 0 rgba(255,255,255,0.35))" }}
+              />
+              <span
+                className="text-[21px] font-extrabold leading-none text-[color:var(--mark)] [--mark:var(--paper-c)] md:[--mark:var(--ink-c)]"
+                style={{ fontFamily: DISPLAY, letterSpacing: "-0.01em" }}
+              >
+                Chemo<span style={{ color: C.red }}>Guard</span>
+              </span>
+              <span
+                className="hidden text-[10px] tracking-[0.22em] text-[color:var(--mark)] opacity-60 [--mark:var(--paper-c)] sm:inline md:[--mark:var(--ink-c)]"
+                style={{ fontFamily: DISPLAY }}
+              >
+                iGEM 2026
+              </span>
+            </div>
+            {/* These links sit over the deep field, so they are paper-white, not
             ink — dark type on the purple was unreadable. */}
-        <nav
-          className="hidden items-center gap-9 md:flex"
-          style={{ color: C.paper, fontFamily: DISPLAY }}
-        >
-          {["Project", "Wet Lab", "Dry Lab", "Human Practices", "Team"].map((l, i) => (
-            <button
-              key={l}
-              type="button"
-              className="group relative cursor-pointer whitespace-nowrap pb-2 text-[16px] font-bold focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-current"
-              style={{ letterSpacing: "0.01em", fontFamily: "inherit", color: "inherit" }}
+            <nav
+              className="hidden items-center gap-9 md:flex"
+              style={{ color: C.paper, fontFamily: DISPLAY }}
             >
-              {l}
-              <Underline index={i} active={i === 0} />
-            </button>
-          ))}
-        </nav>
+              {["Project", "Wet Lab", "Dry Lab", "Human Practices", "Team"].map((l, i) => (
+                <button
+                  key={l}
+                  type="button"
+                  className="group relative cursor-pointer whitespace-nowrap pb-2 text-[16px] font-bold focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-current"
+                  style={{ letterSpacing: "0.01em", fontFamily: "inherit", color: "inherit" }}
+                >
+                  {l}
+                  <Underline index={i} active={i === 0} />
+                </button>
+              ))}
+            </nav>
 
-        {/* Phones had no navigation at all — the links were simply hidden below
+            {/* Phones had no navigation at all — the links were simply hidden below
             md. For an iGEM wiki that is the worst possible thing to drop on
             small screens, since findability is a judging criterion. */}
-        <button
-          type="button"
-          aria-label="Menu"
-          aria-expanded={menu}
-          onClick={() => setMenu((v) => !v)}
-          className="flex size-10 items-center justify-center md:hidden"
-          style={{
-            background: C.paper,
-            border: `2.5px solid ${C.ink}`,
-            borderRadius: 8,
-            boxShadow: `3px 3px 0 ${C.ink}`,
-          }}
-        >
-          <svg width="18" height="14" viewBox="0 0 18 14" aria-hidden="true">
-            {(menu ? [7] : [1, 7, 13]).map((y, i) => (
-              <line
-                key={i}
-                x1="1"
-                y1={y}
-                x2="17"
-                y2={y}
-                stroke={C.ink}
-                strokeWidth="2.5"
-                strokeLinecap="round"
-              />
-            ))}
-          </svg>
-        </button>
-      </header>
-
-      {menu && (
-        <div
-          className="relative z-20 mx-6 mb-2 md:hidden"
-          style={{
-            background: C.paper,
-            border: `2.5px solid ${C.ink}`,
-            borderRadius: 10,
-            boxShadow: `4px 4px 0 ${C.ink}`,
-          }}
-        >
-          {["Project", "Wet Lab", "Dry Lab", "Human Practices", "Team"].map((l, i) => (
             <button
-              key={l}
               type="button"
-              className="block w-full cursor-pointer px-5 py-3 text-left text-[15px] font-bold"
+              aria-label="Menu"
+              aria-expanded={menu}
+              onClick={() => setMenu((v) => !v)}
+              className="flex size-10 items-center justify-center md:hidden"
               style={{
-                fontFamily: DISPLAY,
-                color: C.ink,
-                borderTop: i ? `1.5px solid ${C.ink}22` : undefined,
+                background: C.paper,
+                border: `2.5px solid ${C.ink}`,
+                borderRadius: 8,
+                boxShadow: `3px 3px 0 ${C.ink}`,
               }}
             >
-              {l}
+              <svg width="18" height="14" viewBox="0 0 18 14" aria-hidden="true">
+                {(menu ? [7] : [1, 7, 13]).map((y, i) => (
+                  <line
+                    key={i}
+                    x1="1"
+                    y1={y}
+                    x2="17"
+                    y2={y}
+                    stroke={C.ink}
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                  />
+                ))}
+              </svg>
             </button>
-          ))}
-        </div>
-      )}
+          </header>
 
-      {/* --------------------------------------------------------- hero */}
-      <div className="relative z-10 mx-auto grid max-w-[92rem] items-center gap-3 px-6 pb-8 md:grid-cols-[1.05fr_0.95fr] md:gap-8 md:px-10 md:pb-24">
-        <div className="order-2 md:order-1">
-          {/*
+          {menu && (
+            <div
+              className="relative z-20 mx-6 mb-2 md:hidden"
+              style={{
+                background: C.paper,
+                border: `2.5px solid ${C.ink}`,
+                borderRadius: 10,
+                boxShadow: `4px 4px 0 ${C.ink}`,
+              }}
+            >
+              {["Project", "Wet Lab", "Dry Lab", "Human Practices", "Team"].map((l, i) => (
+                <button
+                  key={l}
+                  type="button"
+                  className="block w-full cursor-pointer px-5 py-3 text-left text-[15px] font-bold"
+                  style={{
+                    fontFamily: DISPLAY,
+                    color: C.ink,
+                    borderTop: i ? `1.5px solid ${C.ink}22` : undefined,
+                  }}
+                >
+                  {l}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* --------------------------------------------------------- hero */}
+          <div className="relative z-10 mx-auto grid h-full max-w-[92rem] items-center gap-3 px-6 pb-8 md:grid-cols-[1.05fr_0.95fr] md:gap-8 md:px-10 md:pb-24">
+            <div
+              className="order-2 md:order-1"
+              style={{
+                opacity: heroOut,
+                transform: `translateY(${((1 - heroOut) * -28).toFixed(1)}px)`,
+                visibility: heroOut < 0.02 ? "hidden" : "visible",
+              }}
+            >
+              {/*
             A chapter label, not a control. It used to carry the same paper
             fill, ink border and hard offset shadow as the secondary button —
             two different affordances wearing one appearance, which made the
@@ -517,95 +623,170 @@ function HeroConcept() {
             THE KIDNEY WORKS" and GlycoGarden's "ACT I — WHY GLYCANS MATTER"
             are plain letterspaced colour, and so is this.
           */}
-          <span
-            className="inline-flex items-center gap-2.5 text-[11px] font-bold uppercase tracking-[0.22em]"
-            style={{ fontFamily: DISPLAY, color: C.redDeep }}
-          >
-            <span className="block h-0.5 w-7" style={{ background: C.red }} />
-            01 · Pharmacogenomics
-          </span>
-
-          <h1
-            className="mt-4 font-black md:mt-7"
-            style={{
-              fontSize: "clamp(2.7rem, 5.9vw, 5rem)",
-              lineHeight: 0.94,
-              letterSpacing: "-0.042em",
-            }}
-          >
-            Your genes <br />
-            decide <br />
-            your <span style={{ color: C.red }}>dose.</span>
-          </h1>
-
-          <p
-            className="mt-4 max-w-md text-[16px] font-medium leading-relaxed md:mt-6 md:text-[17px]"
-            style={{ color: `${C.ink}c4` }}
-          >
-            One gene decides how your body clears a widely used chemotherapy drug. For some people,
-            the standard dose is the danger.
-          </p>
-
-          <div className="mt-5 flex flex-wrap items-center gap-3 md:mt-8">
-            <button
-              className="px-6 py-3 text-[15px] font-bold text-white transition-transform hover:-translate-y-0.5"
-              style={{
-                fontFamily: DISPLAY,
-                background: C.redDeep,
-                border: `2.5px solid ${C.ink}`,
-                borderRadius: 6,
-                boxShadow: `4px 4px 0 ${C.ink}`,
-              }}
-            >
-              Follow the gene
-            </button>
-            <button
-              className="px-6 py-3 text-[15px] font-bold transition-transform hover:-translate-y-0.5"
-              style={{
-                fontFamily: DISPLAY,
-                background: C.paper,
-                color: C.ink,
-                border: `2.5px solid ${C.ink}`,
-                borderRadius: 6,
-                boxShadow: `4px 4px 0 ${C.ink}`,
-              }}
-            >
-              Explore the project
-            </button>
-          </div>
-        </div>
-
-        {/* the strand */}
-        <div className="order-1 flex justify-center md:order-2">
-          <div className="relative h-[34vh] w-full max-w-[520px] md:h-[82vh]">
-            <Helix onFirstDrag={() => setDragged(true)} />
-            <div
-              className="pointer-events-none absolute inset-x-0 -bottom-1 flex justify-center"
-              style={{
-                opacity: dragged ? 0 : 1,
-                transition: "opacity 500ms ease",
-              }}
-            >
               <span
-                className="flex items-center gap-2 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.18em]"
-                style={{ color: C.paper, opacity: 0.75 }}
+                className="inline-flex items-center gap-2.5 text-[11px] font-bold uppercase tracking-[0.22em]"
+                style={{ fontFamily: DISPLAY, color: C.redDeep }}
               >
-                <svg width="26" height="10" viewBox="0 0 26 10" aria-hidden="true">
-                  <path
-                    d="M2 5h22M2 5l4-3.5M2 5l4 3.5M24 5l-4-3.5M24 5l-4 3.5"
-                    stroke={C.paper}
-                    strokeWidth="1.6"
-                    fill="none"
-                    strokeLinecap="round"
-                  />
-                </svg>
-                <span className="md:hidden">Drag the strand</span>
-                <span className="hidden md:inline">Drag the strand · hover a pair</span>
+                <span className="block h-0.5 w-7" style={{ background: C.red }} />
+                01 · Pharmacogenomics
               </span>
+
+              <h1
+                className="mt-4 font-black md:mt-7"
+                style={{
+                  fontSize: "clamp(2.7rem, 5.9vw, 5rem)",
+                  lineHeight: 0.94,
+                  letterSpacing: "-0.042em",
+                }}
+              >
+                Your genes <br />
+                decide <br />
+                your <span style={{ color: C.red }}>dose.</span>
+              </h1>
+
+              <p
+                className="mt-4 max-w-md text-[16px] font-medium leading-relaxed md:mt-6 md:text-[17px]"
+                style={{ color: `${C.ink}c4` }}
+              >
+                One gene decides how your body clears a widely used chemotherapy drug. For some
+                people, the standard dose is the danger.
+              </p>
+
+              <div className="mt-5 flex flex-wrap items-center gap-3 md:mt-8">
+                <button
+                  className="px-6 py-3 text-[15px] font-bold text-white transition-transform hover:-translate-y-0.5"
+                  style={{
+                    fontFamily: DISPLAY,
+                    background: C.redDeep,
+                    border: `2.5px solid ${C.ink}`,
+                    borderRadius: 6,
+                    boxShadow: `4px 4px 0 ${C.ink}`,
+                  }}
+                >
+                  Follow the gene
+                </button>
+                <button
+                  className="px-6 py-3 text-[15px] font-bold transition-transform hover:-translate-y-0.5"
+                  style={{
+                    fontFamily: DISPLAY,
+                    background: C.paper,
+                    color: C.ink,
+                    border: `2.5px solid ${C.ink}`,
+                    borderRadius: 6,
+                    boxShadow: `4px 4px 0 ${C.ink}`,
+                  }}
+                >
+                  Explore the project
+                </button>
+              </div>
+            </div>
+
+            {/* the strand */}
+            <div className="order-1 flex justify-center md:order-2">
+              <div className="relative h-[34vh] w-full max-w-[520px] md:h-[82vh]">
+                <Helix onFirstDrag={() => setDragged(true)} zoom={zoom} focus={focus} />
+                <div
+                  className="pointer-events-none absolute inset-x-0 -bottom-1 flex justify-center"
+                  style={{
+                    // Retires once the reader drags OR once the journey
+                    // starts — it invites you into the hero, it is not a
+                    // caption for the trip inward.
+                    opacity: dragged ? 0 : heroOut,
+                    transition: "opacity 500ms ease",
+                  }}
+                >
+                  <span
+                    className="flex items-center gap-2 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.18em]"
+                    style={{ color: C.paper, opacity: 0.75 }}
+                  >
+                    <svg width="26" height="10" viewBox="0 0 26 10" aria-hidden="true">
+                      <path
+                        d="M2 5h22M2 5l4-3.5M2 5l4 3.5M24 5l-4-3.5M24 5l-4 3.5"
+                        stroke={C.paper}
+                        strokeWidth="1.6"
+                        fill="none"
+                        strokeLinecap="round"
+                      />
+                    </svg>
+                    <span className="md:hidden">Drag the strand</span>
+                    <span className="hidden md:inline">Drag the strand · hover a pair</span>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+          {/*
+            Beat two: her own phrase, at the moment the journey begins. It
+            arrives after the hero copy has stepped aside and leaves before
+            the variant does, so the frame is never carrying two thoughts.
+          */}
+          <div
+            className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center px-6"
+            style={{ opacity: followIn, visibility: followIn < 0.02 ? "hidden" : "visible" }}
+          >
+            {/* A soft scrim carries the words over the strand. Without it the type
+            sits at whatever contrast the rotation happens to leave behind it,
+            which is not a decision anyone made. */}
+            <span
+              aria-hidden="true"
+              className="absolute inset-0"
+              style={{
+                background: `radial-gradient(44% 24% at 50% 50%, ${C.lavenderDeep}cc, transparent 72%)`,
+              }}
+            />
+            <p
+              className="relative text-center font-black"
+              style={{
+                fontFamily: DISPLAY,
+                fontSize: "clamp(2.2rem, 5.4vw, 4.4rem)",
+                letterSpacing: "-0.03em",
+                lineHeight: 1,
+                color: C.paper,
+                textShadow: `0 4px 26px ${C.lavenderDeep}`,
+                transform: `translateY(${((1 - followIn) * 22).toFixed(1)}px)`,
+              }}
+            >
+              Follow the gene.
+            </p>
+          </div>
+
+          {/*
+            Beat three: arrival. One letter, named only once the reader has
+            travelled to it — which is what makes c.1905+1G>A a payoff here
+            rather than the jargon the client objected to in the opening.
+          */}
+          <div
+            className="pointer-events-none absolute inset-x-0 bottom-[12vh] z-20 flex justify-center px-6"
+            style={{ opacity: revealIn, visibility: revealIn < 0.02 ? "hidden" : "visible" }}
+          >
+            <div
+              className="relative px-10 py-6 text-center"
+              style={{
+                transform: `translateY(${((1 - revealIn) * 20).toFixed(1)}px)`,
+                background: `radial-gradient(70% 68% at 50% 50%, ${C.lavenderDeep}f2, ${C.lavenderDeep}99 52%, transparent 76%)`,
+              }}
+            >
+              <p
+                className="font-black"
+                style={{
+                  fontFamily: DISPLAY,
+                  fontSize: "clamp(1.7rem, 3.6vw, 3rem)",
+                  letterSpacing: "-0.03em",
+                  color: C.paper,
+                }}
+              >
+                One letter is different.
+              </p>
+              <p
+                className="mt-3 font-mono text-[13px] tracking-[0.18em] md:text-[15px]"
+                style={{ color: C.paper, opacity: 0.9 }}
+              >
+                DPYD · c.1905+1G&gt;A
+              </p>
             </div>
           </div>
         </div>
-      </div>
+      </section>
 
       <style>{`
         /*
@@ -667,13 +848,13 @@ function HeroConcept() {
         .field {
           inset: 0 0 auto 0;
           width: 100%;
-          height: 46%;
+          height: calc(46% + var(--merge, 0) * 54%);
           clip-path: ellipse(150% 100% at 50% 0%);
         }
         @media (min-width: 768px) {
           .field {
             inset: 0 0 0 auto;
-            width: 58%;
+            width: calc(58% + var(--merge, 0) * 42%);
             height: 100%;
             clip-path: ellipse(96% 128% at 88% 42%);
           }

@@ -37,7 +37,23 @@ const DRAG_SENS = 0.012;
  *  a tilted one reads as an object sitting in space. */
 const BASE_TILT = 9;
 
-export function Helix({ onFirstDrag }: { onFirstDrag: () => void }) {
+/**
+ * How far the camera travels into the strand at full zoom. The variant sits at
+ * the centre of the scale, so the journey ends with it filling the frame.
+ */
+const MAX_ZOOM = 2.9;
+
+export function Helix({
+  onFirstDrag,
+  zoom = 0,
+  focus = 0,
+}: {
+  onFirstDrag: () => void;
+  /** 0 = the hero's whole strand · 1 = arrived at the variant. */
+  zoom?: number;
+  /** 0 = every base equal · 1 = only the variant matters. */
+  focus?: number;
+}) {
   const rungs = useRef<(SVGGElement | null)[]>([]);
   const hits = useRef<(SVGLineElement | null)[]>([]);
   const nodesA = useRef<(SVGCircleElement | null)[]>([]);
@@ -50,6 +66,7 @@ export function Helix({ onFirstDrag }: { onFirstDrag: () => void }) {
 
   const leader = useRef<SVGPathElement>(null);
   const castRef = useRef<SVGPathElement>(null);
+  const calloutRef = useRef<SVGGElement>(null);
 
   const hover = useRef<number | null>(null);
   // `pending` accumulates raw pointer movement between frames. While the
@@ -58,6 +75,13 @@ export function Helix({ onFirstDrag }: { onFirstDrag: () => void }) {
   // velocity and decay.
   const drag = useRef({ active: false, lastX: 0, pending: 0, vel: 0, moved: 0 });
   const pointer = useRef({ x: 0, y: 0 });
+  /** Whether the pointer is over the strand — gates the hit-target updates. */
+  const overRef = useRef(false);
+  // The rAF closure is created once, so the scroll-driven values reach it
+  // through refs rather than by tearing down and rebuilding the loop.
+  const nav = useRef({ zoom: 0, focus: 0 });
+  nav.current.zoom = zoom;
+  nav.current.focus = focus;
   /** Cached bounding box; invalidated on resize rather than read per event. */
   const rect = useRef<DOMRect | null>(null);
   const svg = useRef<SVGSVGElement>(null);
@@ -91,11 +115,39 @@ export function Helix({ onFirstDrag }: { onFirstDrag: () => void }) {
         }
       }
 
+      const z = nav.current.zoom;
+      const foc = nav.current.focus;
+
+      /*
+        Travelling in. As the reader scrolls we ease the strand's rotation to
+        the angle that presents the variant to the front, then scale about the
+        variant itself — so the journey ends with the one wrong base filling
+        the frame rather than wherever the spin happened to leave it.
+      */
+      if (z > 0.001) {
+        const vt = VARIANT / (PAIRS - 1);
+        const want = -vt * TURNS * Math.PI * 2; // puts cos(angle) at 1
+        const d = want - phase;
+        // shortest way round, so it never unwinds the long way
+        phase += Math.atan2(Math.sin(d), Math.cos(d)) * Math.min(0.12, z * 0.12);
+      }
+
       tx += (pointer.current.x * 5 - tx) * 0.06;
       ty += (pointer.current.y * -4 - ty) * 0.06;
+
+      // The lean straightens as we arrive: a tilted strand reads as an object
+      // on a shelf, an upright one as somewhere you are standing inside.
+      const lean = (BASE_TILT + ty) * (1 - z * 0.85);
+      const k = 1 + z * (MAX_ZOOM - 1);
+      const vt2 = VARIANT / (PAIRS - 1);
+      const vy = HTOP + vt2 * (HBOT - HTOP);
+      // The variant orbits the axis, so the scale has to be centred on the
+      // BASE, not on the helix's centreline. Centring on the axis left the
+      // strand walking off the right of the frame as the zoom deepened.
+      const vx = HX + Math.cos(vt2 * TURNS * Math.PI * 2 + phase) * HR;
       tilt.current?.setAttribute(
         "transform",
-        `rotate(${(BASE_TILT + ty).toFixed(2)} ${HX} 380) skewY(${tx.toFixed(2)})`,
+        `translate(${(vx - vx * k).toFixed(1)} ${(vy - vy * k).toFixed(1)}) scale(${k.toFixed(3)}) rotate(${lean.toFixed(2)} ${HX} 380) skewY(${(tx * (1 - z)).toFixed(2)})`,
       );
 
       let da = "";
@@ -126,11 +178,15 @@ export function Helix({ onFirstDrag }: { onFirstDrag: () => void }) {
             line.setAttribute("stroke-width", lifted ? "14" : i === VARIANT ? "13" : "6");
           }
           // Rungs edge-on are nearly invisible; the hovered one is always full.
-          g.setAttribute("opacity", lifted ? "1" : (0.18 + Math.abs(cos) * 0.82).toFixed(3));
+          const base = 0.18 + Math.abs(cos) * 0.82;
+          // Focus fades every rung but the variant, so arriving at the gene
+          // means the rest of the genome quietly gets out of the way.
+          const dimmed = i === VARIANT ? base : base * (1 - foc * 0.58);
+          g.setAttribute("opacity", lifted ? "1" : dimmed.toFixed(3));
         }
 
         const hit = hits.current[i];
-        if (hit) {
+        if (hit && overRef.current) {
           hit.setAttribute("x1", xa.toFixed(1));
           hit.setAttribute("x2", xb.toFixed(1));
           hit.setAttribute("y1", y.toFixed(1));
@@ -144,14 +200,16 @@ export function Helix({ onFirstDrag }: { onFirstDrag: () => void }) {
           ca.setAttribute("r", (lifted ? 13 : 6.5 + near * 5).toFixed(1));
           // Depth by value as well as size: a base at the back of the turn is
           // dimmer, which is what stops the strand reading as a flat zigzag.
-          ca.setAttribute("opacity", lifted ? "1" : (0.55 + near * 0.45).toFixed(2));
+          const oa = (0.55 + near * 0.45) * (i === VARIANT ? 1 : 1 - foc * 0.58);
+          ca.setAttribute("opacity", lifted ? "1" : oa.toFixed(2));
         }
         const cb = nodesB.current[i];
         if (cb) {
           cb.setAttribute("cx", xb.toFixed(1));
           cb.setAttribute("cy", y.toFixed(1));
           cb.setAttribute("r", (lifted ? 13 : 11.5 - near * 5).toFixed(1));
-          cb.setAttribute("opacity", lifted ? "1" : (1 - near * 0.45).toFixed(2));
+          const ob = (1 - near * 0.45) * (i === VARIANT ? 1 : 1 - foc * 0.58);
+          cb.setAttribute("opacity", lifted ? "1" : ob.toFixed(2));
         }
 
         if (lifted && label.current && labelText.current) {
@@ -179,9 +237,16 @@ export function Helix({ onFirstDrag }: { onFirstDrag: () => void }) {
         );
       }
 
+      calloutRef.current?.setAttribute("opacity", Math.max(0, 1 - z * 3).toFixed(2));
+
       pathA.current?.setAttribute("d", da);
       castRef.current?.setAttribute("d", da);
       pathB.current?.setAttribute("d", db);
+      if (foc > 0.001) {
+        pathA.current?.setAttribute("opacity", (1 - foc * 0.32).toFixed(2));
+        pathB.current?.setAttribute("opacity", (0.3 * (1 - foc * 0.32)).toFixed(2));
+        castRef.current?.setAttribute("opacity", (0.22 * (1 - foc)).toFixed(2));
+      }
       raf = requestAnimationFrame(tick);
     };
 
@@ -255,8 +320,13 @@ export function Helix({ onFirstDrag }: { onFirstDrag: () => void }) {
       onPointerMove={onMove}
       onPointerUp={release}
       onPointerCancel={release}
+      onPointerEnter={() => {
+        overRef.current = true;
+      }}
       onPointerLeave={() => {
         release();
+        overRef.current = false;
+        hover.current = null;
         pointer.current.x = 0;
         pointer.current.y = 0;
       }}
@@ -388,54 +458,56 @@ export function Helix({ onFirstDrag }: { onFirstDrag: () => void }) {
           transform in a keyframe overrides an SVG transform attribute, which
           teleports the label to the top of the frame.
         */}
-        <circle
-          cx={HX}
-          cy={variantY}
-          r={64}
-          fill="none"
-          stroke={C.paper}
-          strokeWidth={2.5}
-          strokeDasharray="7 7"
-          opacity={0.75}
-          style={{
-            transformBox: "fill-box",
-            transformOrigin: "center",
-            animation: "popIn 620ms cubic-bezier(0.22,1,0.36,1) 1100ms both",
-          }}
-        />
-        {/* A curved leader, not a straight rule. Wuxi's "Renal artery" and
-            "Renal vein" both hook toward what they name — a straight line is
-            a diagram, a curved one looks drawn. */}
-        <path
-          ref={leader}
-          d={`M-96 ${variantY} C -40 ${variantY}, ${HX - 130} ${variantY - 26}, ${HX - 64} ${variantY - 8}`}
-          fill="none"
-          stroke={C.paper}
-          strokeWidth={3}
-          strokeLinecap="round"
-          pathLength={1}
-          strokeDasharray={1}
-          strokeDashoffset={1}
-          style={{ animation: "draw 520ms cubic-bezier(0.65,0,0.35,1) 1400ms both" }}
-        />
-        <g transform={`translate(-250, ${variantY - 19})`}>
-          <g
+        <g ref={calloutRef}>
+          <circle
+            cx={HX}
+            cy={variantY}
+            r={64}
+            fill="none"
+            stroke={C.paper}
+            strokeWidth={2.5}
+            strokeDasharray="7 7"
+            opacity={0.75}
             style={{
               transformBox: "fill-box",
               transformOrigin: "center",
-              animation: "popIn 460ms cubic-bezier(0.22,1,0.36,1) 1820ms both",
+              animation: "popIn 620ms cubic-bezier(0.22,1,0.36,1) 1100ms both",
             }}
-          >
-            <rect width={150} height={38} rx={5} fill={C.paper} stroke={C.ink} strokeWidth={3} />
-            <text
-              x={75}
-              y={25}
-              textAnchor="middle"
-              fill={C.ink}
-              style={{ font: "700 17px system-ui, sans-serif", letterSpacing: "0.16em" }}
+          />
+          {/* A curved leader, not a straight rule. Wuxi's "Renal artery" and
+            "Renal vein" both hook toward what they name — a straight line is
+            a diagram, a curved one looks drawn. */}
+          <path
+            ref={leader}
+            d={`M-96 ${variantY} C -40 ${variantY}, ${HX - 130} ${variantY - 26}, ${HX - 64} ${variantY - 8}`}
+            fill="none"
+            stroke={C.paper}
+            strokeWidth={3}
+            strokeLinecap="round"
+            pathLength={1}
+            strokeDasharray={1}
+            strokeDashoffset={1}
+            style={{ animation: "draw 520ms cubic-bezier(0.65,0,0.35,1) 1400ms both" }}
+          />
+          <g transform={`translate(-250, ${variantY - 19})`}>
+            <g
+              style={{
+                transformBox: "fill-box",
+                transformOrigin: "center",
+                animation: "popIn 460ms cubic-bezier(0.22,1,0.36,1) 1820ms both",
+              }}
             >
-              DPYD
-            </text>
+              <rect width={150} height={38} rx={5} fill={C.paper} stroke={C.ink} strokeWidth={3} />
+              <text
+                x={75}
+                y={25}
+                textAnchor="middle"
+                fill={C.ink}
+                style={{ font: "700 17px system-ui, sans-serif", letterSpacing: "0.16em" }}
+              >
+                DPYD
+              </text>
+            </g>
           </g>
         </g>
 
