@@ -125,7 +125,7 @@ export function Helix({ onFirstDrag }: { onFirstDrag: () => void }) {
             line.setAttribute("stroke-width", lifted ? "14" : i === VARIANT ? "13" : "6");
           }
           // Rungs edge-on are nearly invisible; the hovered one is always full.
-          g.setAttribute("opacity", lifted ? "1" : (0.25 + Math.abs(cos) * 0.75).toFixed(3));
+          g.setAttribute("opacity", lifted ? "1" : (0.18 + Math.abs(cos) * 0.82).toFixed(3));
         }
 
         const hit = hits.current[i];
@@ -140,13 +140,17 @@ export function Helix({ onFirstDrag }: { onFirstDrag: () => void }) {
         if (ca) {
           ca.setAttribute("cx", xa.toFixed(1));
           ca.setAttribute("cy", y.toFixed(1));
-          ca.setAttribute("r", (lifted ? 13 : 7 + near * 4).toFixed(1));
+          ca.setAttribute("r", (lifted ? 13 : 6.5 + near * 5).toFixed(1));
+          // Depth by value as well as size: a base at the back of the turn is
+          // dimmer, which is what stops the strand reading as a flat zigzag.
+          ca.setAttribute("opacity", lifted ? "1" : (0.55 + near * 0.45).toFixed(2));
         }
         const cb = nodesB.current[i];
         if (cb) {
           cb.setAttribute("cx", xb.toFixed(1));
           cb.setAttribute("cy", y.toFixed(1));
-          cb.setAttribute("r", (lifted ? 13 : 11 - near * 4).toFixed(1));
+          cb.setAttribute("r", (lifted ? 13 : 11.5 - near * 5).toFixed(1));
+          cb.setAttribute("opacity", lifted ? "1" : (1 - near * 0.45).toFixed(2));
         }
 
         if (lifted && label.current && labelText.current) {
@@ -261,6 +265,11 @@ export function Helix({ onFirstDrag }: { onFirstDrag: () => void }) {
           <stop offset="50%" stopColor="#E8DCFB" />
           <stop offset="100%" stopColor={C.paper} />
         </linearGradient>
+        {/* The near strand casts onto the far one — the cheapest honest depth
+            cue there is, and it keeps the illustration flat. */}
+        <filter id="nearCast" x="-30%" y="-10%" width="180%" height="130%">
+          <feDropShadow dx="0" dy="4" stdDeviation="7" floodColor="#2A1857" floodOpacity="0.4" />
+        </filter>
         <filter id="variantGlow" x="-160%" y="-160%" width="420%" height="420%">
           <feGaussianBlur stdDeviation="9" result="b" />
           <feMerge>
@@ -315,9 +324,9 @@ export function Helix({ onFirstDrag }: { onFirstDrag: () => void }) {
           d={initial.map((p, i) => `${i ? "L" : "M"}${p.xb},${p.y}`).join("")}
           fill="none"
           stroke="url(#strand)"
-          strokeWidth={9}
+          strokeWidth={7}
           strokeLinecap="round"
-          opacity={0.45}
+          opacity={0.3}
         />
 
         {initial.map((p, i) => {
@@ -350,8 +359,9 @@ export function Helix({ onFirstDrag }: { onFirstDrag: () => void }) {
           d={initial.map((p, i) => `${i ? "L" : "M"}${p.xa},${p.y}`).join("")}
           fill="none"
           stroke="url(#strand)"
-          strokeWidth={11}
+          strokeWidth={12}
           strokeLinecap="round"
+          filter="url(#nearCast)"
         />
 
         {/*

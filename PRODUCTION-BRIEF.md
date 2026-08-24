@@ -13,6 +13,37 @@ approved.
 
 ## 00 — Status
 
+### THE VISUAL DIRECTION IS APPROVED (client, on /new)
+
+> "This is MUCH closer to the visual direction I mean. Please keep this overall
+> illustrated and colorful style — this is the first version where I feel the
+> visual language is going in the right direction."
+
+Approved by name: DNA immediately visible in the hero · the richer palette ·
+the playful scientific illustration style · the small cells and elements.
+
+**Do not restyle again.** Her words: *"I don't want to completely redesign this
+direction now. I would rather make it more polished and immersive."* Everything
+from here is refinement, depth, transitions and storytelling.
+
+### What she asked for next
+
+1. **The 50/50 split is too rigid.** The two sides should feel connected, with
+   elements crossing between them, and more depth.
+2. **The DNA should feel slightly more dimensional and interactive** — while
+   staying illustrated. Not realistic, not overly 3D.
+3. **"Follow the gene" becomes the central storytelling idea of the homepage.**
+   Scroll follows the highlighted DPYD region into the DNA → why two people
+   respond differently to the same treatment → detection → ChemoGuard.
+4. **A subtle story progress system at the top**, so a visitor always knows
+   where they are.
+
+Note that (3) is her own phrase taken from the hero's CTA, and it matches the
+DNA-as-visual-thread spine already agreed in §07. The story and the visual
+language now point the same way for the first time.
+
+## 00b — Previous status
+
 | | |
 | --- | --- |
 | Story | **Approved by client**, twice, unprompted |

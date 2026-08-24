@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { Helix } from "@/components/hero/Helix";
 import { C } from "@/components/hero/palette";
@@ -193,18 +193,33 @@ function Enzyme({ s = 1, tone = C.green }: { s?: number; tone?: string }) {
 /** Scattered field of scientific elements — the "much less empty background". */
 const FIELD = [
   /*
-    Five objects, not eleven. The previous pass mistook "not empty" for "more
-    things" and produced clutter — the reference wikis are calm: GlycoGarden's
-    hero is a band, a field, five flowers and a lot of open space.
+    Positions are percentages of the viewport, and the layout changes shape at
+    md: side-by-side above it, stacked below. Objects tuned for the seam
+    therefore land on the copy once the columns stack, so the ones that would
+    collide are marked `hideSm` and simply do not render on phones. Fewer
+    objects on a small screen is the right answer anyway.
 
-    So: few, large, fully inside the frame, and placed to leave the reading
-    column clear. Coral is the drug, pink the body, green the enzyme.
+    depth: 0 = far (small, soft, barely moves) … 1 = near (large, sharp, moves most)
   */
-  { k: "cell", x: 12, y: 88, s: 0.86, r: -6, tone: C.pink },
-  { k: "mol", x: 31, y: 93, s: 0.62, r: 12, tone: C.coral },
-  { k: "mol", x: 46, y: 80, s: 0.5, r: -10, tone: C.coral },
-  { k: "enz", x: 15, y: 15, s: 0.54, r: 10, tone: C.green },
-  { k: "cell", x: 40, y: 13, s: 0.5, r: -8, tone: C.blue },
+  { k: "cell", x: 11, y: 87, s: 0.86, r: -6, tone: C.pink, depth: 1, hideSm: true },
+  { k: "mol", x: 30, y: 94, s: 0.6, r: 12, tone: C.coral, depth: 0.82 },
+  { k: "enz", x: 15, y: 15, s: 0.5, r: 10, tone: C.green, depth: 0.5 },
+  { k: "cell", x: 34, y: 12, s: 0.44, r: -8, tone: C.blue, depth: 0.28 },
+
+  /*
+    Straddling the seam. The field's edge sits near x = 42%, so these sit ON
+    it: half on cream, half on the purple. That is what stops the boundary
+    reading as a wall — the world carries across it. They are the nearest
+    objects in the scene, so they travel furthest with the pointer and read as
+    being in front of both sides.
+  */
+  { k: "mol", x: 43, y: 20, s: 0.74, r: -14, tone: C.coral, depth: 1 },
+  { k: "cell", x: 41, y: 79, s: 0.72, r: 8, tone: C.pink, depth: 0.92, hideSm: true },
+  { k: "enz", x: 56, y: 47, s: 0.42, r: 16, tone: C.green, depth: 0.36, hideSm: true },
+
+  // deep in the field: small, soft, slow
+  { k: "cell", x: 95, y: 72, s: 0.5, r: -8, tone: C.blue, depth: 0.3 },
+  { k: "mol", x: 90, y: 16, s: 0.38, r: 20, tone: C.coral, depth: 0.2 },
 ] as const;
 
 /** Small drifting particles — the drug moving through the frame. */
@@ -221,6 +236,36 @@ const DOTS = Array.from({ length: 7 }, (_, i) => ({
 /* --------------------------------------------------------------- the page */
 
 function HeroConcept() {
+  const stage = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
+    const el = stage.current;
+    if (!el) return;
+    let raf = 0;
+    let tx = 0;
+    let ty = 0;
+    const target = { x: 0, y: 0 };
+
+    const onMove = (e: PointerEvent) => {
+      target.x = (e.clientX / window.innerWidth) * 2 - 1;
+      target.y = (e.clientY / window.innerHeight) * 2 - 1;
+    };
+    const tick = () => {
+      tx += (target.x - tx) * 0.05;
+      ty += (target.y - ty) * 0.05;
+      el.style.setProperty("--px", (tx * 26).toFixed(2) + "px");
+      el.style.setProperty("--py", (ty * 18).toFixed(2) + "px");
+      raf = requestAnimationFrame(tick);
+    };
+    window.addEventListener("pointermove", onMove, { passive: true });
+    raf = requestAnimationFrame(tick);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("pointermove", onMove);
+    };
+  }, []);
+
   // The affordance hint retires the moment the visitor proves they don't need
   // it — the same move as Wuxi's "Scroll to follow the signal".
   const [dragged, setDragged] = useState(false);
@@ -228,6 +273,7 @@ function HeroConcept() {
 
   return (
     <main
+      ref={stage}
       className="relative min-h-screen overflow-hidden [&_*]:[-webkit-tap-highlight-color:transparent]"
       style={
         {
@@ -292,15 +338,24 @@ function HeroConcept() {
         {FIELD.map((f, i) => (
           <div
             key={i}
-            className="absolute enter"
+            className={`parallax absolute enter${"hideSm" in f && f.hideSm ? " max-md:hidden" : ""}`}
             style={{
               left: `${f.x}%`,
               top: `${f.y}%`,
-              // Custom property so the entrance keyframe can restore the
-              // element's own rotation instead of flattening it.
+              // Custom properties: the entrance keyframe restores the object's
+              // own rotation instead of flattening it, and --d drives how far
+              // this object travels with the pointer.
               ["--rot" as string]: `${f.r}deg`,
+              ["--d" as string]: f.depth,
               transform: `translate(-50%,-50%) rotate(${f.r}deg)`,
               animationDelay: `${240 + i * 90}ms`,
+              // Far objects sit back: softer, slightly desaturated, blurred a
+              // touch. Near objects are sharp and cast a shadow.
+              opacity: 0.45 + f.depth * 0.55,
+              filter:
+                f.depth > 0.7
+                  ? `drop-shadow(0 ${(6 * f.depth).toFixed(1)}px ${(10 * f.depth).toFixed(1)}px rgba(36,28,46,0.22))`
+                  : `blur(${((1 - f.depth) * 1.6).toFixed(2)}px)`,
             }}
           >
             {f.k === "cell" ? (
@@ -556,6 +611,20 @@ function HeroConcept() {
           70%  { opacity: 1; transform: translate(-50%,-50%) rotate(var(--rot,0deg)) scale(1.06); }
           100% { opacity: 1; transform: translate(-50%,-50%) rotate(var(--rot,0deg)) scale(1); }
         }
+
+        /*
+          Depth parallax. Each object offsets by its own --d, so near objects
+          travel and far ones barely move — the cue that actually reads as
+          space. The transform runs only after the entrance has finished, so
+          the two never fight over the same property.
+        */
+        .parallax {
+          transform: translate(-50%, -50%)
+            translate(calc(var(--px, 0px) * var(--d, 0.5)), calc(var(--py, 0px) * var(--d, 0.5)))
+            rotate(var(--rot, 0deg));
+          transition: none;
+        }
+        .parallax.enter { animation-fill-mode: backwards; }
         .enter {
           animation: enter 760ms cubic-bezier(0.22, 1, 0.36, 1) both;
         }
