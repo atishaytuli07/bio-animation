@@ -120,10 +120,13 @@ export function ChapterSolution() {
     <Tall id="solution" vh={480} refFn={ref}>
       <div className="w-full max-w-6xl px-6">
         <p className="eyebrow mb-4 text-clinical">The Solution</p>
+        {/* Proof slice for decision 7: one headline voice across the whole
+            site. This chapter carries the poster face; the rest follow once
+            the client signs off. */}
         <Reveal
           text={"Test first.\nThen treat."}
           t={range(p, 0, 0.16)}
-          className="story-line mb-12 text-ink"
+          className="poster-head mb-12 text-ink"
         />
 
         <AssayArt step={active} t={range(p, 0.05, 0.9)} />
@@ -194,7 +197,7 @@ export function ChapterSplit() {
   // scroll fought it: flipping the switch showed a half-built column. Both
   // timelines are simply present, and comparing them is the point.
   return (
-    <section className="relative px-6 py-28 md:py-40 lg:pl-64">
+    <section className="relative px-6 py-28 md:py-40">
       <div className="mx-auto w-full max-w-6xl">
         <div className="mb-8 flex flex-wrap items-end justify-between gap-6">
           <div>
@@ -309,7 +312,7 @@ function Counter({ to, suffix }: { to: number; suffix: string }) {
 export function ChapterResults() {
   const [ref, seen, active] = useInView<HTMLDivElement>(0.2);
   return (
-    <section id="results" className="px-6 py-32 md:py-48 lg:pl-64">
+    <section id="results" className="px-6 py-32 md:py-48">
       <div ref={ref} className="mx-auto max-w-6xl">
         <p className="eyebrow mb-4 text-clinical">The Results</p>
         <h2 className="story-line mb-16 text-ink">It works in the lab.</h2>
@@ -363,7 +366,7 @@ export function ChapterResults() {
 export function ChapterFuture() {
   const [ref, seen] = useInView<HTMLDivElement>(0.25);
   return (
-    <section id="future" className="px-6 py-32 md:py-48 lg:pl-64">
+    <section id="future" className="px-6 py-32 md:py-48">
       <div ref={ref} className="mx-auto max-w-6xl">
         <p className="eyebrow mb-4 text-clinical">The Future</p>
         <h2 className="story-line mb-14 text-ink">
@@ -422,7 +425,7 @@ export function ChapterStatistics() {
     { v: "0.5–1%", w: 0.01, l: "of treated patients die from fluoropyrimidine toxicity" },
   ];
   return (
-    <section className="px-6 py-32 md:py-48 lg:pl-64">
+    <section className="px-6 py-32 md:py-48">
       <div ref={ref} className="mx-auto max-w-4xl">
         <p className="eyebrow mb-4 text-ink-faint">Now the numbers</p>
         <h2 className="mb-14 text-3xl text-ink md:text-5xl" style={{ letterSpacing: "-0.04em" }}>

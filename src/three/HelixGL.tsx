@@ -20,7 +20,19 @@ const VARIANT_REGION = [28, 29, 30, 31, 32];
 const VARIANT_FACING_ANGLE = 1.01;
 
 // Red/white brand core with blush between — the mockup's helix, in 3D.
-const BASE_COLORS = [PALETTE.signal, PALETTE.pale, PALETTE.coral, PALETTE.blush];
+const BASE_COLORS = [PALETTE.signal, PALETTE.coral, PALETTE.pale, PALETTE.signal];
+
+/** 3-step gradient → toon shading: flat fills with one soft shade break,
+ *  which is exactly the mockup's illustration look. */
+function useToonGradient() {
+  return useMemo(() => {
+    const tex = new THREE.DataTexture(new Uint8Array([120, 200, 255]), 3, 1, THREE.RedFormat);
+    tex.minFilter = THREE.NearestFilter;
+    tex.magFilter = THREE.NearestFilter;
+    tex.needsUpdate = true;
+    return tex;
+  }, []);
+}
 
 type NodeData = {
   position: THREE.Vector3;
@@ -140,7 +152,7 @@ function Particles({ animate }: { animate: boolean }) {
     <Instances limit={seeds.length} range={seeds.length} frustumCulled={false}>
       {/* Motes are a few pixels across — 6×4 is beyond enough. */}
       <sphereGeometry args={[0.06, 6, 4]} />
-      <meshStandardMaterial color={PALETTE.violet} transparent opacity={0.5} roughness={0.6} />
+      <meshBasicMaterial color={PALETTE.violet} transparent opacity={0.45} />
       {seeds.map((s, i) => (
         <Instance
           key={i}
@@ -159,6 +171,7 @@ export default function HelixGL({ animate = true }: { animate?: boolean }) {
   const group = useRef<THREE.Group>(null);
   const nodeRefs = useRef<(THREE.Object3D | null)[]>([]);
 
+  const toonGrad = useToonGradient();
   const scratch = useMemo(() => new THREE.Color(), []);
   const signal = useMemo(() => new THREE.Color(PALETTE.signal), []);
   // Colours chase their target by lerp, so they keep changing for a few frames
@@ -166,12 +179,22 @@ export default function HelixGL({ animate = true }: { animate?: boolean }) {
   // out once they've converged — scrolled-away or parked, it costs nothing.
   const lastTargets = useRef({ desat: -1, variant: -1, variantScale: -1 });
   const settleFrames = useRef(0);
+  // Interactive spin: horizontal pointer motion throws the helix, inertia
+  // carries it, and the effect stands down during the Discovery dive so the
+  // variant-facing choreography still wins.
+  const spinVel = useRef(0);
+  const prevPX = useRef(0);
 
   useFrame((state, delta) => {
     const g = group.current;
     if (g) {
       // Ambient spin fades out as the dive begins…
       if (animate) g.rotation.y += delta * 0.075 * (1 - sceneState.dive);
+      const dx = state.pointer.x - prevPX.current;
+      prevPX.current = state.pointer.x;
+      if (Math.abs(dx) < 0.4) spinVel.current += dx * 0.05 * (1 - sceneState.dive);
+      spinVel.current *= 0.93;
+      g.rotation.y += spinVel.current;
       // …and the strand eases toward the angle that presents the variant pair
       // to the camera, so the red base is guaranteed to be on the near side
       // when the callout fires — never hidden behind the strand.
@@ -181,7 +204,7 @@ export default function HelixGL({ animate = true }: { animate?: boolean }) {
           Math.atan2(Math.sin(d), Math.cos(d)) * Math.min(0.09, sceneState.dive * 0.09);
       }
       // Pointer parallax, eased toward the target so the helix has weight.
-      const targetX = state.pointer.y * 0.12;
+      const targetX = state.pointer.y * 0.22;
       const targetZ = 0.42 + state.pointer.x * 0.06;
       g.rotation.x += (targetX - g.rotation.x) * 0.05;
       g.rotation.z += (targetZ - g.rotation.z) * 0.05;
@@ -230,8 +253,9 @@ export default function HelixGL({ animate = true }: { animate?: boolean }) {
       {/* 16×12 segments, not 20×20: at this radius the silhouette is identical
           but the 112 instances cost 352 triangles each instead of 760. */}
       <Instances limit={nodes.length} range={nodes.length} frustumCulled={false}>
-        <sphereGeometry args={[0.34, 16, 12]} />
-        <meshStandardMaterial roughness={0.32} metalness={0.06} />
+        {/* small caps where rungs meet strands — bumps, not marbles */}
+        <sphereGeometry args={[0.21, 14, 10]} />
+        <meshToonMaterial gradientMap={toonGrad} />
         {nodes.map((n, i) => (
           <Instance
             key={i}
@@ -245,8 +269,9 @@ export default function HelixGL({ animate = true }: { animate?: boolean }) {
       </Instances>
 
       <Instances limit={rungs.length} range={rungs.length} frustumCulled={false}>
-        <cylinderGeometry args={[0.075, 0.075, 1, 8]} />
-        <meshStandardMaterial color={PALETTE.mistDeep} roughness={0.5} metalness={0.02} />
+        <cylinderGeometry args={[0.055, 0.055, 1, 8]} />
+        {/* thin WHITE rungs between RED strands — the mockup's construction */}
+        <meshToonMaterial color={PALETTE.pale} gradientMap={toonGrad} />
         {rungs.map((r, i) => (
           <Instance
             key={i}
@@ -261,8 +286,8 @@ export default function HelixGL({ animate = true }: { animate?: boolean }) {
           160×6 reads as smooth as the original 380×10 for a quarter the cost. */}
       {[curveA, curveB].map((curve, i) => (
         <mesh key={i} frustumCulled={false}>
-          <tubeGeometry args={[curve, 160, 0.13, 6, false]} />
-          <meshStandardMaterial color={PALETTE.mistDeep} roughness={0.4} metalness={0.05} />
+          <tubeGeometry args={[curve, 160, 0.16, 8, false]} />
+          <meshToonMaterial color={PALETTE.strand} gradientMap={toonGrad} />
         </mesh>
       ))}
 

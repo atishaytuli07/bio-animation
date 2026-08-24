@@ -79,13 +79,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { name: "theme-color", content: "#F5F2F5" },
       // Per-route heads override title/description; these are the fallbacks.
-      { title: "DPYD Diagnostics — iGEM 2026" },
+      { title: "ChemoGuard — iGEM 2026" },
       {
         name: "description",
         content:
           "Pharmacogenomic screening for DPD deficiency before the first dose of fluoropyrimidine chemotherapy.",
       },
-      { name: "author", content: "DPYD Diagnostics — iGEM 2026" },
+      { name: "author", content: "ChemoGuard — iGEM 2026" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -94,7 +94,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,500;0,6..72,600;1,6..72,300&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=Archivo+Black&family=Instrument+Sans:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,500;0,6..72,600;1,6..72,300&display=swap",
       },
       {
         rel: "stylesheet",

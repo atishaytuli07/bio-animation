@@ -29,7 +29,7 @@ export function Tall({
 } & React.HTMLAttributes<HTMLElement>) {
   return (
     <section id={id} ref={refFn} style={{ height: `${vh}vh` }} className="relative" {...rest}>
-      <div className="sticky top-0 flex h-screen items-center justify-center overflow-hidden lg:pl-64">
+      <div className="sticky top-0 flex h-screen items-center justify-center overflow-hidden">
         {children}
       </div>
     </section>

@@ -280,6 +280,16 @@ export function ChapterHero({ onStageReady }: { onStageReady?: () => void }) {
   const dive = range(p, 0.16, 0.78);
   const variant = range(p, 0.6, 0.82);
   useEffect(() => {
+    // The camera is shared with the opening, so only write it while this
+    // section is actually in play. Without this the effect fires once on
+    // mount — before the scroll listener below has corrected `near` — and
+    // yanks the camera back to z=14 underneath the opening's framing.
+    const el = ref.current;
+    if (el) {
+      const r = el.getBoundingClientRect();
+      const inPlay = r.bottom > -window.innerHeight * 0.5 && r.top < window.innerHeight;
+      if (!inPlay) return;
+    }
     sceneState.camZ = lerp(14, 8, dive);
     // The variant pair sits at world y ≈ +1.6 once the strand stretches; the
     // camera rises WITH it and looks AT it, so the red base ends centre-frame,
@@ -292,7 +302,7 @@ export function ChapterHero({ onStageReady }: { onStageReady?: () => void }) {
     sceneState.variant = variant;
     sceneState.variantScale = variant * 0.55;
     sceneState.dive = dive;
-  }, [p, dive, variant]);
+  }, [p, dive, variant, ref]);
 
   // Text beats: strictly non-overlapping windows — each line fully leaves
   // before the next enters, so two layers never double-expose.
@@ -369,7 +379,7 @@ export function ChapterHero({ onStageReady }: { onStageReady?: () => void }) {
               The Discovery — inside the nucleus
             </p>
             <RevealCSS
-              text={"Precision starts\nin your DNA."}
+              text={"This is DPYD."}
               className="story-line"
               style={{ color: "var(--ink)" }}
             />

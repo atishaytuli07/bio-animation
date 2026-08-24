@@ -96,17 +96,32 @@ React Query is installed and provided in `__root.tsx` but issues no queries;
 it is kept deliberately so the template's shape matches Lovable's. The favicon
 is ours (`scripts/make-favicon.mjs` → favicon.svg + .ico).
 
-## The cold open (StoryLoader)
+## The cold open (StoryLoader) — REMOVED
 
-`StoryLoader.tsx` is the narrative loader from the client brief and the load
-gate in one: the two intro lines play on the night canvas while the three.js
-chunk loads, scroll is locked (html overflow hidden + pinned to top), and the
-overlay fades once the stage reports ready. Rules: first visit holds ≥3.4s so
-the lines land; repeat visits this session hold 1.2s (sessionStorage flag);
-reduced-motion shows the lines statically and holds ~1s; a 7s hard cap reveals
-regardless — the SVG placeholder beneath guarantees there is something to
-reveal. "Stage ready" means GL context created (ChapterHero → onStageReady) or
-capability check failed (the SVG fallback IS the stage).
+`StoryLoader.tsx` was deleted (restructure decision 3). It stated the thesis a
+fourth time before the story began and held judges 3.4s for a gate that was
+never load-bearing: the SVG helix already paints before hydration, so there was
+never a blank stage to hide. See `RESTRUCTURE.md`.
+
+## Two traps in the merged opening
+
+Both cost real debugging time; neither is visible from reading the code.
+
+**The camera is shared state.** `sceneState` is one object, and both the
+opening and the Discovery dive write `camZ`. `ChapterHero`'s choreography
+effect used to run unguarded on mount — after the opening had set its framing —
+and snapped the camera back to z=14 under it. Any component that writes
+`sceneState` must first check that its own section is actually in play; a
+`near` flag initialised to `true` is not enough, because the effect that
+corrects it has not run yet on the first pass. Check the rect directly.
+
+**A `setState` fired synchronously from a mount effect can be lost.** The first
+committed instance is replaced during hydration and its setter goes with it, so
+`useEffect(() => setCapable(isCapable()), [])` silently never landed — the
+effect ran, logged the right value, and every subsequent render still read
+`false`. Raising the update from a later callback (`requestAnimationFrame`, or
+an IntersectionObserver callback as `useSmoothProgress` does) lands on the
+surviving instance. If a mount-time flag "isn't applying", this is why.
 
 ## The hero's loading state
 

@@ -116,7 +116,7 @@ function Section({ section }: { section: (typeof SECTIONS)[number] }) {
 
 export function StoryAppendix() {
   return (
-    <section id="work" className="px-6 py-28 md:py-40 lg:pl-64">
+    <section id="work" className="px-6 py-28 md:py-40">
       <div className="mx-auto max-w-5xl">
         <p className="eyebrow mb-4" style={{ color: "var(--ink-faint)" }}>
           The Work

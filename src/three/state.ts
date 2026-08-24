@@ -35,6 +35,8 @@ export const sceneState = {
 export const PALETTE = {
   /* strand tubes + rungs: warm near-white, reads as the mockup's candy helix */
   mistDeep: "#F4E8E2",
+  /* the backbone tubes — the mockup's red strands */
+  strand: "#E4544C",
   signal: "#E03A3E",
   coral: "#F06D4F",
   blush: "#F6B3A5",

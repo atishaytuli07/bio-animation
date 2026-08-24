@@ -288,6 +288,37 @@
   letter-spacing: -0.02em;
 }
 
+/* Poster display — the mockup's loud title voice. Wordmark and hero. */
+@utility poster-line {
+  font-family: "Archivo Black", "Arial Black", Impact, sans-serif;
+  text-transform: uppercase;
+  line-height: 0.94;
+  letter-spacing: 0.005em;
+  text-wrap: balance;
+}
+
+/*
+ * Chapter headline, same voice as the hero one size down. The site used to
+ * set the hero in Archivo Black and every chapter in Newsreader serif, which
+ * is why it read as two websites stitched together. One headline voice now
+ * runs the whole page; poster-line for the wordmark, this for chapters.
+ */
+@utility poster-head {
+  font-family: "Archivo Black", "Arial Black", Impact, sans-serif;
+  text-transform: uppercase;
+  font-size: clamp(2rem, 5.2vw, 4.4rem);
+  line-height: 0.98;
+  letter-spacing: 0.002em;
+  text-wrap: balance;
+}
+
+/* Sticker chrome: pill with the hard offset shadow from the mockup. */
+@utility sticker {
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  box-shadow: 3px 3px 0 var(--ink);
+}
+
 /* Handwritten annotation — the reference's margin-note voice. Use sparingly:
    labels on diagrams, asides, the scroll cue. Never for body copy. */
 @utility hand-note {

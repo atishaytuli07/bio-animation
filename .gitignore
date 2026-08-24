@@ -30,3 +30,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Source artwork originals — processed derivatives ship from public/
+assets-src/
