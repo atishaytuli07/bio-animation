@@ -192,21 +192,23 @@ function Enzyme({ s = 1, tone = C.green }: { s?: number; tone?: string }) {
 
 /** Scattered field of scientific elements — the "much less empty background". */
 const FIELD = [
-  // Left half is the copy's territory — elements hug the margins only, and
-  // the band from y 26 to y 78 is kept clear so nothing lands on the text.
-  { k: "mol", x: 7, y: 16, s: 0.46, r: -14, tone: C.coral },
-  { k: "cell", x: 4, y: 84, s: 0.6, r: -6, tone: C.pink },
-  { k: "mol", x: 20, y: 93, s: 0.4, r: 18, tone: C.coral },
-  { k: "enz", x: 36, y: 15, s: 0.42, r: -10, tone: C.green },
-  { k: "cell", x: 40, y: 88, s: 0.46, r: 8, tone: C.blue },
-  // Right, over the field.
-  { k: "enz", x: 94, y: 20, s: 0.46, r: 12, tone: C.green },
-  { k: "cell", x: 96, y: 74, s: 0.52, r: -8, tone: C.pink },
-  { k: "mol", x: 90, y: 92, s: 0.42, r: 20, tone: C.coral },
+  /*
+    Five objects, not eleven. The previous pass mistook "not empty" for "more
+    things" and produced clutter — the reference wikis are calm: GlycoGarden's
+    hero is a band, a field, five flowers and a lot of open space.
+
+    So: few, large, fully inside the frame, and placed to leave the reading
+    column clear. Coral is the drug, pink the body, green the enzyme.
+  */
+  { k: "cell", x: 12, y: 88, s: 0.86, r: -6, tone: C.pink },
+  { k: "mol", x: 31, y: 93, s: 0.62, r: 12, tone: C.coral },
+  { k: "mol", x: 46, y: 80, s: 0.5, r: -10, tone: C.coral },
+  { k: "enz", x: 15, y: 15, s: 0.54, r: 10, tone: C.green },
+  { k: "cell", x: 40, y: 13, s: 0.5, r: -8, tone: C.blue },
 ] as const;
 
 /** Small drifting particles — the drug moving through the frame. */
-const DOTS = Array.from({ length: 14 }, (_, i) => ({
+const DOTS = Array.from({ length: 7 }, (_, i) => ({
   // biased to the outer thirds so none land on the headline or paragraph
   x: i % 2 === 0 ? ((i * 13) % 26) + 2 : ((i * 17) % 30) + 66,
   y: (i * 67 + 13) % 100,
@@ -441,20 +443,22 @@ function HeroConcept() {
       {/* --------------------------------------------------------- hero */}
       <div className="relative z-10 mx-auto grid max-w-[92rem] items-center gap-3 px-6 pb-8 md:grid-cols-[1.05fr_0.95fr] md:gap-8 md:px-10 md:pb-24">
         <div className="order-2 md:order-1">
-          {/* Solid and outlined. The translucent pill-with-a-dot is a stock SaaS
-              component and reads as template; the reference wikis use flat
-              boxes with real edges. */}
+          {/*
+            A chapter label, not a control. It used to carry the same paper
+            fill, ink border and hard offset shadow as the secondary button —
+            two different affordances wearing one appearance, which made the
+            page ambiguous about what could be pressed. The offset shadow now
+            means exactly one thing: pressable.
+
+            Neither reference wiki boxes its chapter label. Wuxi's "02 · HOW
+            THE KIDNEY WORKS" and GlycoGarden's "ACT I — WHY GLYCANS MATTER"
+            are plain letterspaced colour, and so is this.
+          */}
           <span
-            className="inline-flex items-center gap-2 px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.18em]"
-            style={{
-              background: C.paper,
-              color: C.ink,
-              border: `2.5px solid ${C.ink}`,
-              borderRadius: 4,
-              boxShadow: `3px 3px 0 ${C.ink}`,
-            }}
+            className="inline-flex items-center gap-2.5 text-[11px] font-bold uppercase tracking-[0.22em]"
+            style={{ fontFamily: DISPLAY, color: C.redDeep }}
           >
-            <span className="block size-2 rounded-full" style={{ background: C.red }} />
+            <span className="block h-0.5 w-7" style={{ background: C.red }} />
             01 · Pharmacogenomics
           </span>
 
@@ -574,13 +578,13 @@ function HeroConcept() {
         .field {
           inset: 0 0 auto 0;
           width: 100%;
-          height: 44%;
+          height: 46%;
           clip-path: ellipse(150% 100% at 50% 0%);
         }
         @media (min-width: 768px) {
           .field {
             inset: 0 0 0 auto;
-            width: 52%;
+            width: 58%;
             height: 100%;
             clip-path: ellipse(96% 128% at 88% 42%);
           }
