@@ -2,7 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 
 import { Helix } from "@/components/hero/Helix";
-import { range, useSmoothProgress } from "@/hooks/use-scroll-progress";
+import { Sequence } from "@/components/hero/Sequence";
+import { band, range, useSmoothProgress } from "@/hooks/use-scroll-progress";
 import { C } from "@/components/hero/palette";
 
 /**
@@ -99,12 +100,32 @@ function Underline({ index, active = false }: { index: number; active?: boolean 
 const JOURNEY = ["The gene", "Two people", "Why", "Detection", "ChemoGuard"] as const;
 
 /**
- * The story progress rail. Deliberately quiet: a hairline that fills, and
- * named stops that only the current one states out loud. The client asked for
- * "a subtle story progress system at the top so users always understand where
- * they are" — subtle being the operative word, so this is not a navbar.
+ * The scale stops named during the descent.
+ *
+ * PLACEHOLDER FIGURES. Three billion base pairs and DPYD on chromosome 1 are
+ * textbook, but iGEM requires that nothing on a wiki be unverifiable, and the
+ * first hard numbers on this site should come from the team rather than from
+ * whoever wrote the component. Confirm before shipping.
  */
-function StoryProgress({ p, stop }: { p: number; stop: number }) {
+const SCALE_STOPS = [
+  // in/out are scroll positions; each is fully retired before the next arrives.
+  // Overlapping them stacked two labels at the same coordinates.
+  { label: "Your genome", note: "3,000,000,000 letters", in: 0.34, out: 0.42 },
+  { label: "Chromosome 1", note: "1p21.3", in: 0.48, out: 0.56 },
+  { label: "DPYD", note: "the gene", in: 0.62, out: 0.68 },
+] as const;
+
+/**
+ * The story progress rail: a hairline across the very top that fills as the
+ * reader moves through the whole journey, not through one section.
+ *
+ * It carried the five stop names for a while, and they had to go. They sat in
+ * the same band as the header, so on a shorter viewport they crowded the
+ * wordmark and shoved the chapter badge up underneath it. "Subtle" was the
+ * client's own word — a bar is subtle, a second row of navigation is not, and
+ * every section already states its own name in its numbered label.
+ */
+function StoryProgress({ p }: { p: number }) {
   return (
     <div className="pointer-events-none fixed inset-x-0 top-0 z-40">
       <div className="h-[3px] w-full" style={{ background: `${C.ink}12` }}>
@@ -118,23 +139,6 @@ function StoryProgress({ p, stop }: { p: number; stop: number }) {
             background: `linear-gradient(90deg, ${C.lavender}, ${C.coral}, ${C.red})`,
           }}
         />
-      </div>
-      <div className="mx-auto hidden max-w-[92rem] justify-between px-10 pt-2 md:flex">
-        {JOURNEY.map((label, i) => (
-          <span
-            key={label}
-            className="text-[9px] font-bold uppercase tracking-[0.2em] transition-opacity duration-500"
-            style={{
-              fontFamily: DISPLAY,
-              // Stops ahead of the reader are barely there; the one they are
-              // standing in is the only one that speaks.
-              color: i === stop ? C.redDeep : C.ink,
-              opacity: i === stop ? 1 : i < stop ? 0.35 : 0.18,
-            }}
-          >
-            {label}
-          </span>
-        ))}
       </div>
     </div>
   );
@@ -256,9 +260,9 @@ const FIELD = [
     depth: 0 = far (small, soft, barely moves) … 1 = near (large, sharp, moves most)
   */
   { k: "cell", x: 11, y: 87, s: 0.86, r: -6, tone: C.pink, depth: 1, hideSm: true },
-  { k: "mol", x: 22, y: 97, s: 0.6, r: 12, tone: C.coral, depth: 0.82 },
-  { k: "enz", x: 15, y: 15, s: 0.5, r: 10, tone: C.green, depth: 0.5 },
-  { k: "cell", x: 34, y: 12, s: 0.44, r: -8, tone: C.blue, depth: 0.28 },
+  { k: "mol", x: 22, y: 97, s: 0.6, r: 12, tone: C.coral, depth: 0.82, hideSm: true },
+  { k: "enz", x: 72, y: 12, s: 0.5, r: 10, tone: C.green, depth: 0.5 },
+  { k: "cell", x: 20, y: 11, s: 0.44, r: -8, tone: C.blue, depth: 0.28 },
 
   /*
     Straddling the seam. The field's edge sits near x = 42%, so these sit ON
@@ -293,24 +297,37 @@ function HeroConcept() {
   const stage = useRef<HTMLElement>(null);
   const [track, p] = useSmoothProgress<HTMLElement>(0.1);
 
-  /* ---- one section, four beats -----------------------------------------
-     The hero holds, its words step aside, the strand grows until the variant
-     fills the frame, and the rest of the genome fades out around it. This is
-     the transition mechanic for the whole site; if it works here it works
-     everywhere, which is why it is built once before anything else.        */
-  const heroOut = 1 - range(p, 0.1, 0.3);
-  const zoom = range(p, 0.16, 0.66);
-  const focus = range(p, 0.52, 0.9);
-  const followIn = range(p, 0.3, 0.44) * (1 - range(p, 0.56, 0.68));
-  const revealIn = range(p, 0.72, 0.88);
+  /* ---- one section, four beats -------------------------------------------
+     The principle: THE SCROLL IS THE MICROSCOPE. The reader's own hand is what
+     magnifies, which is what makes the interaction mean something rather than
+     decorate something — and it is the only reason a story about scale can be
+     told by scrolling at all.
+
+       A  the descent begins, and the strand is named: your genome
+       B  structure resolves; the annotation narrows to chromosome 1 · DPYD
+       C  the helix folds shut and the sequence assembles, readable
+       D  one letter changes, and the stakes land
+
+     The drama of DPYD is scale: three billion letters, and one of them decides
+     whether a standard dose treats you or harms you. That is the idea this
+     screen exists to carry, and nothing before it says so.                  */
+  const heroOut = 1 - range(p, 0.06, 0.2);
+  const zoom = range(p, 0.12, 0.66);
+  const focus = range(p, 0.44, 0.72);
+  const flatten = range(p, 0.66, 0.8);
+  const assemble = range(p, 0.7, 0.88);
+  const flip = range(p, 0.86, 0.94);
+  const closing = range(p, 0.9, 0.98);
+  // Her phrase, once, before the annotations start narrating. It is fully
+  // gone by 0.36 so it never shares the frame with a scale label.
+  const followIn = band(p, 0.16, 0.24, 0.3, 0.36);
   // The cream side gives way as we travel in, so the two halves become one
   // space rather than staying a split screen.
-  const merge = range(p, 0.14, 0.6);
+  const merge = range(p, 0.08, 0.44);
   // How far inward the reader has travelled; the ambient scene defers to it.
-  const travel = range(p, 0.14, 0.66);
-  // Objects clear out well before the first copy beat peaks (0.44); otherwise
-  // they sit at ~45% underneath the words and the scrim has to fight them.
-  const ambientOut = range(p, 0.1, 0.34);
+  const travel = range(p, 0.12, 0.6);
+  // Objects clear out well before the first annotation lands.
+  const ambientOut = range(p, 0.06, 0.26);
 
   useEffect(() => {
     if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
@@ -375,7 +392,7 @@ function HeroConcept() {
         } as React.CSSProperties
       }
     >
-      <StoryProgress p={p} stop={0} />
+      <StoryProgress p={p} />
 
       {/*
         ONE section. The client asked to follow the gene as the homepage's
@@ -383,7 +400,7 @@ function HeroConcept() {
         anything downstream is committed to: a tall track with a pinned stage,
         and every beat driven by scroll position rather than by a timer.
       */}
-      <section ref={track} style={{ height: "300vh" }} className="relative">
+      <section ref={track} style={{ height: "420vh" }} className="relative">
         <div className="sticky top-0 h-screen overflow-hidden">
           {/*
         A committed colour field with a hard edge, not a gradient mesh. Every
@@ -493,7 +510,23 @@ function HeroConcept() {
           </div>
 
           {/* ---------------------------------------------------------- nav */}
-          <header className="absolute inset-x-0 top-0 z-30 mx-auto flex max-w-[92rem] items-center justify-between px-6 py-4 md:px-10 md:py-6">
+          {/*
+            A scrim under the header, arriving with the descent. At hero scale
+            the header sits on flat colour and needs nothing; once the strand
+            has grown it passes straight through "Wet Lab" and "Human
+            Practices", and navigation that cannot be read is worse than
+            navigation that is not there.
+          */}
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-x-0 top-0 z-20 h-32"
+            style={{
+              background: `linear-gradient(to bottom, ${C.lavenderDeep}b3, transparent)`,
+              opacity: travel,
+            }}
+          />
+
+          <header className="absolute inset-x-0 top-0 z-30 mx-auto flex max-w-[92rem] items-center justify-between px-6 py-5 md:px-10 md:py-7">
             <div className="flex items-center gap-2.5">
               {/*
             The team's own emblem — DNA dissolving into hexagons above a
@@ -603,7 +636,7 @@ function HeroConcept() {
           )}
 
           {/* --------------------------------------------------------- hero */}
-          <div className="relative z-10 mx-auto grid h-full max-w-[92rem] items-center gap-3 px-6 pb-8 md:grid-cols-[1.05fr_0.95fr] md:gap-8 md:px-10 md:pb-24">
+          <div className="relative z-10 mx-auto grid h-full max-w-[92rem] items-center gap-3 px-6 pb-8 pt-24 md:grid-cols-[1.05fr_0.95fr] md:gap-8 md:px-10 md:pb-24 md:pt-28">
             <div
               className="order-2 md:order-1"
               style={{
@@ -684,7 +717,12 @@ function HeroConcept() {
             {/* the strand */}
             <div className="order-1 flex justify-center md:order-2">
               <div className="relative h-[34vh] w-full max-w-[520px] md:h-[82vh]">
-                <Helix onFirstDrag={() => setDragged(true)} zoom={zoom} focus={focus} />
+                <Helix
+                  onFirstDrag={() => setDragged(true)}
+                  zoom={zoom}
+                  focus={focus}
+                  flatten={flatten}
+                />
                 <div
                   className="pointer-events-none absolute inset-x-0 -bottom-1 flex justify-center"
                   style={{
@@ -716,17 +754,47 @@ function HeroConcept() {
             </div>
           </div>
           {/*
-            Beat two: her own phrase, at the moment the journey begins. It
-            arrives after the hero copy has stepped aside and leaves before
-            the variant does, so the frame is never carrying two thoughts.
+            The scale annotation. It names where the reader currently is as the
+            descent deepens — your genome, then the chromosome, then the gene.
+            Three stops: enough to feel the descent, not so many it becomes a
+            lecture. This is the "annotated diagram" mechanic every reference
+            wiki uses, applied to a journey instead of a still.
+
+            PLACEHOLDER FIGURES — the team must confirm these before shipping.
+            iGEM's rule is that nothing on a wiki may be unverifiable, and the
+            first hard number on this site should not be one I wrote.
+          */}
+          {SCALE_STOPS.map((stop, i) => {
+            const on = band(p, stop.in, stop.in + 0.06, stop.out, stop.out + 0.06);
+            if (on < 0.02) return null;
+            return (
+              <div
+                key={stop.label}
+                className="pointer-events-none absolute inset-x-0 z-20 flex justify-center"
+                style={{ top: "16vh", opacity: on }}
+              >
+                <span
+                  className="flex items-center gap-3 text-[11px] font-bold uppercase tracking-[0.26em]"
+                  style={{ fontFamily: DISPLAY, color: C.paper }}
+                >
+                  <span className="block h-px w-8" style={{ background: `${C.paper}66` }} />
+                  {stop.label}
+                  <span className="opacity-60">{stop.note}</span>
+                  <span className="block h-px w-8" style={{ background: `${C.paper}66` }} />
+                </span>
+              </div>
+            );
+          })}
+
+          {/*
+            Beat A's title: her own phrase, at the moment the journey begins.
+            It leaves before the sequence arrives, so the frame never carries
+            two thoughts at once.
           */}
           <div
             className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center px-6"
             style={{ opacity: followIn, visibility: followIn < 0.02 ? "hidden" : "visible" }}
           >
-            {/* A soft scrim carries the words over the strand. Without it the type
-            sits at whatever contrast the rotation happens to leave behind it,
-            which is not a decision anyone made. */}
             <span
               aria-hidden="true"
               className="absolute inset-0"
@@ -751,39 +819,42 @@ function HeroConcept() {
           </div>
 
           {/*
-            Beat three: arrival. One letter, named only once the reader has
-            travelled to it — which is what makes c.1905+1G>A a payoff here
-            rather than the jargon the client objected to in the opening.
+            Beats C and D: the strand has folded shut and handed the frame to
+            DNA you can read. The mutation then happens in front of the reader
+            instead of being described to them.
           */}
           <div
-            className="pointer-events-none absolute inset-x-0 bottom-[12vh] z-20 flex justify-center px-6"
-            style={{ opacity: revealIn, visibility: revealIn < 0.02 ? "hidden" : "visible" }}
+            className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center px-4"
+            style={{ visibility: assemble < 0.02 ? "hidden" : "visible" }}
           >
-            <div
-              className="relative px-10 py-6 text-center"
+            <Sequence assemble={assemble} flip={flip} />
+          </div>
+
+          {/*
+            The stakes, last. It closes the loop on the hero's headline — "Your
+            genes decide your dose" — and pays it off with scale rather than
+            repeating it.
+          */}
+          <div
+            className="pointer-events-none absolute inset-x-0 bottom-[13vh] z-20 flex justify-center px-6"
+            style={{ opacity: closing, visibility: closing < 0.02 ? "hidden" : "visible" }}
+          >
+            <p
+              className="max-w-3xl text-center font-black"
               style={{
-                transform: `translateY(${((1 - revealIn) * 20).toFixed(1)}px)`,
-                background: `radial-gradient(70% 68% at 50% 50%, ${C.lavenderDeep}f2, ${C.lavenderDeep}99 52%, transparent 76%)`,
+                fontFamily: DISPLAY,
+                fontSize: "clamp(1.4rem, 3vw, 2.5rem)",
+                letterSpacing: "-0.028em",
+                lineHeight: 1.1,
+                color: C.paper,
+                textShadow: `0 4px 30px ${C.lavenderDeep}`,
+                transform: `translateY(${((1 - closing) * 18).toFixed(1)}px)`,
               }}
             >
-              <p
-                className="font-black"
-                style={{
-                  fontFamily: DISPLAY,
-                  fontSize: "clamp(1.7rem, 3.6vw, 3rem)",
-                  letterSpacing: "-0.03em",
-                  color: C.paper,
-                }}
-              >
-                One letter is different.
-              </p>
-              <p
-                className="mt-3 font-mono text-[13px] tracking-[0.18em] md:text-[15px]"
-                style={{ color: C.paper, opacity: 0.9 }}
-              >
-                DPYD · c.1905+1G&gt;A
-              </p>
-            </div>
+              Three billion letters.
+              <br />
+              <span style={{ color: "#FFC9C4" }}>This one decides your dose.</span>
+            </p>
           </div>
         </div>
       </section>
@@ -856,7 +927,22 @@ function HeroConcept() {
             inset: 0 0 0 auto;
             width: calc(58% + var(--merge, 0) * 42%);
             height: 100%;
-            clip-path: ellipse(96% 128% at 88% 42%);
+            /*
+              A straight edge, deliberately.
+
+              This was an ellipse for a while and it only ever produced
+              accidents: off-centre it bevelled the bottom-left corner like a
+              rendering fault, and centred it bulged and sliced through the
+              objects sitting on the seam. The stated principle here was always
+              "a committed colour field with a HARD edge" — GlycoGarden's crisp
+              horizon, KCIS's flat blue — and a clean vertical line is that.
+              The seam is softened by the objects that straddle it, which is
+              the job those objects exist to do.
+
+              A value of none must be stated explicitly: without it the portrait
+              rule above still applies here and curves the bottom edge.
+            */
+            clip-path: none;
           }
         }
 
