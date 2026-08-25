@@ -97,6 +97,16 @@ function Underline({ index, active = false }: { index: number; active?: boolean 
  * has to show a whole journey to mean anything — a reader needs to see where
  * they are going, not just where they are.
  */
+/**
+ * Quantise a scroll-driven value to 20 steps.
+ *
+ * A value that changes by a thousandth every frame repaints exactly as hard as
+ * one that changes by a tenth — so fades that are driven continuously by
+ * scroll cost a full repaint per frame for a difference nobody can see. Twenty
+ * steps is smooth to the eye and a twentieth of the work.
+ */
+const q = (v: number) => Math.round(v * 20) / 20;
+
 const JOURNEY = ["The gene", "Two people", "Why", "Detection", "ChemoGuard"] as const;
 
 /**
@@ -475,7 +485,13 @@ function HeroConcept() {
                   // leaving the bloodstream for the gene, and the nearest
                   // objects — which would otherwise sail past the camera —
                   // clear out first.
-                  opacity: (0.45 + f.depth * 0.55) * (1 - ambientOut),
+                  opacity: q((0.45 + f.depth * 0.55) * (1 - ambientOut)),
+                  // Out of paint once faded: for most of this section these are
+                  // invisible but were still filtered and composited every
+                  // frame. Kept MOUNTED though — unmounting made them replay
+                  // their staggered entrance every time the reader scrolled
+                  // back up to the hero.
+                  display: ambientOut > 0.99 ? "none" : undefined,
                   filter:
                     f.depth > 0.7
                       ? `drop-shadow(0 ${(6 * f.depth).toFixed(1)}px ${(10 * f.depth).toFixed(1)}px rgba(36,28,46,0.22))`
@@ -491,6 +507,7 @@ function HeroConcept() {
                 )}
               </div>
             ))}
+            {/* Particles are cheap and read as suspension; they stay. */}
             {DOTS.map((d, i) => (
               <span
                 key={`d${i}`}
@@ -522,7 +539,7 @@ function HeroConcept() {
             className="pointer-events-none absolute inset-x-0 top-0 z-20 h-32"
             style={{
               background: `linear-gradient(to bottom, ${C.lavenderDeep}b3, transparent)`,
-              opacity: travel,
+              opacity: q(travel),
             }}
           />
 
@@ -640,7 +657,7 @@ function HeroConcept() {
             <div
               className="order-2 md:order-1"
               style={{
-                opacity: heroOut,
+                opacity: q(heroOut),
                 transform: `translateY(${((1 - heroOut) * -28).toFixed(1)}px)`,
                 visibility: heroOut < 0.02 ? "hidden" : "visible",
               }}
@@ -729,7 +746,7 @@ function HeroConcept() {
                     // Retires once the reader drags OR once the journey
                     // starts — it invites you into the hero, it is not a
                     // caption for the trip inward.
-                    opacity: dragged ? 0 : heroOut,
+                    opacity: dragged ? 0 : q(heroOut),
                     transition: "opacity 500ms ease",
                   }}
                 >
@@ -771,7 +788,7 @@ function HeroConcept() {
               <div
                 key={stop.label}
                 className="pointer-events-none absolute inset-x-0 z-20 flex justify-center"
-                style={{ top: "16vh", opacity: on }}
+                style={{ top: "16vh", opacity: q(on) }}
               >
                 <span
                   className="flex items-center gap-3 text-[11px] font-bold uppercase tracking-[0.26em]"
@@ -793,7 +810,7 @@ function HeroConcept() {
           */}
           <div
             className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center px-6"
-            style={{ opacity: followIn, visibility: followIn < 0.02 ? "hidden" : "visible" }}
+            style={{ opacity: q(followIn), visibility: followIn < 0.02 ? "hidden" : "visible" }}
           >
             <span
               aria-hidden="true"
@@ -837,7 +854,7 @@ function HeroConcept() {
           */}
           <div
             className="pointer-events-none absolute inset-x-0 bottom-[13vh] z-20 flex justify-center px-6"
-            style={{ opacity: closing, visibility: closing < 0.02 ? "hidden" : "visible" }}
+            style={{ opacity: q(closing), visibility: closing < 0.02 ? "hidden" : "visible" }}
           >
             <p
               className="max-w-3xl text-center font-black"
