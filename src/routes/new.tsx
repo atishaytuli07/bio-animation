@@ -122,7 +122,7 @@ const SCALE_STOPS = [
   // Overlapping them stacked two labels at the same coordinates.
   { label: "Your genome", note: "3,000,000,000 letters", in: 0.34, out: 0.42 },
   { label: "Chromosome 1", note: "1p21.3", in: 0.48, out: 0.56 },
-  { label: "DPYD", note: "the gene", in: 0.62, out: 0.68 },
+  { label: "DPYD", note: "builds the enzyme that clears the drug", in: 0.6, out: 0.68 },
 ] as const;
 
 /**
@@ -689,9 +689,9 @@ function HeroConcept() {
                   letterSpacing: "-0.042em",
                 }}
               >
-                Your genes <br />
-                decide <br />
-                your <span style={{ color: C.red }}>dose.</span>
+                The same drug <br />
+                isn&rsquo;t the same <br />
+                for <span style={{ color: C.red }}>everyone.</span>
               </h1>
 
               <p
@@ -787,17 +787,24 @@ function HeroConcept() {
             return (
               <div
                 key={stop.label}
-                className="pointer-events-none absolute inset-x-0 z-20 flex justify-center"
-                style={{ top: "16vh", opacity: q(on) }}
+                // Left-anchored, not centred. Centred, the label sat exactly
+                // where the growing strand passes and was crossed by the
+                // backbone; the left half of the frame is empty for the whole
+                // descent, so the "you are here" reads cleanly there.
+                className="pointer-events-none absolute left-6 z-20 md:left-10"
+                style={{ top: "20vh", opacity: q(on) }}
               >
                 <span
-                  className="flex items-center gap-3 text-[11px] font-bold uppercase tracking-[0.26em]"
+                  className="flex flex-col gap-1.5 text-[11px] font-bold uppercase tracking-[0.26em]"
                   style={{ fontFamily: DISPLAY, color: C.paper }}
                 >
-                  <span className="block h-px w-8" style={{ background: `${C.paper}66` }} />
-                  {stop.label}
-                  <span className="opacity-60">{stop.note}</span>
-                  <span className="block h-px w-8" style={{ background: `${C.paper}66` }} />
+                  <span className="flex items-center gap-3">
+                    <span className="block h-px w-8" style={{ background: `${C.paper}99` }} />
+                    {stop.label}
+                  </span>
+                  <span className="pl-11 text-[10px] font-semibold normal-case tracking-[0.06em] opacity-75">
+                    {stop.note}
+                  </span>
                 </span>
               </div>
             );
