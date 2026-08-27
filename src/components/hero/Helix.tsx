@@ -132,7 +132,15 @@ export function Helix({
       // with it, so the sequence inherits a frame that has been vacated
       // rather than one that was cross-faded over.
       const radius = HR * (1 - flat);
-      root.current?.setAttribute("opacity", Math.max(0, 1 - flat * 1.25).toFixed(3));
+      const visible = Math.max(0, 1 - flat * 1.25);
+      root.current?.setAttribute("opacity", visible.toFixed(3));
+      // Once the strand has folded away there is nothing to draw, but the loop
+      // was still writing ~340 attributes a frame into an invisible group.
+      // Skip the geometry entirely; the sequence owns the frame now.
+      if (visible <= 0) {
+        raf = requestAnimationFrame(tick);
+        return;
+      }
 
       /*
         Travelling in. As the reader scrolls we ease the strand's rotation to
