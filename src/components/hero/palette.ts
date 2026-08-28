@@ -32,6 +32,59 @@ export const C = {
 };
 
 /**
+ * The type scale.
+ *
+ * Every headline on the site was hand-tuned before this existed: five sizes and
+ * four different letter-spacings across three sections, and the largest type on
+ * the whole page was the single word "Why?" — bigger than the hero. Sizes are
+ * now picked from this scale and nowhere else.
+ *
+ * One rule ties the two together: the bigger the type, the tighter the
+ * tracking. Large display type needs negative tracking to hold together; small
+ * type needs air to stay legible. So each step carries its own pairing and a
+ * headline can never be given the wrong one.
+ *
+ * The hierarchy is fixed and deliberate:
+ *   display  — the hero, and only the hero. The largest thing on the site.
+ *   headline — every stop's headline. All equal to each other, one step down.
+ *   sub      — the line that answers a headline, or closes a beat.
+ *   label    — chapter labels, diagram labels. Uppercase, letterspaced.
+ *   caption  — the small explanatory line under a diagram.
+ */
+export const T = {
+  display: {
+    fontSize: "clamp(2.7rem, 5.9vw, 5rem)",
+    lineHeight: 0.94,
+    letterSpacing: "-0.042em",
+  },
+  headline: {
+    fontSize: "clamp(2rem, 4.8vw, 3.8rem)",
+    lineHeight: 1,
+    letterSpacing: "-0.034em",
+  },
+  sub: {
+    fontSize: "clamp(1.35rem, 2.9vw, 2.3rem)",
+    lineHeight: 1.12,
+    letterSpacing: "-0.024em",
+  },
+} as const;
+
+/**
+ * Layout constants, so a reader scrolling from one stop to the next never sees
+ * a heading jump. The headline sat at 24vh in stop two and 16vh in stop three;
+ * consecutive sections moved their own copy by 8vh.
+ */
+export const L = {
+  /** Chapter label, pinned identically on every stop stage. */
+  label: "absolute left-6 top-24 z-20 md:left-10 md:top-28",
+  /** Chapter label typography — uppercase, letterspaced, always this size. */
+  labelType: "inline-flex items-center gap-2.5 text-[11px] font-bold uppercase tracking-[0.22em]",
+  /** Where a stop's headline sits. One coordinate, every stop. */
+  headline:
+    "pointer-events-none absolute inset-x-0 top-[16vh] z-20 flex justify-center px-6 md:top-[20vh]",
+} as const;
+
+/**
  * Base-pair colours, bright enough to hold on the deep field.
  *
  * Red is absent because it belongs to the variant. Coral is absent because at

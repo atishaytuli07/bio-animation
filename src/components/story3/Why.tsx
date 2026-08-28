@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 
-import { C } from "@/components/hero/palette";
+import { C, L, T } from "@/components/hero/palette";
 import { band, range, useSmoothProgress, useTime } from "@/hooks/use-scroll-progress";
 
 /**
@@ -290,7 +290,7 @@ function Vessel({
       </div>
 
       <p
-        className="min-h-[3.9em] max-w-[26ch] text-center text-[12px] font-semibold leading-snug md:text-[15px]"
+        className="min-h-[4.3em] max-w-[26ch] text-center text-[12px] font-semibold leading-snug md:text-[15px]"
         style={{ color: C.ink, opacity: q(captionOn) }}
       >
         {caption}
@@ -338,27 +338,19 @@ export function Why() {
         }}
       >
         {/* chapter label */}
-        <div className="absolute left-6 top-24 z-20 md:left-10 md:top-28">
-          <span
-            className="inline-flex items-center gap-2.5 text-[11px] font-bold uppercase tracking-[0.22em]"
-            style={{ color: C.redDeep, opacity: q(enter) }}
-          >
+        <div className={L.label}>
+          <span className={L.labelType} style={{ color: C.redDeep, opacity: q(enter) }}>
             <span className="block h-0.5 w-7" style={{ background: C.red }} />
             03 · Why
           </span>
         </div>
 
         {/* the question — short, on colour, never a black screen */}
-        <div
-          className="pointer-events-none absolute inset-x-0 top-[13vh] z-20 flex justify-center px-6 md:top-[16vh]"
-          style={{ opacity: q(title) }}
-        >
+        <div className={L.headline} style={{ opacity: q(title) }}>
           <p
             className="text-center font-black"
             style={{
-              fontSize: "clamp(2.4rem, 6vw, 5.4rem)",
-              lineHeight: 1,
-              letterSpacing: "-0.03em",
+              ...T.headline,
               color: C.ink,
               transform: `translateY(${((1 - title) * 16).toFixed(1)}px)`,
             }}

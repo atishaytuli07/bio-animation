@@ -1,5 +1,5 @@
 import { Cell, Enzyme, Molecule } from "@/components/hero/elements";
-import { C } from "@/components/hero/palette";
+import { C, L, T } from "@/components/hero/palette";
 import { band, range, useSmoothProgress, useTime } from "@/hooks/use-scroll-progress";
 
 /**
@@ -281,11 +281,8 @@ export function TwoPeople() {
           </div>
         ))}
         {/* chapter label */}
-        <div className="absolute left-6 top-24 z-20 md:left-10 md:top-28">
-          <span
-            className="inline-flex items-center gap-2.5 text-[11px] font-bold uppercase tracking-[0.22em]"
-            style={{ color: C.paper, opacity: q(enter) }}
-          >
+        <div className={L.label}>
+          <span className={L.labelType} style={{ color: C.paper, opacity: q(enter) }}>
             <span className="block h-0.5 w-7" style={{ background: C.paper }} />
             02 · Two people
           </span>
@@ -315,16 +312,11 @@ export function TwoPeople() {
         </div>
 
         {/* "The same treatment." — arrives with the drip, leaves before the split */}
-        <div
-          className="pointer-events-none absolute inset-x-0 top-[12vh] z-20 flex justify-center px-6 md:top-[24vh]"
-          style={{ opacity: q(title) }}
-        >
+        <div className={L.headline} style={{ opacity: q(title) }}>
           <p
             className="text-center font-black"
             style={{
-              fontSize: "clamp(1.5rem, 4.6vw, 4rem)",
-              lineHeight: 1,
-              letterSpacing: "-0.03em",
+              ...T.headline,
               color: C.paper,
               textShadow: `0 4px 24px ${C.lavenderDeep}88`,
               transform: `translateY(${((1 - title) * 16).toFixed(1)}px)`,
@@ -335,16 +327,11 @@ export function TwoPeople() {
         </div>
 
         {/* "…doesn't mean the same outcome." — only after the split has happened */}
-        <div
-          className="pointer-events-none absolute inset-x-0 top-[12vh] z-20 flex justify-center px-6 md:top-[24vh]"
-          style={{ opacity: q(outcome) }}
-        >
+        <div className={L.headline} style={{ opacity: q(outcome) }}>
           <p
             className="text-center font-black"
             style={{
-              fontSize: "clamp(1.5rem, 4.6vw, 4rem)",
-              lineHeight: 1,
-              letterSpacing: "-0.03em",
+              ...T.headline,
               color: C.paper,
               textShadow: `0 4px 24px ${C.lavenderDeep}88`,
               transform: `translateY(${((1 - outcome) * 16).toFixed(1)}px)`,

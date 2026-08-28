@@ -7,7 +7,7 @@ import { TwoPeople } from "@/components/story2/TwoPeople";
 import { Why } from "@/components/story3/Why";
 import { band, range, useSmoothProgress } from "@/hooks/use-scroll-progress";
 import { Cell, Enzyme, Molecule } from "@/components/hero/elements";
-import { C } from "@/components/hero/palette";
+import { C, L, T } from "@/components/hero/palette";
 
 /**
  * /new — the hero concept, built to the Production Brief.
@@ -581,20 +581,15 @@ function HeroConcept() {
             THE KIDNEY WORKS" and GlycoGarden's "ACT I — WHY GLYCANS MATTER"
             are plain letterspaced colour, and so is this.
           */}
-              <span
-                className="inline-flex items-center gap-2.5 text-[11px] font-bold uppercase tracking-[0.22em]"
-                style={{ fontFamily: DISPLAY, color: C.redDeep }}
-              >
+              <span className={L.labelType} style={{ fontFamily: DISPLAY, color: C.redDeep }}>
                 <span className="block h-0.5 w-7" style={{ background: C.red }} />
-                01 · Pharmacogenomics
+                01 · The gene
               </span>
 
               <h1
                 className="mt-4 font-black md:mt-7"
                 style={{
-                  fontSize: "clamp(2.7rem, 5.9vw, 5rem)",
-                  lineHeight: 0.94,
-                  letterSpacing: "-0.042em",
+                  ...T.display,
                 }}
               >
                 It starts <br />
@@ -738,9 +733,7 @@ function HeroConcept() {
               className="relative text-center font-black"
               style={{
                 fontFamily: DISPLAY,
-                fontSize: "clamp(2.2rem, 5.4vw, 4.4rem)",
-                letterSpacing: "-0.03em",
-                lineHeight: 1,
+                ...T.headline,
                 color: C.paper,
                 textShadow: `0 4px 26px ${C.lavenderDeep}`,
                 transform: `translateY(${((1 - followIn) * 22).toFixed(1)}px)`,
@@ -775,9 +768,7 @@ function HeroConcept() {
               className="max-w-3xl text-center font-black"
               style={{
                 fontFamily: DISPLAY,
-                fontSize: "clamp(1.4rem, 3vw, 2.5rem)",
-                letterSpacing: "-0.028em",
-                lineHeight: 1.1,
+                ...T.sub,
                 color: C.paper,
                 textShadow: `0 4px 30px ${C.lavenderDeep}`,
                 transform: `translateY(${((1 - closing) * 18).toFixed(1)}px)`,
