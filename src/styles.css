@@ -242,8 +242,6 @@
   --color-alarm: var(--alarm);
   --color-vital: var(--vital);
   --color-night: var(--night);
-  --font-display: "Newsreader", Georgia, "Times New Roman", serif;
-  --font-quiet: "Newsreader", ui-serif, Georgia, serif;
   --font-hand: "Segoe Script", "Bradley Hand", "Comic Sans MS", "Chalkboard SE", cursive;
 }
 
@@ -253,49 +251,22 @@
     -webkit-font-smoothing: antialiased;
   }
   body {
-    font-family: "Instrument Sans", ui-sans-serif, system-ui, sans-serif;
+    /* The variable package registers this exact family name; "Instrument
+       Sans" alone matches nothing and falls through to the system stack. */
+    font-family: "Instrument Sans Variable", "Instrument Sans", ui-sans-serif, system-ui, sans-serif;
     letter-spacing: -0.015em;
   }
 }
 
-@utility story-line {
-  font-family: "Newsreader", Georgia, "Times New Roman", serif;
-  font-size: clamp(2.25rem, 7vw, 6rem);
-  line-height: 1.02;
-  letter-spacing: -0.015em;
-  font-weight: 500;
-  text-wrap: balance;
-}
 
 /*
  * A size step down from story-line, for beats whose longest line is too many
  * characters to survive at 6.5rem. Same voice, just set to fit — use it
  * whenever a two-line beat is wrapping to three.
  */
-@utility story-line-sm {
-  font-family: "Newsreader", Georgia, "Times New Roman", serif;
-  font-size: clamp(1.8rem, 5vw, 4.2rem);
-  line-height: 1.06;
-  letter-spacing: -0.012em;
-  font-weight: 500;
-  text-wrap: balance;
-}
 
-@utility quiet-line {
-  font-family: "Newsreader", ui-serif, Georgia, serif;
-  font-weight: 300;
-  font-style: italic;
-  letter-spacing: -0.02em;
-}
 
 /* Poster display — the mockup's loud title voice. Wordmark and hero. */
-@utility poster-line {
-  font-family: "Archivo Black", "Arial Black", Impact, sans-serif;
-  text-transform: uppercase;
-  line-height: 0.94;
-  letter-spacing: 0.005em;
-  text-wrap: balance;
-}
 
 /*
  * Chapter headline, same voice as the hero one size down. The site used to

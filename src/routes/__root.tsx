@@ -13,16 +13,15 @@ import { useEffect, type ReactNode } from "react";
   Self-hosted typefaces, replacing a Google Fonts <link>. All three are OFL, so
   redistributing them inside the wiki build is permitted.
 
-  Archivo Black is pinned to the latin subset because it offers one. The two
-  variable families publish a single stylesheet per axis rather than per
-  subset, so their Cyrillic, Greek and Vietnamese faces are declared too — but
-  each carries a unicode-range, so a reader only ever downloads the subset the
-  page actually sets. The extra woff2 files sit unused in the build.
+  Instrument Sans is the body face for the whole site. Archivo Black and
+  Newsreader went with the deleted direction — they were only ever used by its
+  poster and serif utilities.
+
+  The package publishes one stylesheet per axis rather than per subset, so its
+  Cyrillic, Greek and Vietnamese faces are declared too; each carries a
+  unicode-range, so a reader only downloads the subset the page actually sets.
 */
-import "@fontsource/archivo-black/latin-400.css";
 import "@fontsource-variable/instrument-sans/wght.css";
-import "@fontsource-variable/newsreader/opsz.css";
-import "@fontsource-variable/newsreader/opsz-italic.css";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
@@ -115,8 +114,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         that host, so the typography was already at the mercy of a network
         call.
 
-        The three families are now installed as packages and imported at the
-        top of this file. Vite fingerprints the woff2 files into the build
+        The typeface is now installed as a package and imported at the top of
+        this file. Vite fingerprints the woff2 files into the build
         output, so they ship with the wiki and resolve locally. Swapping in the
         team's own typeface later is a change of import and family name; the
         mechanism does not change.

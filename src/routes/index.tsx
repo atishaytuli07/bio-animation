@@ -1,41 +1,27 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import { TopNav } from "@/components/story/TopNav";
-import { StoryCanvas } from "@/components/story/StoryCanvas";
-import { StoryAppendix } from "@/components/story/StoryAppendix";
-import { Atmosphere } from "@/components/story/visuals";
-import { ChapterHero } from "@/components/story/ChapterHero";
-import { StoryOpening } from "@/components/story/StoryOpening";
-import {
-  ChapterOpen,
-  ChapterEmma,
-  ChapterDrug,
-  ChapterZoom,
-  ChapterAccumulation,
-  ChapterSilence,
-} from "@/components/story/ActOne";
-import {
-  ChapterSolution,
-  ChapterSplit,
-  ChapterResults,
-  ChapterFuture,
-  ChapterStatistics,
-  StoryFooter,
-} from "@/components/story/ActTwo";
 
 const TITLE = "ChemoGuard — Precision starts in your DNA";
 const DESCRIPTION =
   "An interactive story about DPYD gene variants, DPD deficiency and fluoropyrimidine chemotherapy toxicity — and the pre-treatment test that prevents it.";
 
 /**
- * The root currently REDIRECTS to /new.
+ * The root redirects to /new, which is the approved direction and the only
+ * version being shown to the client.
  *
- * /new is the approved-direction hero concept and the only thing being shown
- * to the client. Everything below this line is the previous visual direction,
- * which the client rejected — if she landed on it by trimming the URL she
- * would reasonably conclude nothing had changed.
+ * This route used to also carry the whole previous visual direction — the
+ * three.js helix, the near-black chapters and the poster hero the client
+ * rejected — behind a redirect that made it unreachable. Unreachable is not
+ * the same as gone: it still compiled, still shipped, and @react-three/drei
+ * alone was 2.1 MB of the server bundle for a page nobody could open.
  *
- * To bring the old story back, delete the `beforeLoad` below. Nothing else
- * about this route has been touched.
+ * That direction is deleted rather than commented out. It is recoverable from
+ * git if it is ever wanted, which is the right place for it — carrying a dead
+ * alternative in the build costs every reader a slower wiki, and iGEM's
+ * infrastructure is not fast.
+ *
+ * The redirect stays because the client has been given the /new link; both the
+ * root and that link must keep working. When /new becomes the finished
+ * homepage it should move here and this file becomes the page itself.
  */
 export const Route = createFileRoute("/")({
   beforeLoad: () => {
@@ -54,41 +40,4 @@ export const Route = createFileRoute("/")({
       { name: "twitter:description", content: DESCRIPTION },
     ],
   }),
-  component: Story,
 });
-
-function Story() {
-  // True once the hero's stage exists — GL context live, or the SVG fallback
-  // confirmed as the stage on machines that won't get WebGL.
-
-  return (
-    <main className="min-h-screen">
-      <StoryCanvas />
-      <Atmosphere />
-      <TopNav />
-
-      {/* One continuous opening: the strand alone, then ChemoGuard beside it,
-          then the camera pulls out of the nucleus to the two patients it was
-          inside. Visual leads; the thesis lands last. */}
-      <StoryOpening />
-
-      <ChapterOpen />
-      <ChapterEmma />
-      <ChapterDrug />
-      <ChapterZoom />
-      {/* The 3D dive now lives at The Discovery — the payoff of travelling
-          into the body, not an abstract splash. */}
-      <ChapterHero />
-      <ChapterAccumulation />
-      <ChapterSilence />
-
-      <ChapterSolution />
-      <ChapterSplit />
-      <ChapterResults />
-      <ChapterFuture />
-      <ChapterStatistics />
-      <StoryAppendix />
-      <StoryFooter />
-    </main>
-  );
-}
