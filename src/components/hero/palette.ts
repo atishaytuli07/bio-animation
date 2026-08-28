@@ -114,3 +114,13 @@ export const HX = 210;
 export const HTOP = 40;
 export const HBOT = 720;
 export const HR = 132;
+
+/**
+ * Resolve a file in public/ against the wiki's base path.
+ *
+ * An iGEM wiki is served from /<team-slug>/, so a literal "/logo.webp" points
+ * outside it. Rewriting the SSR HTML is not enough: React re-renders on
+ * hydration and puts the literal path straight back. BASE_URL is "/" during
+ * development and for root-hosted deploys, so this is a no-op there.
+ */
+export const asset = (path: string) => `${import.meta.env.BASE_URL}${path.replace(/^\//, "")}`;

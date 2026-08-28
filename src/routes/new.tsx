@@ -7,7 +7,7 @@ import { TwoPeople } from "@/components/story2/TwoPeople";
 import { Why } from "@/components/story3/Why";
 import { band, range, useSmoothProgress } from "@/hooks/use-scroll-progress";
 import { Cell, Enzyme, Molecule } from "@/components/hero/elements";
-import { C, L, T } from "@/components/hero/palette";
+import { asset, C, L, T } from "@/components/hero/palette";
 
 /**
  * /new — the hero concept, built to the Production Brief.
@@ -465,7 +465,7 @@ function HeroConcept() {
             edges stay red instead of going pink on a coloured ground.
           */}
               <img
-                src="/logo.webp"
+                src={asset("logo.webp")}
                 alt="ChemoGuard — NIS Kazakhstan, iGEM 2026"
                 width={34}
                 height={41}

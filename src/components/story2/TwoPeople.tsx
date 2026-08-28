@@ -1,5 +1,5 @@
 import { Cell, Enzyme, Molecule } from "@/components/hero/elements";
-import { C, L, T } from "@/components/hero/palette";
+import { asset, C, L, T } from "@/components/hero/palette";
 import { band, range, useSmoothProgress, useTime } from "@/hooks/use-scroll-progress";
 
 /**
@@ -298,7 +298,7 @@ export function TwoPeople() {
           }}
         >
           <div className="flex items-end gap-2 md:gap-4" style={{ height: "var(--fig2)" }}>
-            <Patient src="/patient-a.webp" fill={fillA} alarm={0} flip={false} />
+            <Patient src={asset("patient-a.webp")} fill={fillA} alarm={0} flip={false} />
             <div className="h-[92%]">
               <IV dose={dose} flow={flow} flip={false} />
             </div>
@@ -307,7 +307,7 @@ export function TwoPeople() {
             <div className="h-[92%]">
               <IV dose={dose} flow={flow} flip />
             </div>
-            <Patient src="/patient-b.webp" fill={fillB} alarm={alarm} flip={false} />
+            <Patient src={asset("patient-b.webp")} fill={fillB} alarm={alarm} flip={false} />
           </div>
         </div>
 

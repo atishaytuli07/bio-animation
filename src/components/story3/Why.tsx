@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 
-import { C, L, T } from "@/components/hero/palette";
+import { asset, C, L, T } from "@/components/hero/palette";
 import { band, range, useSmoothProgress, useTime } from "@/hooks/use-scroll-progress";
 
 /**
@@ -214,7 +214,7 @@ export function Why() {
         >
           <div className="relative hidden md:block" style={{ height: "46vh" }}>
             <img
-              src="/patient-b.webp"
+              src={asset("patient-b.webp")}
               alt=""
               draggable={false}
               className="h-full w-auto select-none"

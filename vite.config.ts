@@ -12,11 +12,30 @@ export default defineConfig({
     // nitro/vite builds from this
     server: { entry: "server" },
   },
+  /*
+    The wiki's base path, for iGEM. An iGEM wiki is served from
+    /<team-slug>/, not from the domain root, so asset URLs — including the
+    ones inside bundled CSS, which no amount of HTML rewriting can reach —
+    have to be built with that prefix.
+
+    Set by `bun run build:static -- --base=<slug>`; empty for local
+    development and for any root-hosted deploy.
+  */
+  vite: {
+    base: process.env["WIKI_BASE"] || "/",
+  },
+
   // Deploy notes:
-  // - `npx vite preview` is BROKEN in this template (expects dist/server/server.js,
-  //   which the Lovable/nitro pipeline never writes). Don't use it.
-  // - Both tanstackStart.prerender and nitro's prerenderer also fail against
-  //   this pipeline, so there is no static-HTML export. Deploy to a host that
-  //   runs the server: Vercel auto-detects nitro (preset switches from the
-  //   Cloudflare default automatically in its CI), or deploy via Lovable.
+  // - `npx vite preview` is BROKEN in this template: it imports
+  //   dist/server/server.js, which the Lovable/nitro pipeline never writes
+  //   (it writes .output/server/). Don't use it.
+  // - That same missing file is why tanstackStart.prerender fails. Its
+  //   prerenderer boots that preview server before crawling, so every page
+  //   comes back 500 and the build dies. One missing file, two broken
+  //   features — which is why the static export does not use it.
+  // - For iGEM's static HTML, use `bun run build:static`. It builds with
+  //   nitro's node-server preset, runs that real server and crawls it, so it
+  //   depends on nothing the Lovable pipeline can take away.
+  // - To run a server instead: Vercel auto-detects nitro, or deploy via
+  //   Lovable.
 });

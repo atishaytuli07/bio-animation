@@ -33,3 +33,4 @@ dist-ssr
 
 # Source artwork originals — processed derivatives ship from public/
 assets-src/
+dist-static/
