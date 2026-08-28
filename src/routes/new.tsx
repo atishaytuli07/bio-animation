@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 
 import { Helix } from "@/components/hero/Helix";
@@ -784,6 +784,30 @@ function HeroConcept() {
 
       <TwoPeople />
       <Why />
+
+      {/*
+        The footer exists mainly to carry the Attributions link. iGEM requires
+        that page, and a required page nothing links to is a page judges do not
+        find — the AI declaration in particular has to be reachable from the
+        story, not only by typing the URL.
+      */}
+      <footer
+        className="relative z-10 px-6 py-10 md:px-10 md:py-12"
+        style={{ background: C.paper, borderTop: `2px solid ${C.ink}18` }}
+      >
+        <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-4">
+          <span className="text-[13px] font-semibold" style={{ color: `${C.ink}a8` }}>
+            ChemoGuard · iGEM 2026
+          </span>
+          <Link
+            to="/attributions"
+            className="text-[13px] font-bold underline-offset-4 hover:underline"
+            style={{ color: C.redDeep }}
+          >
+            Attributions
+          </Link>
+        </div>
+      </footer>
 
       <style>{`
         /*
