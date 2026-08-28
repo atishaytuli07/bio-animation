@@ -855,7 +855,13 @@ function HeroConcept() {
           inset: 0 0 auto 0;
           width: 100%;
           height: calc(46% + var(--merge, 0) * 54%);
-          clip-path: ellipse(150% 100% at 50% 0%);
+          /*
+            The curved lower edge straightens out as the field merges to full
+            height. Left at 100%, the ellipse kept biting the bottom corners
+            once the field filled the screen, leaving a cream sliver between
+            this stop and the next.
+          */
+          clip-path: ellipse(150% calc(100% + var(--merge, 0) * 90%) at 50% 0%);
         }
         @media (min-width: 768px) {
           .field {
