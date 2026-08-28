@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { Helix } from "@/components/hero/Helix";
 import { Sequence } from "@/components/hero/Sequence";
 import { TwoPeople } from "@/components/story2/TwoPeople";
+import { Why } from "@/components/story3/Why";
 import { band, range, useSmoothProgress } from "@/hooks/use-scroll-progress";
 import { Cell, Enzyme, Molecule } from "@/components/hero/elements";
 import { C } from "@/components/hero/palette";
@@ -791,6 +792,7 @@ function HeroConcept() {
       </section>
 
       <TwoPeople />
+      <Why />
 
       <style>{`
         /*
