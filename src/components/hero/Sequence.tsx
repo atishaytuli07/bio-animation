@@ -14,20 +14,35 @@ import { C } from "./palette";
  * is anchored on the base that matters before the context arrives around it.
  *
  * ─────────────────────────────────────────────────────────────────────────
- * PLACEHOLDER SEQUENCE — MUST BE REPLACED BEFORE THIS SHIPS.
+ * WHY THERE IS NO FLANKING SEQUENCE HERE.
  *
- * The flanking bases below are illustrative, NOT the verified reference
- * sequence around DPYD c.1905+1G>A. iGEM's own policy is explicit that
- * nothing on a wiki may be fabricated, and a judge checking this against the
- * reference genome is a realistic thing to happen. The team must supply the
- * real flank, and the ellipses are there to signal "excerpt" rather than
- * "this is the locus".
+ * This used to show six invented bases on each side of the variant. They were
+ * decorative ACGT, not the reference sequence, and iGEM's policy is explicit
+ * that nothing on a wiki may be fabricated — a judge checking a rendered
+ * sequence against the reference genome is an entirely realistic thing to
+ * happen, and inventing a locus is the kind of error that is not recoverable.
+ *
+ * What is shown instead is the part that is verifiable from the variant's own
+ * name, and which happens to be the part that actually matters:
+ *
+ *   DPYD c.1905+1G>A (rs3918290, the DPYD*2A allele) sits at position +1 of
+ *   intron 14, immediately after the end of exon 14. Positions +1 and +2 of an
+ *   intron are the canonical GT splice donor — the two letters that mark where
+ *   the cut goes. The variant changes that G to an A, so the donor reads AT,
+ *   the spliceosome does not recognise it, and exon 14 is skipped.
+ *
+ * So the frame shows the boundary, the two donor letters, and the G becoming
+ * an A. Every glyph on screen is entailed by the variant's name. Nothing is
+ * invented, and the image now carries the mechanism rather than decoration.
+ *
+ * The team should still confirm the wording against their own cited source
+ * before the freeze.
  * ─────────────────────────────────────────────────────────────────────────
  */
-const FLANK_LEFT = ["A", "C", "G", "A", "T", "C"];
-const FLANK_RIGHT = ["A", "T", "C", "G", "G", "T"];
 const REF_BASE = "G";
 const ALT_BASE = "A";
+/** Intron position +2. Canonical donor is GT, so this letter follows. */
+const DONOR_SECOND = "T";
 
 /** Base → colour, the same mapping the hero's rungs use. */
 const TONE: Record<string, string> = {
@@ -71,16 +86,56 @@ export function Sequence({
     );
   };
 
+  /**
+   * A named region rather than spelled-out bases. "exon 14" is verifiable;
+   * six invented letters are not, and this reads as an annotated locus
+   * instead of a sequence nobody can check.
+   */
+  const Region = ({
+    label,
+    distance,
+    align,
+  }: {
+    label: string;
+    distance: number;
+    align: "left" | "right";
+  }) => {
+    const t = step(distance);
+    return (
+      <span
+        className="font-sans text-[0.32em] font-bold uppercase"
+        style={{
+          color: C.paper,
+          opacity: t * 0.62,
+          letterSpacing: "0.18em",
+          transform: `translateX(${((1 - t) * (align === "right" ? 14 : -14)).toFixed(1)}px)`,
+          display: "inline-block",
+          whiteSpace: "nowrap",
+        }}
+      >
+        {label}
+      </span>
+    );
+  };
+
   return (
     <div className="pointer-events-none flex flex-col items-center">
       <div
         className="flex items-center font-mono font-bold"
         style={{ fontSize: "clamp(1.5rem, 4vw, 3.2rem)", letterSpacing: "0.3em" }}
       >
-        <span style={{ color: C.paper, opacity: step(7) * 0.4 }}>…</span>
-        {FLANK_LEFT.map((b, i) => (
-          <Base key={`l${i}`} letter={b} distance={FLANK_LEFT.length - i} />
-        ))}
+        {/* the end of exon 14 — named, not spelled out */}
+        <Region label="exon 14" distance={3} align="right" />
+        {/* the boundary the variant sits on */}
+        <span
+          className="mx-2 block md:mx-3"
+          style={{
+            width: 2,
+            height: "1.5em",
+            background: `${C.paper}80`,
+            opacity: step(2),
+          }}
+        />
 
         {/* the one that matters */}
         <span className="relative mx-2 inline-flex flex-col items-center md:mx-3">
@@ -126,10 +181,9 @@ export function Sequence({
           </span>
         </span>
 
-        {FLANK_RIGHT.map((b, i) => (
-          <Base key={`r${i}`} letter={b} distance={i + 1} />
-        ))}
-        <span style={{ color: C.paper, opacity: step(7) * 0.4 }}>…</span>
+        {/* intron position +2 — the second half of the donor signal */}
+        <Base letter={DONOR_SECOND} distance={1} />
+        <Region label="intron 14" distance={3} align="left" />
       </div>
 
       <p
@@ -137,6 +191,18 @@ export function Sequence({
         style={{ color: C.paper, opacity: Math.min(1, Math.max(0, flip * 2 - 0.3)) }}
       >
         DPYD · c.1905+1G&gt;A
+      </p>
+      {/*
+        What the two letters were for. Without this the reader sees a letter
+        change and has to take on faith that it matters; with it, the image is
+        self-explaining — a two-letter signal that says "cut here", broken.
+      */}
+      <p
+        className="mt-3 max-w-[34ch] text-center text-[13px] font-semibold leading-snug md:text-[15px]"
+        style={{ color: C.paper, opacity: Math.min(1, Math.max(0, flip * 2 - 0.7)) * 0.8 }}
+      >
+        These two letters tell the cell where to cut. Change one, and the cut is made in the wrong
+        place.
       </p>
     </div>
   );

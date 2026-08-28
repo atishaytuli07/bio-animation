@@ -115,15 +115,19 @@ const JOURNEY = ["The gene", "Two people", "Look closer", "Detection", "ChemoGua
 /**
  * The scale stops named during the descent.
  *
- * PLACEHOLDER FIGURES. Three billion base pairs and DPYD on chromosome 1 are
- * textbook, but iGEM requires that nothing on a wiki be unverifiable, and the
- * first hard numbers on this site should come from the team rather than from
- * whoever wrote the component. Confirm before shipping.
+ * These are textbook and citable: the human haploid genome is about 3.1
+ * billion base pairs, and DPYD sits at 1p21.3. The figure reads "about 3
+ * billion" rather than "3,000,000,000" — the exact-looking number implied a
+ * precision the rounded figure does not have, and a wiki that fakes precision
+ * invites a judge to check the one number that is wrong.
+ *
+ * The team should still attach its own citation before the freeze; that is a
+ * medal criterion, not just good manners.
  */
 const SCALE_STOPS = [
   // in/out are scroll positions; each is fully retired before the next arrives.
   // Overlapping them stacked two labels at the same coordinates.
-  { label: "Your genome", note: "3,000,000,000 letters", in: 0.34, out: 0.42 },
+  { label: "Your genome", note: "about 3 billion letters", in: 0.34, out: 0.42 },
   { label: "Chromosome 1", note: "1p21.3", in: 0.48, out: 0.56 },
   { label: "DPYD", note: "builds the enzyme that clears the drug", in: 0.6, out: 0.68 },
 ] as const;
@@ -776,7 +780,7 @@ function HeroConcept() {
             >
               Three billion letters.
               <br />
-              <span style={{ color: "#FFC9C4" }}>This one decides your dose.</span>
+              <span style={{ color: "#FFC9C4" }}>This one can change your dose.</span>
             </p>
           </div>
         </div>
