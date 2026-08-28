@@ -9,6 +9,21 @@ import {
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
 
+/*
+  Self-hosted typefaces, replacing a Google Fonts <link>. All three are OFL, so
+  redistributing them inside the wiki build is permitted.
+
+  Archivo Black is pinned to the latin subset because it offers one. The two
+  variable families publish a single stylesheet per axis rather than per
+  subset, so their Cyrillic, Greek and Vietnamese faces are declared too — but
+  each carries a unicode-range, so a reader only ever downloads the subset the
+  page actually sets. The extra woff2 files sit unused in the build.
+*/
+import "@fontsource/archivo-black/latin-400.css";
+import "@fontsource-variable/instrument-sans/wght.css";
+import "@fontsource-variable/newsreader/opsz.css";
+import "@fontsource-variable/newsreader/opsz-italic.css";
+
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 
@@ -90,12 +105,22 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [
-      { rel: "preconnect", href: "https://fonts.googleapis.com" },
-      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      {
-        rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Archivo+Black&family=Instrument+Sans:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,500;0,6..72,600;1,6..72,300&display=swap",
-      },
+      /*
+        NO EXTERNAL STYLESHEETS OR FONT CDNs.
+
+        iGEM wikis must serve every asset from the team's own wiki; a request to
+        fonts.googleapis.com is a rule violation and, on competition
+        infrastructure, a request that simply fails. It was failing here too —
+        a headless run of this page logged ERR_CONNECTION_TIMED_OUT against
+        that host, so the typography was already at the mercy of a network
+        call.
+
+        The three families are now installed as packages and imported at the
+        top of this file. Vite fingerprints the woff2 files into the build
+        output, so they ship with the wiki and resolve locally. Swapping in the
+        team's own typeface later is a change of import and family name; the
+        mechanism does not change.
+      */
       {
         rel: "stylesheet",
         href: appCss,
