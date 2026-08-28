@@ -110,7 +110,7 @@ function Underline({ index, active = false }: { index: number; active?: boolean 
  */
 const q = (v: number) => Math.round(v * 20) / 20;
 
-const JOURNEY = ["The gene", "Two people", "Why", "Detection", "ChemoGuard"] as const;
+const JOURNEY = ["The gene", "Two people", "Look closer", "Detection", "ChemoGuard"] as const;
 
 /**
  * The scale stops named during the descent.
