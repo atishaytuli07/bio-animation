@@ -37,34 +37,34 @@ import { track, usePageProgress } from "@/hooks/use-page-progress";
 const BASE = [
   [0.0, C.paper],
   [0.05, C.paper],
-  [0.12, `color-mix(in oklab, ${C.lavender} 45%, ${C.paper})`],
-  [0.19, C.lavender],
-  [0.27, C.lavenderDeep],
-  [0.38, C.lavenderDeep],
+  [0.11, `color-mix(in oklab, ${C.lavender} 45%, ${C.paper})`],
+  [0.17, C.lavender],
+  [0.24, C.lavenderDeep],
+  [0.37, C.lavenderDeep],
   [0.48, `color-mix(in oklab, ${C.lavender} 85%, ${C.coral})`],
-  [0.58, `color-mix(in oklab, ${C.lavenderDeep} 72%, ${C.red})`],
-  [0.66, `color-mix(in oklab, ${C.lavenderDeep} 46%, ${C.red})`],
-  [0.75, `color-mix(in oklab, ${C.pink} 62%, ${C.paper})`],
-  [0.84, `color-mix(in oklab, ${C.pink} 24%, ${C.paper})`],
+  [0.6, `color-mix(in oklab, ${C.lavenderDeep} 72%, ${C.red})`],
+  [0.7, `color-mix(in oklab, ${C.lavenderDeep} 44%, ${C.red})`],
+  [0.79, `color-mix(in oklab, ${C.pink} 62%, ${C.paper})`],
+  [0.87, `color-mix(in oklab, ${C.pink} 24%, ${C.paper})`],
   [1.0, `color-mix(in oklab, ${C.pink} 15%, ${C.paper})`],
 ] as const;
 
 /** The light in the room: strength of the wash, and where it falls from. */
 const LIGHT = [
   [0.0, 0],
-  [0.1, 0.2],
-  [0.2, 0.6],
-  [0.31, 0.66],
+  [0.09, 0.2],
+  [0.18, 0.6],
+  [0.28, 0.66],
   [0.5, 0.7],
-  [0.65, 0.58],
-  [0.78, 0.24],
+  [0.68, 0.58],
+  [0.81, 0.24],
   [1.0, 0.1],
 ] as const;
 
 const ANGLE = [
   [0.0, 150],
-  [0.31, 168],
-  [0.66, 196],
+  [0.28, 168],
+  [0.69, 196],
   [1.0, 212],
 ] as const;
 

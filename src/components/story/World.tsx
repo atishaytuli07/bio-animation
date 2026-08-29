@@ -5,6 +5,12 @@ import { track, usePageProgress } from "@/hooks/use-page-progress";
 /**
  * The world: one set of scientific objects that travels the whole story.
  *
+ * Everything here moves by TRANSFORM, never by `top`. An earlier version set
+ * `top` on all 42 elements each frame, which makes the browser lay out the
+ * whole layer every frame — it measured 43fps and 106 layout shifts across a
+ * scroll of the page. The container is fixed and viewport-sized, so a
+ * percentage of it is exactly vh, and the identical motion composites for free.
+ *
  * Each scene used to scatter its own array of cells and molecules, which meant
  * the objects vanished and a different set appeared at every boundary — part of
  * why the site read as separate stages rather than one journey. These are
@@ -27,14 +33,14 @@ import { track, usePageProgress } from "@/hooks/use-page-progress";
 /** Presence across the story: high where a scene is sparse, low where it is busy. */
 const DENSITY = [
   [0.0, 0.5], // hero — the helix already fills the frame
-  [0.12, 0.75],
-  [0.2, 0.92], // the descent, deep in the purple
-  [0.28, 1.0], // the sequence arrival — the emptiest frame in the story
-  [0.34, 0.85],
+  [0.1, 0.75],
+  [0.18, 0.92], // the descent, deep in the purple
+  [0.25, 1.0], // the sequence arrival — the emptiest frame in the story
+  [0.32, 0.88], // the enzyme bridge
   [0.44, 0.45], // the two patients carry their own frame
-  [0.6, 0.42],
-  [0.72, 0.8], // into the bloodstream
-  [0.86, 0.55],
+  [0.62, 0.42],
+  [0.75, 0.8], // into the bloodstream
+  [0.88, 0.55],
   [1.0, 0.4],
 ] as const;
 
@@ -96,7 +102,8 @@ export function World() {
             className="absolute rounded-full"
             style={{
               left: `${m.x}%`,
-              top: `${(-10 + y * 120).toFixed(2)}%`,
+              top: 0,
+              transform: `translate(-50%, -50%) translateY(${(-10 + y * 120).toFixed(2)}vh)`,
               width: m.r * 2,
               height: m.r * 2,
               background: i % 5 === 0 ? C.coral : i % 3 === 0 ? C.pink : C.paper,
@@ -125,8 +132,8 @@ export function World() {
             className={o.sm ? "absolute" : "absolute hidden md:block"}
             style={{
               left: `${o.x}%`,
-              top: `${top.toFixed(2)}%`,
-              transform: `translate(-50%,-50%) rotate(${(i * 47) % 360}deg)`,
+              top: 0,
+              transform: `translate(-50%,-50%) translateY(${top.toFixed(2)}vh) rotate(${(i * 47) % 360}deg)`,
               opacity: Math.round(edge * density * (0.4 + o.depth * 0.5) * 20) / 20,
               filter: o.depth > 0.7 ? undefined : `blur(${((1 - o.depth) * 1.5).toFixed(2)}px)`,
             }}

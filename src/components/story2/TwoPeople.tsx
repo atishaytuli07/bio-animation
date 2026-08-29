@@ -1,7 +1,14 @@
 import { Cell, Enzyme, Molecule } from "@/components/hero/elements";
 import { asset, C, L, T } from "@/components/hero/palette";
 import { usePageProgress } from "@/hooks/use-page-progress";
-import { band, easeOut, range, useSmoothProgress, useTime } from "@/hooks/use-scroll-progress";
+import {
+  band,
+  beat,
+  easeOut,
+  range,
+  useSmoothProgress,
+  useTime,
+} from "@/hooks/use-scroll-progress";
 
 /**
  * Stop two — "Two people".
@@ -151,17 +158,42 @@ function IV({ dose, flow, flip }: { dose: number; flow: number; flip: boolean })
 }
 
 /** A patient: plate + the drug inside them, masked to their silhouette. */
+/**
+ * A patient: plate, the drug inside them masked to their silhouette, and — the
+ * part the client asked for — movement.
+ *
+ * Her note was that the figures read as static illustrations placed on top of
+ * the experience rather than being part of it, next to a DNA section that
+ * moves. Two things move here, and they are deliberately different in kind:
+ *
+ *   breathing  — a slow rise and fall, always on. This is what stops a plate
+ *                looking like a sticker. It is tiny on purpose; at this scale
+ *                anything larger reads as a bobbing animation.
+ *   reacting   — the body responds to its own drug load. As it climbs, the
+ *                figure settles: a little lower, tilted a little off vertical.
+ *                So the one who clears the drug stays upright and the one who
+ *                cannot visibly tires, without anything cartoonish and without
+ *                a single word.
+ */
 function Patient({
   src,
   fill,
   alarm,
   flip,
+  animate,
+  seed,
 }: {
   src: string;
   fill: number;
   alarm: number;
   flip: boolean;
+  animate: boolean;
+  seed: number;
 }) {
+  const t = useTime(animate);
+  // Two figures breathing in lockstep would read as a loop, so they are offset.
+  const breath = Math.sin(t * 0.9 + seed) * 1.4;
+  const load = Math.min(1, alarm);
   const level = fill * 100;
   const tint = alarm > 0.01 ? `color-mix(in oklab, ${C.red} ${alarm * 100}%, ${C.coral})` : C.coral;
   const mask = {
@@ -174,19 +206,27 @@ function Patient({
   } as const;
   return (
     <div className="relative h-full" style={{ transform: flip ? "scaleX(-1)" : undefined }}>
-      <img src={src} alt="" draggable={false} className="h-full w-auto select-none" />
-      {fill > 0.004 && (
-        <div
-          aria-hidden="true"
-          className="absolute inset-0"
-          style={{
-            ...mask,
-            background: `linear-gradient(to top, ${tint} 0%, ${tint} ${level}%, transparent ${Math.min(100, level + 18)}%)`,
-            opacity: q(0.42 + alarm * 0.3),
-            mixBlendMode: "multiply",
-          }}
-        />
-      )}
+      <div
+        className="h-full"
+        style={{
+          transform: `translateY(${(breath + load * 7).toFixed(2)}px) rotate(${(load * 1.1).toFixed(2)}deg)`,
+          transformOrigin: "50% 100%",
+        }}
+      >
+        <img src={src} alt="" draggable={false} className="h-full w-auto select-none" />
+        {fill > 0.004 && (
+          <div
+            aria-hidden="true"
+            className="absolute inset-0"
+            style={{
+              ...mask,
+              background: `linear-gradient(to top, ${tint} 0%, ${tint} ${level}%, transparent ${Math.min(100, level + 18)}%)`,
+              opacity: q(0.42 + alarm * 0.3),
+              mixBlendMode: "multiply",
+            }}
+          />
+        )}
+      </div>
       {/* contact shadow */}
       <div
         aria-hidden="true"
@@ -202,22 +242,41 @@ export function TwoPeople() {
   // Dissolve out across the measured boundary at 0.658, as the bloodstream
   // scene rises into the same frame.
   const pageP = usePageProgress();
-  const handoff = range(pageP, 0.64, 0.68);
+  const handoff = range(pageP, 0.676, 0.716);
 
   /* ---- beats ---------------------------------------------------------------
      enter → the same treatment → IDENTICAL, held → one clears, one fills →
      the sentence finishes. The hold is the point: the split only hurts if the
      reader has had time to believe there was no difference.                 */
-  const enter = range(p, 0.02, 0.16);
-  const title = band(p, 0.12, 0.2, 0.6, 0.68);
-  const flow = band(p, 0.2, 0.26, 0.88, 0.94);
-  const dose = range(p, 0.2, 0.9);
-  const uptake = 0.34 * range(p, 0.24, 0.5); // both, identically
-  const clearA = range(p, 0.54, 0.74);
-  const buildB = range(p, 0.54, 0.8);
-  const alarm = range(p, 0.6, 0.82);
-  const warm = range(p, 0.58, 0.86);
-  const outcome = range(p, 0.82, 0.94);
+  /*
+    THE BRIDGE, and it runs before anything else here.
+
+    The client identified a missing link: we showed the gene and the variant,
+    then jumped to two people having different outcomes, without ever showing
+    the thing in between. Her chain was DPYD variant → reduced DPD activity →
+    reduced drug breakdown → accumulation → toxicity risk, and she asked for it
+    as a short visual transformation rather than an explanation.
+
+    So the letter the reader just watched change now visibly decides how much
+    enzyme this body builds — five slots, two filled — and only then do the
+    patients arrive. Everything after runs on `pp`, the remaining progress
+    remapped to 0→1, so the two-patient beat is unchanged in shape and simply
+    starts later.
+  */
+  const bridge = beat(p, 0.02, 0.09, 0.2, 0.27);
+  const slots = range(p, 0.08, 0.2);
+  const pp = range(p, 0.24, 1);
+
+  const enter = range(pp, 0.02, 0.16);
+  const title = beat(pp, 0.12, 0.2, 0.6, 0.68);
+  const flow = band(pp, 0.2, 0.26, 0.88, 0.94);
+  const dose = range(pp, 0.2, 0.9);
+  const uptake = 0.34 * range(pp, 0.24, 0.5); // both, identically
+  const clearA = range(pp, 0.54, 0.74);
+  const buildB = range(pp, 0.54, 0.8);
+  const alarm = range(pp, 0.6, 0.82);
+  const warm = range(pp, 0.58, 0.86);
+  const outcome = beat(pp, 0.8, 0.9, 1.2, 1.3);
 
   const fillA = uptake * (1 - clearA);
   const fillB = uptake + 0.36 * buildB;
@@ -226,7 +285,7 @@ export function TwoPeople() {
     <section
       id="two-people"
       ref={ref}
-      style={{ height: "460vh", marginTop: "-100vh" }}
+      style={{ height: "580vh", marginTop: "-100vh" }}
       className="relative"
       data-active={String(active)}
     >
@@ -243,6 +302,73 @@ export function TwoPeople() {
         */}
         {/* The chapter label lives in the story rail now — see StoryProgress. */}
 
+        {/*
+          The bridge: one letter → how much enzyme this body builds. Drawn with
+          the vocabulary already established — the red variant badge from the
+          descent, and the green enzyme shape the next scene will find missing.
+        */}
+        {bridge.o > 0.004 && (
+          <div
+            className="pointer-events-none absolute inset-x-0 top-1/2 z-20 flex -translate-y-1/2 flex-col items-center px-6"
+            style={{ opacity: q(bridge.o), transform: `translateY(${bridge.y.toFixed(1)}px)` }}
+          >
+            <svg viewBox="0 0 460 130" className="w-[min(88vw,560px)]" aria-hidden="true">
+              {/* the letter, carried straight over from the sequence */}
+              <g transform="translate(6 44)">
+                <rect width="42" height="46" rx="9" fill={C.red} stroke={C.ink} strokeWidth="3" />
+                <text
+                  x="21"
+                  y="33"
+                  textAnchor="middle"
+                  fill="#fff"
+                  style={{ font: "800 25px ui-monospace, monospace" }}
+                >
+                  A
+                </text>
+              </g>
+              <path
+                d="M62 67 L 104 67"
+                stroke={C.ink}
+                strokeWidth="3"
+                strokeLinecap="round"
+                markerEnd=""
+              />
+              <path d="M96 60 L 106 67 L 96 74 Z" fill={C.ink} />
+
+              {/*
+                Five slots, two filled. "Reduced, not absent" is the accurate
+                claim and the picture makes it without a sentence.
+              */}
+              {[0, 1, 2, 3, 4].map((i) => {
+                const on = range(slots, i * 0.12, i * 0.12 + 0.3);
+                const made = i < 2;
+                return (
+                  <g key={i} transform={`translate(${124 + i * 68} 40)`}>
+                    <path
+                      d="M8 14 Q8 6 16 6 L34 6 Q42 6 42 14 L42 21 Q33 21 33 26 Q33 31 42 31 L42 38 Q42 46 34 46 L16 46 Q8 46 8 38 Z"
+                      fill={made ? C.green : "none"}
+                      fillOpacity={made ? on : 0}
+                      stroke={C.ink}
+                      strokeWidth="2.6"
+                      strokeDasharray={made ? undefined : "5 5"}
+                      strokeLinejoin="round"
+                      opacity={made ? 1 : 0.35}
+                    />
+                  </g>
+                );
+              })}
+            </svg>
+
+            <p
+              className="mt-6 max-w-[34ch] text-center font-black md:mt-8"
+              style={{ ...T.sub, color: C.paper }}
+            >
+              One letter decides how much <span style={{ color: "#9BE8C4" }}>DPD</span> a body
+              builds — the enzyme that clears the drug.
+            </p>
+          </div>
+        )}
+
         {/* the two patients, facing each other */}
         <div
           className="absolute inset-x-0 flex items-end justify-center gap-[5vw] md:gap-[12vw]"
@@ -253,7 +379,14 @@ export function TwoPeople() {
           }}
         >
           <div className="flex items-end gap-2 md:gap-4" style={{ height: "var(--fig2)" }}>
-            <Patient src={asset("patient-a.webp")} fill={fillA} alarm={0} flip={false} />
+            <Patient
+              src={asset("patient-a.webp")}
+              fill={fillA}
+              alarm={0}
+              flip={false}
+              animate={active}
+              seed={0}
+            />
             <div className="h-[92%]">
               <IV dose={dose} flow={flow} flip={false} />
             </div>
@@ -262,19 +395,26 @@ export function TwoPeople() {
             <div className="h-[92%]">
               <IV dose={dose} flow={flow} flip />
             </div>
-            <Patient src={asset("patient-b.webp")} fill={fillB} alarm={alarm} flip={false} />
+            <Patient
+              src={asset("patient-b.webp")}
+              fill={fillB}
+              alarm={alarm}
+              flip={false}
+              animate={active}
+              seed={1.9}
+            />
           </div>
         </div>
 
         {/* "The same treatment." — arrives with the drip, leaves before the split */}
-        <div className={L.headline} style={{ opacity: q(easeOut(title)) }}>
+        <div className={L.headline} style={{ opacity: q(title.o) }}>
           <p
             className="text-center font-black"
             style={{
               ...T.headline,
               color: C.paper,
               textShadow: `0 4px 24px ${C.lavenderDeep}88`,
-              transform: `translateY(${((1 - easeOut(title)) * 16).toFixed(1)}px)`,
+              transform: `translateY(${title.y.toFixed(1)}px)`,
             }}
           >
             The same treatment.
@@ -282,14 +422,14 @@ export function TwoPeople() {
         </div>
 
         {/* "…doesn't mean the same outcome." — only after the split has happened */}
-        <div className={L.headline} style={{ opacity: q(easeOut(outcome)) }}>
+        <div className={L.headline} style={{ opacity: q(outcome.o) }}>
           <p
             className="text-center font-black"
             style={{
               ...T.headline,
               color: C.paper,
               textShadow: `0 4px 24px ${C.lavenderDeep}88`,
-              transform: `translateY(${((1 - easeOut(outcome)) * 16).toFixed(1)}px)`,
+              transform: `translateY(${outcome.y.toFixed(1)}px)`,
             }}
           >
             &hellip;doesn&rsquo;t mean the <span style={{ color: "#FFC9C4" }}>same outcome.</span>

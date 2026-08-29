@@ -22,6 +22,24 @@ export const range = (p: number, start: number, end: number) =>
  */
 export const easeOut = (t: number) => 1 - Math.pow(1 - t, 3);
 
+/**
+ * A line of copy with DIRECTIONAL motion: it arrives from below and leaves
+ * upward, rather than fading in and back out along the same path.
+ *
+ * `band` alone cannot express this, because it collapses entry and exit into
+ * one number and the caller can no longer tell which is happening. The result
+ * was copy that sank back down as it left, which reads as un-arriving — a
+ * line that never quite made it — and is part of why the client thought a
+ * faded headline was an unfinished element rather than one on its way out.
+ *
+ * Returns opacity and a y offset in pixels.
+ */
+export function beat(p: number, a: number, b: number, c: number, d: number) {
+  const inn = easeOut(range(p, a, b));
+  const out = range(p, c, d);
+  return { o: inn * (1 - out), y: (1 - inn) * 16 - out * 22 };
+}
+
 /** Ramps 0→1→0 across [a,b] and [c,d]. Use for "hold then release" beats. */
 export const band = (p: number, a: number, b: number, c: number, d: number) =>
   range(p, a, b) - range(p, c, d);

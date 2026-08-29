@@ -113,7 +113,7 @@ function Underline({ index, active = false }: { index: number; active?: boolean 
  */
 const q = (v: number) => Math.round(v * 20) / 20;
 
-const JOURNEY = ["The gene", "Two people", "Look closer", "Detection", "ChemoGuard"] as const;
+const JOURNEY = ["The gene", "The enzyme", "Two people", "Look closer", "Detection"] as const;
 
 /**
  * The scale stops named during the descent.
@@ -162,8 +162,9 @@ const SCALE_STOPS = [
  */
 const CHAPTERS = [
   { at: 0.0, n: "01", name: "The gene" },
-  { at: 0.31, n: "02", name: "Two people" },
-  { at: 0.658, n: "03", name: "Look closer" },
+  { at: 0.278, n: "02", name: "The enzyme" },
+  { at: 0.378, n: "03", name: "Two people" },
+  { at: 0.694, n: "04", name: "Look closer" },
 ] as const;
 
 function StoryProgress() {
@@ -186,7 +187,7 @@ function StoryProgress() {
         opening screen — the hero states the chapter itself and does not need
         telling twice.
       */}
-      <div className="px-6 pt-3 md:px-10" style={{ opacity: q(easeOut(range(p, 0.04, 0.09))) }}>
+      <div className="px-6 pt-3 md:px-10" style={{ opacity: q(easeOut(range(p, 0.062, 0.11))) }}>
         <span
           className={L.labelType}
           style={{
@@ -264,7 +265,7 @@ function HeroConcept() {
     closing line has finished arriving.
   */
   const pageP = usePageProgress();
-  const handoff = range(pageP, 0.298, 0.34);
+  const handoff = range(pageP, 0.268, 0.306);
 
   /* ---- one section, four beats -------------------------------------------
      The principle: THE SCROLL IS THE MICROSCOPE. The reader's own hand is what

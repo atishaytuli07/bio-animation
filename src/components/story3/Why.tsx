@@ -1,7 +1,14 @@
 import { useRef, useState } from "react";
 
 import { asset, C, L, T } from "@/components/hero/palette";
-import { band, easeOut, range, useSmoothProgress, useTime } from "@/hooks/use-scroll-progress";
+import {
+  band,
+  beat,
+  easeOut,
+  range,
+  useSmoothProgress,
+  useTime,
+} from "@/hooks/use-scroll-progress";
 
 /**
  * Stop three — "Look closer".
@@ -184,17 +191,17 @@ export function Why() {
      it piles up. Each line of copy lands on the frame that earns it, and no
      two are ever on screen together.                                       */
   const enter = range(p, 0.02, 0.12);
-  const lineA = band(p, 0.04, 0.12, 0.3, 0.38);
+  const lineA = beat(p, 0.04, 0.12, 0.3, 0.38);
   const flow = band(p, 0.16, 0.24, 0.9, 0.96);
   const drugLabel = band(p, 0.2, 0.28, 0.44, 0.52);
   const gap = range(p, 0.34, 0.46);
   const link = range(p, 0.44, 0.58);
   const enzymeLabel = band(p, 0.5, 0.58, 0.76, 0.82);
-  const lineB = band(p, 0.44, 0.52, 0.7, 0.76);
+  const lineB = beat(p, 0.44, 0.52, 0.72, 0.79);
   const build = range(p, 0.56, 0.9);
   const alarm = range(p, 0.66, 0.86);
   const warm = range(p, 0.6, 0.88);
-  const lineC = range(p, 0.84, 0.93);
+  const lineC = beat(p, 0.82, 0.9, 1.2, 1.3);
 
   const t = useTime(flow > 0.01);
 
@@ -256,13 +263,13 @@ export function Why() {
         {/* The chapter label lives in the story rail now — see StoryProgress. */}
 
         {COPY.map((b, i) => (
-          <div key={i} className={L.headline} style={{ opacity: q(easeOut(b.on)) }}>
+          <div key={i} className={L.headline} style={{ opacity: q(b.on.o) }}>
             <p
               className="text-center font-black"
               style={{
                 ...T.headline,
                 color: C.ink,
-                transform: `translateY(${((1 - easeOut(b.on)) * 16).toFixed(1)}px)`,
+                transform: `translateY(${b.on.y.toFixed(1)}px)`,
               }}
             >
               {b.text}

@@ -18,7 +18,7 @@ import { clamp01 } from "./use-scroll-progress";
  * leaves here: a background repaint every 1/500th of the page is invisible, and
  * repainting a full-viewport gradient on every pixel of scroll is not free.
  */
-export function usePageProgress(steps = 500) {
+export function usePageProgress(steps = 240) {
   const [p, setP] = useState(0);
 
   useEffect(() => {
