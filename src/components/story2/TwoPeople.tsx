@@ -1,6 +1,7 @@
 import { Cell, Enzyme, Molecule } from "@/components/hero/elements";
 import { asset, C, L, T } from "@/components/hero/palette";
-import { band, range, useSmoothProgress, useTime } from "@/hooks/use-scroll-progress";
+import { usePageProgress } from "@/hooks/use-page-progress";
+import { band, easeOut, range, useSmoothProgress, useTime } from "@/hooks/use-scroll-progress";
 
 /**
  * Stop two — "Two people".
@@ -198,6 +199,10 @@ function Patient({
 
 export function TwoPeople() {
   const [ref, p, active] = useSmoothProgress<HTMLElement>(0.1);
+  // Dissolve out across the measured boundary at 0.658, as the bloodstream
+  // scene rises into the same frame.
+  const pageP = usePageProgress();
+  const handoff = range(pageP, 0.64, 0.68);
 
   /* ---- beats ---------------------------------------------------------------
      enter → the same treatment → IDENTICAL, held → one clears, one fills →
@@ -221,65 +226,21 @@ export function TwoPeople() {
     <section
       id="two-people"
       ref={ref}
-      style={{ height: "460vh" }}
+      style={{ height: "460vh", marginTop: "-100vh" }}
       className="relative"
       data-active={String(active)}
     >
       <div
         className="sticky top-0 h-screen overflow-hidden [--fig2:36vh] md:[--fig2:min(52vh,600px)]"
-        style={{ background: C.paper }}
+        style={{ opacity: 1 - q(handoff), visibility: handoff > 0.99 ? "hidden" : "visible" }}
       >
         {/*
-          The room. A committed field with a hard bottom edge — the same
-          language as the hero, so this reads as the next room of one world
-          and not a different site. It warms from lavender toward coral as B's
-          load climbs: hotter and more saturated, never dark, because the
-          client rejected near-black sections outright.
+          No background and no scattered field here any more; both moved to
+          <Ground /> and <World />. A scene that paints its own rectangle
+          cannot fade into the next one — at the seam this stage stops
+          existing and the following one starts — and that hard edge, cream to
+          purple to pink to cream, was the client's main note.
         */}
-        <div
-          aria-hidden="true"
-          className="absolute inset-x-0 top-0"
-          style={{
-            height: "62%",
-            backgroundImage: `repeating-linear-gradient(102deg, rgba(255,255,255,0.05) 0 3px, transparent 3px 26px), linear-gradient(160deg, color-mix(in oklab, ${C.coral} ${q(warm) * 55}%, ${C.lavender}), color-mix(in oklab, ${C.red} ${q(warm) * 40}%, ${C.lavenderDeep}))`,
-          }}
-        />
-        {/* the floor: a tonal shift, no horizon line */}
-        <div
-          aria-hidden="true"
-          className="absolute inset-x-0 bottom-0"
-          style={{
-            height: "38%",
-            background: `linear-gradient(to bottom, ${C.paper}, color-mix(in oklab, ${C.pink} ${8 + q(warm) * 14}%, ${C.paper}))`,
-          }}
-        />
-
-        {/* the shared illustrated world, at depth */}
-        {FIELD2.map((f, i) => (
-          <div
-            key={i}
-            aria-hidden="true"
-            className={`absolute${"hideSm" in f && f.hideSm ? " max-md:hidden" : ""}`}
-            style={{
-              left: `${f.x}%`,
-              top: `${f.y}%`,
-              transform: `translate(-50%,-50%) rotate(${f.r}deg)`,
-              opacity: q(enter) * (0.5 + f.depth * 0.5),
-              filter:
-                f.depth > 0.7
-                  ? `drop-shadow(0 6px 10px rgba(36,28,46,0.2))`
-                  : `blur(${((1 - f.depth) * 1.4).toFixed(2)}px)`,
-            }}
-          >
-            {f.k === "cell" ? (
-              <Cell s={f.s} tone={f.tone} />
-            ) : f.k === "mol" ? (
-              <Molecule s={f.s} tone={f.tone} />
-            ) : (
-              <Enzyme s={f.s} tone={f.tone} />
-            )}
-          </div>
-        ))}
         {/* chapter label */}
         <div className={L.label}>
           <span className={L.labelType} style={{ color: C.paper, opacity: q(enter) }}>
@@ -312,14 +273,14 @@ export function TwoPeople() {
         </div>
 
         {/* "The same treatment." — arrives with the drip, leaves before the split */}
-        <div className={L.headline} style={{ opacity: q(title) }}>
+        <div className={L.headline} style={{ opacity: q(easeOut(title)) }}>
           <p
             className="text-center font-black"
             style={{
               ...T.headline,
               color: C.paper,
               textShadow: `0 4px 24px ${C.lavenderDeep}88`,
-              transform: `translateY(${((1 - title) * 16).toFixed(1)}px)`,
+              transform: `translateY(${((1 - easeOut(title)) * 16).toFixed(1)}px)`,
             }}
           >
             The same treatment.
@@ -327,14 +288,14 @@ export function TwoPeople() {
         </div>
 
         {/* "…doesn't mean the same outcome." — only after the split has happened */}
-        <div className={L.headline} style={{ opacity: q(outcome) }}>
+        <div className={L.headline} style={{ opacity: q(easeOut(outcome)) }}>
           <p
             className="text-center font-black"
             style={{
               ...T.headline,
               color: C.paper,
               textShadow: `0 4px 24px ${C.lavenderDeep}88`,
-              transform: `translateY(${((1 - outcome) * 16).toFixed(1)}px)`,
+              transform: `translateY(${((1 - easeOut(outcome)) * 16).toFixed(1)}px)`,
             }}
           >
             &hellip;doesn&rsquo;t mean the <span style={{ color: "#FFC9C4" }}>same outcome.</span>

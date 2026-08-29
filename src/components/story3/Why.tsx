@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
 
 import { asset, C, L, T } from "@/components/hero/palette";
-import { band, range, useSmoothProgress, useTime } from "@/hooks/use-scroll-progress";
+import { band, easeOut, range, useSmoothProgress, useTime } from "@/hooks/use-scroll-progress";
 
 /**
  * Stop three — "Look closer".
@@ -166,15 +166,13 @@ export function Why() {
   ];
 
   return (
-    <section id="why" ref={ref} style={{ height: "440vh" }} className="relative">
-      <div
-        className="sticky top-0 h-screen overflow-hidden [--vessel:44vh] md:[--vessel:min(56vh,520px)]"
-        style={{
-          // Cream, like the hero's ground — the field is something this world
-          // has, not every room's colour. Warms toward pink as the load climbs.
-          background: `color-mix(in oklab, ${C.pink} ${q(warm) * 20}%, ${C.paper})`,
-        }}
-      >
+    <section
+      id="why"
+      ref={ref}
+      style={{ height: "440vh", marginTop: "-100vh" }}
+      className="relative"
+    >
+      <div className="sticky top-0 h-screen overflow-hidden [--vessel:44vh] md:[--vessel:min(56vh,520px)]">
         <div className={L.label}>
           <span className={L.labelType} style={{ color: C.redDeep, opacity: q(enter) }}>
             <span className="block h-0.5 w-7" style={{ background: C.red }} />
@@ -183,13 +181,13 @@ export function Why() {
         </div>
 
         {COPY.map((b, i) => (
-          <div key={i} className={L.headline} style={{ opacity: q(b.on) }}>
+          <div key={i} className={L.headline} style={{ opacity: q(easeOut(b.on)) }}>
             <p
               className="text-center font-black"
               style={{
                 ...T.headline,
                 color: C.ink,
-                transform: `translateY(${((1 - b.on) * 16).toFixed(1)}px)`,
+                transform: `translateY(${((1 - easeOut(b.on)) * 16).toFixed(1)}px)`,
               }}
             >
               {b.text}

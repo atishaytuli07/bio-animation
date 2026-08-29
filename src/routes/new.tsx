@@ -5,7 +5,10 @@ import { Helix } from "@/components/hero/Helix";
 import { Sequence } from "@/components/hero/Sequence";
 import { TwoPeople } from "@/components/story2/TwoPeople";
 import { Why } from "@/components/story3/Why";
-import { band, range, useSmoothProgress } from "@/hooks/use-scroll-progress";
+import { Ground } from "@/components/story/Ground";
+import { World } from "@/components/story/World";
+import { usePageProgress } from "@/hooks/use-page-progress";
+import { band, easeOut, range, useSmoothProgress } from "@/hooks/use-scroll-progress";
 import { Cell, Enzyme, Molecule } from "@/components/hero/elements";
 import { asset, C, L, T } from "@/components/hero/palette";
 
@@ -218,6 +221,15 @@ const DOTS = Array.from({ length: 7 }, (_, i) => ({
 function HeroConcept() {
   const stage = useRef<HTMLElement>(null);
   const [track, p] = useSmoothProgress<HTMLElement>(0.1);
+  /*
+    Sections overlap by a viewport so the next scene begins the instant this
+    one lands — but overlap alone is a collision, not a transition. This is the
+    dissolve, measured against the real boundary at 0.31: scene one releases
+    the frame exactly as the patients rise into it, and only after its own
+    closing line has finished arriving.
+  */
+  const pageP = usePageProgress();
+  const handoff = range(pageP, 0.298, 0.34);
 
   /* ---- one section, four beats -------------------------------------------
      The principle: THE SCROLL IS THE MICROSCOPE. The reader's own hand is what
@@ -306,14 +318,18 @@ function HeroConcept() {
           // mix-blend-mode across the viewport measured at ~19fps of cost,
           // because it forces the whole stacking context to re-composite
           // every frame. As a background image it costs nothing.
+          // Grain only. The COLOUR now lives in <Ground />, one continuous
+          // surface under the whole story — see that file for why.
           backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='0.1'/%3E%3C/svg%3E")`,
-          backgroundColor: C.paper,
           color: C.ink,
           "--paper-c": C.paper,
           "--ink-c": C.ink,
         } as React.CSSProperties
       }
     >
+      <Ground />
+      <World />
+
       <StoryProgress />
 
       {/*
@@ -323,7 +339,10 @@ function HeroConcept() {
         and every beat driven by scroll position rather than by a timer.
       */}
       <section ref={track} style={{ height: "420vh" }} className="relative">
-        <div className="sticky top-0 h-screen overflow-hidden">
+        <div
+          className="sticky top-0 h-screen overflow-hidden"
+          style={{ opacity: 1 - q(handoff), visibility: handoff > 0.99 ? "hidden" : "visible" }}
+        >
           {/*
         A committed colour field with a hard edge, not a gradient mesh. Every
         reference wiki does this — GlycoGarden meets green to blue on a crisp
@@ -342,6 +361,16 @@ function HeroConcept() {
               // screen and become one space. This is the client's "the two sides
               // feel more connected" taken to its conclusion.
               ["--merge" as string]: merge,
+              /*
+                And then it hands over. Once merged, this field is a
+                full-screen OPAQUE rectangle sitting on top of <Ground /> and
+                <World /> — which is exactly why the descent and the sequence
+                arrival looked like an object alone in a void. It dissolves
+                into the ground, which is already running the same
+                lavender→lavenderDeep by then, so the swap is invisible and the
+                travelling world becomes visible behind the strand.
+              */
+              opacity: 1 - range(merge, 0.72, 1),
               // Striping layered over the field, the way GlycoGarden stripes its
               // green. It is barely visible and it is the difference between a
               // colour and a surface.
@@ -699,7 +728,7 @@ function HeroConcept() {
                 // backbone; the left half of the frame is empty for the whole
                 // descent, so the "you are here" reads cleanly there.
                 className="pointer-events-none absolute left-6 z-20 md:left-10"
-                style={{ top: "20vh", opacity: q(on) }}
+                style={{ top: "20vh", opacity: q(easeOut(on)) }}
               >
                 <span
                   className="flex flex-col gap-1.5 text-[11px] font-bold uppercase tracking-[0.26em]"
@@ -766,7 +795,10 @@ function HeroConcept() {
           */}
           <div
             className="pointer-events-none absolute inset-x-0 bottom-[13vh] z-20 flex justify-center px-6"
-            style={{ opacity: q(closing), visibility: closing < 0.02 ? "hidden" : "visible" }}
+            style={{
+              opacity: q(easeOut(closing)),
+              visibility: closing < 0.02 ? "hidden" : "visible",
+            }}
           >
             <p
               className="max-w-3xl text-center font-black"

@@ -7,6 +7,21 @@ export const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
 /** Maps p from [start,end] onto 0→1. */
 export const range = (p: number, start: number, end: number) =>
   clamp01((p - start) / (end - start));
+/**
+ * Ease-out cubic, for anything the reader has to READ.
+ *
+ * A linear opacity ramp spends most of its length half-transparent, so a
+ * headline sitting anywhere in the middle of its own entrance looks disabled
+ * rather than arriving — the client's exact words were that she thought the
+ * text was an unfinished element. This reaches 0.88 by the time the ramp is
+ * a third done and 0.99 by two thirds, so copy is legible almost immediately
+ * and only the last sliver of the fade is faint.
+ *
+ * Applied to a band it also slows the exit, which is the right asymmetry:
+ * arrive fast, linger, leave gently.
+ */
+export const easeOut = (t: number) => 1 - Math.pow(1 - t, 3);
+
 /** Ramps 0→1→0 across [a,b] and [c,d]. Use for "hold then release" beats. */
 export const band = (p: number, a: number, b: number, c: number, d: number) =>
   range(p, a, b) - range(p, c, d);
