@@ -241,13 +241,7 @@ export function TwoPeople() {
           existing and the following one starts — and that hard edge, cream to
           purple to pink to cream, was the client's main note.
         */}
-        {/* chapter label */}
-        <div className={L.label}>
-          <span className={L.labelType} style={{ color: C.paper, opacity: q(enter) }}>
-            <span className="block h-0.5 w-7" style={{ background: C.paper }} />
-            02 · Two people
-          </span>
-        </div>
+        {/* The chapter label lives in the story rail now — see StoryProgress. */}
 
         {/* the two patients, facing each other */}
         <div

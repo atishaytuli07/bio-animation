@@ -34,6 +34,14 @@ import { band, easeOut, range, useSmoothProgress, useTime } from "@/hooks/use-sc
 
 const q = (v: number) => Math.round(v * 20) / 20;
 
+/** Red cells drifting past, so the tube reads as a blood vessel. */
+const RBC = Array.from({ length: 7 }, (_, i) => ({
+  x: ((i * 0.37) % 1) * 0.9,
+  phase: (i * 0.143) % 1,
+  r: 15 + ((i * 5) % 4) * 3,
+  rot: (i * 53) % 180,
+}));
+
 /** Molecules in flight. Every 4th is still cleared — the enzyme is reduced. */
 const IN_FLIGHT = 9;
 const CLEARED_EVERY = 4;
@@ -97,6 +105,76 @@ function Hex({
   );
 }
 
+/**
+ * A small annotation pinned over the vessel, with a leader dot.
+ *
+ * Deliberately integrated rather than floating in the margin — the client
+ * asked for "a small integrated label", and a caption parked at the edge of
+ * the screen does not tell you which thing it is naming.
+ */
+function Tag({
+  on,
+  x,
+  y,
+  title,
+  sub,
+  tone,
+}: {
+  on: number;
+  x: number;
+  y: number;
+  title: string;
+  sub: string;
+  tone: string;
+}) {
+  if (on <= 0.004) return null;
+  return (
+    <div
+      /*
+        The anchor is a CSS variable rather than an inline `left` so that a
+        media query can override it: on a phone the vessel is centred and
+        narrow, and a tag pointing right from 62% ran off the screen. Below md
+        it flips — anchored to the right edge with the row reversed, so the box
+        sits inboard and the leader points back at the thing it names.
+      */
+      className="pointer-events-none absolute flex items-center gap-2 left-[var(--tx)] max-md:left-auto max-md:right-[1%] max-md:flex-row-reverse"
+      style={{
+        ["--tx" as string]: `${x}%`,
+        top: `${y}%`,
+        opacity: q(easeOut(on)),
+        transform: `translateY(${((1 - easeOut(on)) * 8).toFixed(1)}px)`,
+      }}
+    >
+      <span
+        className="block h-2.5 w-2.5 shrink-0 rounded-full"
+        style={{ background: tone, border: `2px solid ${C.ink}` }}
+      />
+      <span className="block h-px w-4 shrink-0" style={{ background: `${C.ink}55` }} />
+      <span
+        className="whitespace-nowrap rounded-md px-2.5 py-1.5"
+        style={{
+          background: C.paper,
+          border: `2px solid ${C.ink}`,
+          boxShadow: `2px 2px 0 ${C.ink}`,
+        }}
+      >
+        <span
+          className="block text-[11px] font-black leading-none md:text-[12px]"
+          style={{ color: C.ink }}
+        >
+          {title}
+        </span>
+        <span
+          className="mt-0.5 block text-[10px] font-semibold leading-none md:text-[11px]"
+          style={{ color: `${C.ink}a0` }}
+        >
+          {sub}
+        </span>
+      </span>
+    </div>
+  );
+}
+
 export function Why() {
   const [ref, p] = useSmoothProgress<HTMLElement>(0.1);
   const [hot, setHot] = useState(false);
@@ -106,15 +184,17 @@ export function Why() {
      it piles up. Each line of copy lands on the frame that earns it, and no
      two are ever on screen together.                                       */
   const enter = range(p, 0.02, 0.12);
-  const lineA = band(p, 0.05, 0.13, 0.32, 0.4);
+  const lineA = band(p, 0.04, 0.12, 0.3, 0.38);
   const flow = band(p, 0.16, 0.24, 0.9, 0.96);
-  const gap = range(p, 0.3, 0.44);
-  const link = range(p, 0.42, 0.58);
-  const lineB = band(p, 0.42, 0.5, 0.7, 0.76);
-  const build = range(p, 0.52, 0.88);
-  const alarm = range(p, 0.62, 0.84);
+  const drugLabel = band(p, 0.2, 0.28, 0.44, 0.52);
+  const gap = range(p, 0.34, 0.46);
+  const link = range(p, 0.44, 0.58);
+  const enzymeLabel = band(p, 0.5, 0.58, 0.76, 0.82);
+  const lineB = band(p, 0.44, 0.52, 0.7, 0.76);
+  const build = range(p, 0.56, 0.9);
+  const alarm = range(p, 0.66, 0.86);
   const warm = range(p, 0.6, 0.88);
-  const lineC = range(p, 0.82, 0.92);
+  const lineC = range(p, 0.84, 0.93);
 
   const t = useTime(flow > 0.01);
 
@@ -173,12 +253,7 @@ export function Why() {
       className="relative"
     >
       <div className="sticky top-0 h-screen overflow-hidden [--vessel:44vh] md:[--vessel:min(56vh,520px)]">
-        <div className={L.label}>
-          <span className={L.labelType} style={{ color: C.redDeep, opacity: q(enter) }}>
-            <span className="block h-0.5 w-7" style={{ background: C.red }} />
-            03 · Look closer
-          </span>
-        </div>
+        {/* The chapter label lives in the story rail now — see StoryProgress. */}
 
         {COPY.map((b, i) => (
           <div key={i} className={L.headline} style={{ opacity: q(easeOut(b.on)) }}>
@@ -196,11 +271,9 @@ export function Why() {
         ))}
 
         {/*
-          The figure and the vessel, side by side. Without him the stop was a
-          tube floating on cream and the reader had no reason to believe this
-          was anyone's bloodstream. He is the same plate as stop two's right
-          hand figure, so the descent is visibly INTO the person who could not
-          clear the drug. Hidden on phones, where there is only room for one.
+          The figure and the magnified vessel, side by side. Without him this
+          was a tube floating on a colour and the reader had no reason to
+          believe it was anyone's bloodstream.
         */}
         <div
           className="absolute inset-x-0 flex items-end justify-center gap-[4vw]"
@@ -217,48 +290,77 @@ export function Why() {
               draggable={false}
               className="h-full w-auto select-none"
             />
-            {/* the lens: what the vessel beside him is a view of */}
+            {/*
+              THE ENTRY POINT. The lens used to sit at y=720 in the plate's
+              space, which is his wrist — and beside his hip, so the client read
+              the whole thing as zooming into his pocket. Measured against the
+              plate's alpha channel, the hands are the widest span at y 594–707,
+              so the elbow is above that.
+
+              It is also no longer a bare circle. The drip line from the
+              previous scene runs down into a cannula at exactly that point and
+              the vein is drawn through the lens, so the reader is following the
+              drug into the arm rather than being asked to accept an arbitrary
+              magnifier somewhere on a body.
+            */}
             <svg
               viewBox="0 0 415 1415"
               className="pointer-events-none absolute inset-0 h-full w-full overflow-visible"
               aria-hidden="true"
             >
+              <path
+                d="M-150 30 C -150 250, 250 300, 332 496"
+                fill="none"
+                stroke={`${C.ink}66`}
+                strokeWidth="9"
+                strokeLinecap="round"
+              />
+              <path
+                d="M300 360 C 352 430, 358 600, 330 760"
+                fill="none"
+                stroke={C.lavenderDeep}
+                strokeWidth="13"
+                strokeLinecap="round"
+                opacity="0.5"
+              />
+              <rect
+                x="316"
+                y="486"
+                width="46"
+                height="20"
+                rx="10"
+                fill={C.paper}
+                stroke={C.ink}
+                strokeWidth="9"
+              />
               <circle
-                cx="378"
-                cy="720"
-                r="128"
+                cx="338"
+                cy="516"
+                r="122"
                 fill="none"
                 stroke={C.ink}
                 strokeWidth="12"
                 strokeDasharray="30 26"
-                opacity={q(enter) * 0.75}
+                opacity="0.8"
               />
               <path
-                d="M512 720 L 700 720"
+                d="M446 516 L 690 516"
                 fill="none"
                 stroke={C.ink}
                 strokeWidth="11"
                 strokeDasharray="26 24"
                 strokeLinecap="round"
-                opacity={q(enter) * 0.45}
+                opacity="0.5"
               />
             </svg>
           </div>
 
-          <div style={{ height: "var(--vessel)" }}>
-            <svg
-              viewBox={`0 0 ${W} ${H}`}
-              className="h-full w-auto cursor-pointer select-none touch-none"
-              aria-hidden="true"
-              onPointerEnter={() => setHot(true)}
-              onPointerLeave={() => setHot(false)}
-              onPointerDown={() => setHot(true)}
-              onPointerUp={() => setHot(false)}
-            >
+          <div className="relative w-fit shrink-0" style={{ height: "var(--vessel)" }}>
+            <svg viewBox={`0 0 ${W} ${H}`} className="h-full w-auto select-none" aria-hidden="true">
               <defs>
                 {/*
-                  Fade top and bottom. Without it the lumen ended in two flat
-                  horizontal edges and read as a cut-out strip rather than a
+                  Fade top and bottom. Without it the lumen ends in two flat
+                  horizontal edges and reads as a cut-out strip rather than a
                   vessel running on through the body.
                 */}
                 <linearGradient id="wy-fade" x1="0" y1="0" x2="0" y2="1">
@@ -272,16 +374,54 @@ export function Why() {
                 </mask>
               </defs>
 
-              {/* the lumen — this is body, so pink; brightens under the hand */}
               <g mask="url(#wy-mask)">
+                {/* Lit, not tinted: a pink lumen on the pink ground vanished. */}
                 <path
                   d={LUMEN}
-                  fill={`${C.pink}${hot ? "44" : "2e"}`}
+                  fill={`${C.paper}${hot ? "9e" : "7a"}`}
                   style={{ transition: "fill 300ms ease" }}
                 />
                 <path d={WALL_L} fill="none" stroke={C.ink} strokeWidth="3" />
                 <path d={WALL_R} fill="none" stroke={C.ink} strokeWidth="3" />
               </g>
+
+              {/*
+                Red cells. The client called this "the enlarged vessel-like
+                area" — she could not tell what it was, and a plain tube is not
+                a blood vessel to anyone. Discs drifting past make it one
+                instantly, and they are a different SHAPE from the drug, not
+                just a different colour, so the two can never be confused.
+              */}
+              {flow > 0.01 &&
+                RBC.map((c, i) => {
+                  const s2 = (((ph * 0.09 + c.phase) % 1) + 1) % 1;
+                  const cx = 60 + c.x * 240;
+                  const cy = TOP + s2 * (BOT - TOP);
+                  return (
+                    <g
+                      key={`r${i}`}
+                      opacity={flow * 0.5}
+                      transform={`rotate(${c.rot} ${cx} ${cy})`}
+                    >
+                      <ellipse
+                        cx={cx}
+                        cy={cy}
+                        rx={c.r}
+                        ry={c.r * 0.62}
+                        fill={C.pink}
+                        opacity="0.85"
+                      />
+                      <ellipse
+                        cx={cx}
+                        cy={cy}
+                        rx={c.r * 0.45}
+                        ry={c.r * 0.26}
+                        fill={C.red}
+                        opacity="0.18"
+                      />
+                    </g>
+                  );
+                })}
 
               {/* where the enzyme should be */}
               <path
@@ -292,14 +432,13 @@ export function Why() {
                 strokeWidth="2.4"
                 strokeDasharray="6 6"
                 strokeLinejoin="round"
-                opacity={q(gap) * 0.6}
+                opacity={q(gap) * 0.85}
               />
 
               {/*
-                The causal line, drawn top to bottom: the variant the reader
-                pulled out of the helix in stop one, a hairline, and the empty
-                place where the enzyme should have been. The site's whole
-                thesis in one image, using only vocabulary already taught.
+                The causal line: the variant the reader pulled out of the helix
+                in stop one returns, drops a hairline down the frame, and lands
+                on the empty place where the enzyme should have been.
               */}
               <path
                 d={`M${W / 2} 76 L ${W / 2} ${EY - 68}`}
@@ -371,27 +510,84 @@ export function Why() {
                 <Hex key={`p${i}`} x={m.x} y={m.y} r={12} tone={drugTone} />
               ))}
             </svg>
+
+            {/*
+              ANNOTATIONS. The drug label arrives with the first molecules and
+              retires before a single one has settled — the client's requirement
+              was that the viewer must know what these are BEFORE the
+              accumulation begins, because otherwise the pile is just red
+              shapes. The other two answer both halves of her question about
+              the A: not only why a letter appeared, but how it is causing what
+              happens below.
+            */}
+            <Tag
+              on={drugLabel}
+              x={62}
+              y={16}
+              title="5-FU"
+              sub="the chemotherapy drug"
+              tone={C.coral}
+            />
+            <Tag
+              on={enzymeLabel}
+              x={64}
+              y={49}
+              title="DPD enzyme"
+              sub="barely made here"
+              tone={C.green}
+            />
+            <Tag
+              on={link}
+              x={57}
+              y={2}
+              title="the DPYD variant"
+              sub="from the gene, earlier"
+              tone={C.red}
+            />
           </div>
         </div>
 
         {/*
-          The affordance, framed as the dose rather than as harm. An earlier
-          draft read "press and hold — and watch it pile up", which invited the
-          reader to make a patient sicker; on a wiki about chemotherapy
-          toxicity that is the wrong invitation. The reader is holding the
-          infusion open at a standard dose, and the pile is what a standard
-          dose does to this particular body.
+          THE CONTROL. This used to be a line of small caps saying "hold to
+          keep the standard dose running", with the whole SVG as an invisible
+          hit target — the client liked the idea but could not tell what she was
+          supposed to hold. It is a button now, in the same paper/ink/offset
+          language as every other pressable thing here, and it fills while held
+          so the reader can see their own input doing something.
         */}
         <div
-          className="pointer-events-none absolute inset-x-0 bottom-[3vh] flex justify-center px-6"
-          style={{ opacity: hot ? 0 : q(flow) * 0.45, transition: "opacity 300ms ease" }}
+          className="absolute inset-x-0 bottom-[3vh] z-20 flex justify-center px-6"
+          style={{ opacity: q(easeOut(flow)) }}
         >
-          <span
-            className="text-[10px] font-bold uppercase tracking-[0.18em]"
-            style={{ color: C.ink }}
+          <button
+            type="button"
+            className="relative select-none overflow-hidden rounded-full px-5 py-2.5 text-[12px] font-bold tracking-[0.06em] transition-transform active:translate-y-px md:text-[13px]"
+            style={{
+              background: C.paper,
+              color: C.ink,
+              border: `2.5px solid ${C.ink}`,
+              boxShadow: hot ? `1px 1px 0 ${C.ink}` : `3px 3px 0 ${C.ink}`,
+              touchAction: "none",
+            }}
+            onPointerDown={(e) => {
+              e.currentTarget.setPointerCapture(e.pointerId);
+              setHot(true);
+            }}
+            onPointerUp={() => setHot(false)}
+            onPointerCancel={() => setHot(false)}
+            onPointerLeave={() => setHot(false)}
           >
-            hold to keep the standard dose running
-          </span>
+            <span
+              aria-hidden="true"
+              className="absolute inset-y-0 left-0"
+              style={{
+                width: `${(Math.min(1, extra.current / 0.4) * 100).toFixed(0)}%`,
+                background: `${C.coral}44`,
+                transition: "width 120ms linear",
+              }}
+            />
+            <span className="relative">{hot ? "Dosing…" : "Hold — give the standard dose"}</span>
+          </button>
         </div>
       </div>
     </section>

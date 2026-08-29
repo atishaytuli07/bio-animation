@@ -145,19 +145,31 @@ const SCALE_STOPS = [
  * client's own word — a bar is subtle, a second row of navigation is not, and
  * every section already states its own name in its numbered label.
  */
+/**
+ * The story rail: where you are, and what you are looking at, in one place.
+ *
+ * The client found the small left-hand labels confusing on first viewing, and
+ * the diagnosis is that there were TWO systems dressed identically: chapter
+ * labels ("01 · THE GENE") and scale annotations inside the diagram ("YOUR
+ * GENOME"), both small, uppercase and letterspaced, so neither read as a
+ * system. She also pointed out that "03 · LOOK CLOSER" sat next to a headline
+ * reading "Look closer." — the same words twice.
+ *
+ * So the chapter labels are gone from the scenes and live here instead, in the
+ * one place that already meant "where am I in the story". The annotations
+ * inside the diagram keep their own look, and now they are the only thing that
+ * looks like that.
+ */
+const CHAPTERS = [
+  { at: 0.0, n: "01", name: "The gene" },
+  { at: 0.31, n: "02", name: "Two people" },
+  { at: 0.658, n: "03", name: "Look closer" },
+] as const;
+
 function StoryProgress() {
-  // Whole-page progress, read from the document rather than from any one
-  // section, so it keeps meaning something as stops are added.
-  const [p, setP] = useState(0);
-  useEffect(() => {
-    const on = () => {
-      const h = document.documentElement.scrollHeight - window.innerHeight;
-      setP(h > 0 ? Math.round((window.scrollY / h) * 200) / 200 : 0);
-    };
-    on();
-    window.addEventListener("scroll", on, { passive: true });
-    return () => window.removeEventListener("scroll", on);
-  }, []);
+  const p = usePageProgress(200);
+  const chapter = [...CHAPTERS].reverse().find((c) => p >= c.at) ?? CHAPTERS[0];
+
   return (
     <div className="pointer-events-none fixed inset-x-0 top-0 z-40">
       <div className="h-[3px] w-full" style={{ background: `${C.ink}12` }}>
@@ -168,6 +180,29 @@ function StoryProgress() {
             background: `linear-gradient(90deg, ${C.lavender}, ${C.coral}, ${C.red})`,
           }}
         />
+      </div>
+      {/*
+        The name rides just under the bar, and only once the reader has left the
+        opening screen — the hero states the chapter itself and does not need
+        telling twice.
+      */}
+      <div className="px-6 pt-3 md:px-10" style={{ opacity: q(easeOut(range(p, 0.04, 0.09))) }}>
+        <span
+          className={L.labelType}
+          style={{
+            color: p > 0.06 && p < 0.7 ? C.paper : C.redDeep,
+            transition: "color 400ms ease",
+          }}
+        >
+          <span
+            className="block h-0.5 w-7"
+            style={{
+              background: p > 0.06 && p < 0.7 ? C.paper : C.red,
+              transition: "background 400ms ease",
+            }}
+          />
+          {chapter.n} · {chapter.name}
+        </span>
       </div>
     </div>
   );
