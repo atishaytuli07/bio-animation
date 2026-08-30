@@ -1,4 +1,4 @@
-import { C, L } from "@/components/hero/palette";
+import { C, L, R } from "@/components/hero/palette";
 import { useSeen } from "@/hooks/use-seen";
 
 /**
@@ -158,7 +158,7 @@ export function ChainFigure() {
           </div>
 
           <span
-            className="mb-3 whitespace-nowrap rounded-md px-3.5 py-2 text-[13px] font-bold md:text-[14px]"
+            className="mb-3 whitespace-nowrap rounded-[6px] px-3.5 py-2 text-[13px] font-bold md:text-[14px]"
             style={{
               background: step.solid ? step.tone : C.paper,
               color: step.solid ? "#fff" : C.ink,

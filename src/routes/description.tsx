@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 
-import { C } from "@/components/hero/palette";
+import { C, R } from "@/components/hero/palette";
 import { ART } from "@/components/story/PageHero";
 import { Awaiting, P, PageShell, Section } from "@/components/story/PageShell";
 import { Figure } from "@/components/story/Figure";
@@ -156,7 +156,7 @@ function Description() {
             background: C.redDeep,
             color: "#fff",
             border: `2.5px solid ${C.ink}`,
-            borderRadius: 6,
+            borderRadius: R.sm,
             boxShadow: `4px 4px 0 ${C.ink}`,
           }}
         >

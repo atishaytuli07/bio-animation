@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 
-import { C, L } from "@/components/hero/palette";
+import { C, L, R } from "@/components/hero/palette";
 import { useSeen } from "@/hooks/use-seen";
 
 /**
@@ -46,7 +46,7 @@ export function Figure({
       }}
     >
       <div
-        className="overflow-hidden rounded-xl"
+        className="overflow-hidden rounded-[10px]"
         style={{ background: `${C.lavender}14`, border: `2px solid ${C.ink}1f` }}
       >
         <div className="px-4 py-7 md:px-7 md:py-9">{children}</div>

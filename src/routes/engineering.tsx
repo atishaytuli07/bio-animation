@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 
-import { C, L } from "@/components/hero/palette";
+import { C, L, R } from "@/components/hero/palette";
 import { ART } from "@/components/story/PageHero";
 import { Awaiting, P, PageShell, Section } from "@/components/story/PageShell";
 
@@ -39,13 +39,22 @@ export const Route = createFileRoute("/engineering")({
   component: Engineering,
 });
 
-/** The four phases, with the question each one has to answer. */
+/*
+  The four phases, with the question each has to answer.
+
+  These all began "What was decided…", "What was actually made…", "What was
+  expected…", "What changed…" — four identical grammatical shapes in a row,
+  which is the parallel-construction tic that makes writing read as generated.
+  Parallelism is a legitimate choice for a set of like things, but four in
+  sequence stops signalling "these are the same kind of thing" and starts
+  signalling that nobody read them aloud.
+*/
 const CYCLE = [
   {
     phase: "Design",
-    ask: "What was decided, and why that rather than the alternatives",
+    ask: "The decision, and the alternatives it beat",
     prompt:
-      "The requirement the design had to meet, the options considered, and the reason this one was chosen. A judge is looking for a decision with a justification, not a description of the final object.",
+      "The requirement the design had to meet, what else was on the table, and why this won. A judge is looking for a decision with a justification, not a description of the finished object.",
   },
   {
     phase: "Build",
@@ -55,15 +64,15 @@ const CYCLE = [
   },
   {
     phase: "Test",
-    ask: "What was expected, and what happened",
+    ask: "The result, including the ones that failed",
     prompt:
       "The experiment, the controls, the readout, and the result — including the results that did not work. Negative results are worth more here than a clean story, because they are what the next phase is built on.",
   },
   {
     phase: "Learn",
-    ask: "What changed as a result",
+    ask: "Why the next pass looked different",
     prompt:
-      "What the test showed, what was wrong with the design because of it, and what was done differently next time. This is the phase most teams skip, and it is the one that carries the criterion.",
+      "Where the design turned out to be wrong, and what was done differently because of it. Most teams skip this phase, and it is the one the criterion actually rewards.",
   },
 ];
 
@@ -128,8 +137,8 @@ function Engineering() {
 
       <Section id="contribution" title="Contribution">
         <P>
-          What the next team can use: a characterised part, a protocol that works, a measurement, or
-          a documented failure that saves them the same month of work.
+          Anything a later team can pick up: a characterised part, a protocol that works, a
+          measurement, or a documented failure that saves them the same month.
         </P>
         <Awaiting what="Needs the team: what is left behind for others" />
       </Section>
@@ -142,7 +151,7 @@ function Engineering() {
             background: C.redDeep,
             color: "#fff",
             border: `2.5px solid ${C.ink}`,
-            borderRadius: 6,
+            borderRadius: R.sm,
             boxShadow: `4px 4px 0 ${C.ink}`,
           }}
         >
@@ -155,7 +164,7 @@ function Engineering() {
             background: C.paper,
             color: C.ink,
             border: `2.5px solid ${C.ink}`,
-            borderRadius: 6,
+            borderRadius: R.sm,
             boxShadow: `4px 4px 0 ${C.ink}`,
           }}
         >

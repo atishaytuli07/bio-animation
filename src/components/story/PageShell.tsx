@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { useEffect, useState, type ReactNode } from "react";
 
-import { asset, C, L, T } from "@/components/hero/palette";
+import { asset, C, L, T, R } from "@/components/hero/palette";
 import { PageHero, type Art } from "@/components/story/PageHero";
 import { NAV, PAGES } from "@/components/story/site-map";
 
@@ -124,7 +124,7 @@ export function PageShell({
             style={{
               background: C.paper,
               border: `2.5px solid ${C.ink}`,
-              borderRadius: 8,
+              borderRadius: R.sm,
               boxShadow: `3px 3px 0 ${C.ink}`,
             }}
           >
@@ -151,7 +151,7 @@ export function PageShell({
             style={{
               background: C.paper,
               border: `2.5px solid ${C.ink}`,
-              borderRadius: 10,
+              borderRadius: R.md,
               boxShadow: `4px 4px 0 ${C.ink}`,
             }}
           >
@@ -275,7 +275,7 @@ export function P({ children }: { children: ReactNode }) {
 export function Awaiting({ what, children }: { what: string; children?: ReactNode }) {
   return (
     <div
-      className="rounded-lg px-4 py-3.5 md:px-5"
+      className="rounded-[10px] px-4 py-3.5 md:px-5"
       style={{ background: `${C.red}0d`, border: `2px dashed ${C.red}66` }}
     >
       <span className={L.note} style={{ color: C.redDeep }}>

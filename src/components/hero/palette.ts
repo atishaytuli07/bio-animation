@@ -96,6 +96,23 @@ export const T = {
  * a heading jump. The headline sat at 24vh in stop two and 16vh in stop three;
  * consecutive sections moved their own copy by 8vh.
  */
+/**
+ * Corner radii. Three values, and no fourth.
+ *
+ * An audit of the rendered pages found 6px, 8px, 10px and 14px all in use for
+ * what are really two jobs — a small pressable thing and a panel — plus the
+ * pill. Nobody chose four; each component reached for whatever looked right on
+ * its own, which is how a system stops being one.
+ */
+export const R = {
+  /** Buttons, badges, chips, small boxed letters. */
+  sm: 6,
+  /** Panels, cards, figures, menus. */
+  md: 10,
+  /** Pills and the logo chip. */
+  full: 9999,
+} as const;
+
 export const L = {
   /** Chapter label, pinned identically on every stop stage. */
   label: "absolute left-6 top-24 z-20 md:left-10 md:top-28",

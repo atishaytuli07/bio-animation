@@ -1,5 +1,5 @@
 import { Cell, Enzyme, Molecule } from "@/components/hero/elements";
-import { C, L, T } from "@/components/hero/palette";
+import { C, L, T, R } from "@/components/hero/palette";
 import { useTime } from "@/hooks/use-scroll-progress";
 
 /**
@@ -116,7 +116,7 @@ export function PageHero({ title, lede, art }: { title: string; lede: string; ar
         <div className="max-w-[46rem]">
           {/* the badge, in the site's paper/ink/offset-shadow language */}
           <span
-            className={`inline-block rounded-md px-3 py-1.5 ${L.note}`}
+            className={`inline-block rounded-[6px] px-3 py-1.5 ${L.note}`}
             style={{
               background: C.paper,
               color: C.ink,
@@ -149,7 +149,7 @@ export function PageHero({ title, lede, art }: { title: string; lede: string; ar
           </div>
 
           <p
-            className="mt-7 max-w-[54ch] rounded-lg px-5 py-4 text-[15px] leading-relaxed md:mt-9 md:text-[17px]"
+            className="mt-7 max-w-[54ch] rounded-[10px] px-5 py-4 text-[15px] leading-relaxed md:mt-9 md:text-[17px]"
             style={{
               background: `${C.ink}3d`,
               border: `2px solid ${C.paper}3d`,
