@@ -3,6 +3,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { C } from "@/components/hero/palette";
 import { ART } from "@/components/story/PageHero";
 import { Awaiting, P, PageShell, Section } from "@/components/story/PageShell";
+import { Figure } from "@/components/story/Figure";
+import { ChainFigure, DoseFigure, SpliceFigure } from "@/components/story/diagrams";
 
 /**
  * Project Description — the first content page, and the one the hero's second
@@ -82,12 +84,22 @@ function Description() {
           after the end of exon 14 — the two letters that tell the cell where to cut when it
           assembles the finished instructions.
         </P>
+        <Figure
+          label="Figure 1 · the splice donor"
+          caption="Positions +1 and +2 of an intron are the canonical GT that marks where the cut goes. The variant changes that G to an A, so the donor reads AT, the spliceosome does not recognise it, and exon 14 is skipped."
+        >
+          <SpliceFigure />
+        </Figure>
         <P>
-          Change that G to an A and the cut is made in the wrong place. Exon 14 is skipped, and the
-          enzyme built from the result does not work as it should. The chain is short and it is the
-          whole story: one letter changes, less working DPD is made, the drug is cleared more
-          slowly, it accumulates, and the risk of severe toxicity rises.
+          The enzyme built from the result does not work as it should. What follows is short, and it
+          is the whole argument of the project:
         </P>
+        <Figure
+          label="Figure 2 · from a letter to a risk"
+          caption="Each step follows from the one before it. Nothing here is specific to one patient — it is what the variant does in anyone who carries it."
+        >
+          <ChainFigure />
+        </Figure>
         <P>
           It is worth being precise about what this does <em>not</em> mean. A variant reduces enzyme
           activity; it does not usually abolish it, and carrying one does not mean a patient cannot
@@ -102,6 +114,12 @@ function Description() {
           people who do not carry it. Nothing about the diagnosis changes and nothing about the drug
           changes — only the amount.
         </P>
+        <Figure
+          label="Figure 3 · the same variant, two doses"
+          caption="Left: what a standard dose leaves behind in a body that cannot clear it at the expected rate. Right: the same person, the same drug, at a dose matched to the enzyme activity they actually have."
+        >
+          <DoseFigure />
+        </Figure>
         <Awaiting what="Needs the team: citation">
           The clinical guidance for pre-treatment DPYD testing and dose adjustment must be cited
           here from the team&rsquo;s own reading, with the source named. Do not publish this section

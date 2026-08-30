@@ -1,5 +1,6 @@
 import { Cell, Enzyme, Molecule } from "@/components/hero/elements";
 import { C, L, T } from "@/components/hero/palette";
+import { useTime } from "@/hooks/use-scroll-progress";
 
 /**
  * The header block every content page opens with.
@@ -50,6 +51,14 @@ export const ART = {
 } satisfies Record<string, Art>;
 
 export function PageHero({ title, lede, art }: { title: string; lede: string; art: Art }) {
+  /*
+    The elements drift, slowly, the way they do on the homepage. This is the
+    only motion on a content page and it is nearly imperceptible by design —
+    enough that the header is alive rather than a screenshot, not enough to
+    pull the eye off the title. Everything else here is still.
+  */
+  const t = useTime(true);
+
   return (
     <section
       className="relative overflow-hidden"
@@ -88,7 +97,7 @@ export function PageHero({ title, lede, art }: { title: string; lede: string; ar
             style={{
               left: `${a.x}%`,
               top: `${a.y}%`,
-              transform: `translate(-50%,-50%) rotate(${((i * 47) % 40) - 20}deg)`,
+              transform: `translate(-50%,-50%) translateY(${(Math.sin(t * 0.32 + i * 1.7) * 7).toFixed(2)}px) rotate(${((i * 47) % 40) - 20 + Math.sin(t * 0.22 + i) * 2}deg)`,
               filter: `drop-shadow(0 6px 12px rgba(36,28,46,0.22))`,
             }}
           >
