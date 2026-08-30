@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 
 import { C, L } from "@/components/hero/palette";
+import { ART } from "@/components/story/PageHero";
 import { Awaiting, P, PageShell, Section } from "@/components/story/PageShell";
 
 /**
@@ -66,13 +67,23 @@ const CYCLE = [
   },
 ];
 
+/** The index rail; ids match the sections below. */
+const SECTIONS = [
+  { id: "cycle", label: "The cycle" },
+  ...CYCLE.map((c) => ({ id: c.phase.toLowerCase(), label: c.phase })),
+  { id: "later", label: "Later passes" },
+  { id: "contribution", label: "Contribution" },
+];
+
 function Engineering() {
   return (
     <PageShell
       title="Engineering"
       lede="How the project was designed, built, tested and then changed because of what the testing showed. Each pass round the cycle is recorded here, including the ones that did not work."
+      art={ART.engineering}
+      sections={SECTIONS}
     >
-      <Section title="The cycle">
+      <Section id="cycle" title="The cycle">
         <P>
           Engineering is not a straight line from an idea to a result. Each pass through design,
           build, test and learn changes what the next pass attempts — and the passes that failed are
@@ -81,7 +92,11 @@ function Engineering() {
       </Section>
 
       {CYCLE.map((step, i) => (
-        <section key={step.phase} className="mt-10 md:mt-12">
+        <section
+          key={step.phase}
+          id={step.phase.toLowerCase()}
+          className="mt-10 scroll-mt-28 md:mt-12"
+        >
           <div className="flex items-baseline gap-3">
             <span className={L.note} style={{ color: C.redDeep }}>
               {String(i + 1).padStart(2, "0")}
@@ -102,7 +117,7 @@ function Engineering() {
         </section>
       ))}
 
-      <Section title="Later passes">
+      <Section id="later" title="Later passes">
         <P>
           A second and third time round the cycle belong here, in the same four phases. If the
           project only went round once, say so and say why — an honest single pass reads better than
@@ -111,7 +126,7 @@ function Engineering() {
         <Awaiting what="Needs the team: further iterations" />
       </Section>
 
-      <Section title="Contribution">
+      <Section id="contribution" title="Contribution">
         <P>
           What the next team can use: a characterised part, a protocol that works, a measurement, or
           a documented failure that saves them the same month of work.

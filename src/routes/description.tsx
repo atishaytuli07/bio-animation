@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 
 import { C } from "@/components/hero/palette";
+import { ART } from "@/components/story/PageHero";
 import { Awaiting, P, PageShell, Section } from "@/components/story/PageShell";
 
 /**
@@ -42,13 +43,24 @@ export const Route = createFileRoute("/description")({
   component: Description,
 });
 
+/** The index rail; ids match the sections below. */
+const SECTIONS = [
+  { id: "problem", label: "The problem" },
+  { id: "letter", label: "What a single letter does" },
+  { id: "testing", label: "Why testing first matters" },
+  { id: "building", label: "What we are building" },
+  { id: "references", label: "References" },
+];
+
 function Description() {
   return (
     <PageShell
       title="Description"
       lede="Two people can be given the same chemotherapy, at the same dose, on the same day, and one of them can be harmed by it. This page explains why, and what we propose to do about it."
+      art={ART.description}
+      sections={SECTIONS}
     >
-      <Section title="The problem">
+      <Section id="problem" title="The problem">
         <P>
           Fluoropyrimidines — 5-FU and its oral form capecitabine — are among the most widely used
           chemotherapy drugs in the world. Most of the dose a patient receives is not used to treat
@@ -63,7 +75,7 @@ function Description() {
         </P>
       </Section>
 
-      <Section title="What a single letter does">
+      <Section id="letter" title="What a single letter does">
         <P>
           The variant this project focuses on is <strong>DPYD c.1905+1G&gt;A</strong>, also known as
           rs3918290 or the DPYD*2A allele. It sits at the first position of intron 14, immediately
@@ -83,7 +95,7 @@ function Description() {
         </P>
       </Section>
 
-      <Section title="Why testing first matters">
+      <Section id="testing" title="Why testing first matters">
         <P>
           The variant is knowable before treatment begins. If it is found first, the dose can be
           matched to the enzyme activity the patient actually has, rather than to the average of
@@ -98,7 +110,7 @@ function Description() {
         </Awaiting>
       </Section>
 
-      <Section title="What we are building">
+      <Section id="building" title="What we are building">
         <Awaiting what="Needs the team: the method">
           What ChemoGuard actually is. What the test does, what sample it takes, what it measures,
           what it reports, and who uses it. This is the one part of the project that cannot be
@@ -111,7 +123,7 @@ function Description() {
         </Awaiting>
       </Section>
 
-      <Section title="References">
+      <Section id="references" title="References">
         <Awaiting what="Needs the team: reference list">
           Every factual claim on this page and in the animation, with its source. The mechanism
           described above is textbook, but textbook is not the same as cited.

@@ -44,13 +44,13 @@ export const Route = createFileRoute("/new")({
       history, and it should not be asking search engines to ignore it.
     */
     meta: [
-      { title: "ChemoGuard — one gene decides your dose" },
+      { title: "ChemoGuard: one gene decides your dose" },
       {
         name: "description",
         content:
           "A DPYD variant can reduce how fast the body clears fluoropyrimidine chemotherapy. Follow the gene, the enzyme and the drug — and see why testing comes before the first dose.",
       },
-      { property: "og:title", content: "ChemoGuard — one gene decides your dose" },
+      { property: "og:title", content: "ChemoGuard: one gene decides your dose" },
       { property: "og:type", content: "website" },
     ],
   }),

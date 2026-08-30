@@ -1,40 +1,77 @@
 import { Link } from "@tanstack/react-router";
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 
 import { asset, C, L, T } from "@/components/hero/palette";
-import { NAV } from "@/components/story/site-map";
+import { PageHero, type Art } from "@/components/story/PageHero";
+import { NAV, PAGES } from "@/components/story/site-map";
 
 /**
  * The frame every content page sits in.
  *
- * The story route paints its own header because that header is scroll-driven —
- * it changes colour with the ground beneath it and carries a scrim. A content
- * page has none of that, so it gets a plain static header here rather than the
- * story's one bent into a shape it was not built for.
+ * The story route paints its own header because that one is scroll-driven. A
+ * content page has none of that, so it gets a plain static header here rather
+ * than the story's bent into a shape it was not built for. What must NOT
+ * diverge is the navigation, and it cannot: both are generated from the site
+ * map, so a page appearing or being renamed shows up everywhere at once.
  *
- * What must NOT diverge is the navigation, and it cannot: both are generated
- * from the same site map, so a page appearing or being renamed shows up in
- * every header at once. That is the whole reason the map exists.
+ * The first version of this was a header, an h1 and some paragraphs. It was
+ * honest and it was plain, and the client was right that plain is not enough:
+ * the documentation pages do not need the homepage's storytelling, but they do
+ * need to look like the same site, because they are judged beside wikis whose
+ * every page opens with a composed hero and closes with a real footer.
  *
- * Everything else — the type scale, the palette, the label spec, the hard
- * offset shadow — comes from the same tokens the story uses, so a reader
- * moving from the animation to a written page stays in one place.
+ * So a page now gets a hero, a section index that follows the reader, and a
+ * footer — all built from vocabulary the story already owns.
  */
+
 export function PageShell({
   title,
   lede,
+  art,
+  sections,
   children,
 }: {
   title: string;
   lede: string;
+  art: Art;
+  /** Ids and labels for the index rail; must match the <Section id>s below. */
+  sections: { id: string; label: string }[];
   children: ReactNode;
 }) {
   const [menu, setMenu] = useState(false);
+  const [active, setActive] = useState(sections[0]?.id ?? "");
+
+  /*
+    Which section the reader is in. An IntersectionObserver rather than a
+    scroll handler, so this costs nothing per frame: the browser reports when a
+    section crosses the line instead of us asking on every pixel of scroll.
+  */
+  useEffect(() => {
+    const seen = new Map<string, number>();
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) seen.set(e.target.id, e.intersectionRatio);
+        let best = "";
+        let top = -1;
+        for (const [id, ratio] of seen) if (ratio > top) [best, top] = [id, ratio];
+        if (best && top > 0) setActive(best);
+      },
+      { rootMargin: "-25% 0px -60% 0px", threshold: [0, 0.5, 1] },
+    );
+    for (const s of sections) {
+      const el = document.getElementById(s.id);
+      if (el) io.observe(el);
+    }
+    return () => io.disconnect();
+  }, [sections]);
 
   return (
     <div className="min-h-screen" style={{ background: C.paper, color: C.ink }}>
-      <header className="border-b" style={{ borderColor: `${C.ink}1a` }}>
-        <div className="mx-auto flex max-w-[92rem] items-center justify-between gap-6 px-6 py-4 md:px-10">
+      <header
+        className="sticky top-0 z-40"
+        style={{ background: C.paper, borderBottom: `2px solid ${C.ink}14` }}
+      >
+        <div className="mx-auto flex max-w-[92rem] items-center justify-between gap-6 px-6 py-3.5 md:px-10">
           <Link to="/new" className="flex items-center gap-2.5">
             <span
               className="grid h-[34px] w-[34px] shrink-0 place-items-center overflow-hidden rounded-full md:h-[38px] md:w-[38px]"
@@ -78,12 +115,6 @@ export function PageShell({
             )}
           </nav>
 
-          {/*
-            Below lg this was a single "← Story" link, so a reader on a tablet
-            or phone could leave a content page but could not reach any other
-            one. That is fine with two pages and broken with six. Same menu the
-            story route offers, same source of truth.
-          */}
           <button
             type="button"
             aria-label="Menu"
@@ -113,6 +144,7 @@ export function PageShell({
             </svg>
           </button>
         </div>
+
         {menu && (
           <div
             className="mx-6 mb-4 lg:hidden"
@@ -156,41 +188,63 @@ export function PageShell({
         )}
       </header>
 
-      <main className="mx-auto max-w-3xl px-6 pb-24 pt-14 md:px-10 md:pt-20">
-        <h1 className="font-black" style={{ ...T.headline, color: C.ink }}>
-          {title}
-        </h1>
-        <p
-          className="mt-5 max-w-[62ch] text-[16px] leading-relaxed md:text-[18px]"
-          style={{ color: C.inkBody }}
-        >
-          {lede}
-        </p>
-        {children}
-      </main>
+      <PageHero title={title} lede={lede} art={art} />
 
-      <footer className="px-6 py-10 md:px-10" style={{ borderTop: `2px solid ${C.ink}18` }}>
-        <div className="mx-auto flex max-w-3xl flex-wrap items-center justify-between gap-4">
-          <span className="text-[13px] font-semibold" style={{ color: C.inkNote }}>
-            ChemoGuard · iGEM 2026
-          </span>
-          <Link
-            to="/attributions"
-            className="text-[13px] font-bold underline-offset-4 hover:underline"
-            style={{ color: C.redDeep }}
-          >
-            Attributions
-          </Link>
-        </div>
-      </footer>
+      <div className="mx-auto flex max-w-[92rem] gap-12 px-6 pb-24 pt-12 md:px-10 md:pt-16">
+        {/*
+          The section index. Competing wikis all carry one, and on a long
+          documentation page it is the difference between a reader finding the
+          part they came for and scrolling past it. Sticky, so it stays with
+          them, and it marks where they are rather than only offering links.
+        */}
+        <aside className="hidden w-[15rem] shrink-0 xl:block">
+          <nav className="sticky top-28">
+            <span className={L.note} style={{ color: C.inkNote }}>
+              On this page
+            </span>
+            <ul className="mt-4 space-y-1">
+              {sections.map((s) => {
+                const on = s.id === active;
+                return (
+                  <li key={s.id}>
+                    <a
+                      href={`#${s.id}`}
+                      className="flex items-center gap-2.5 py-1.5 text-[14px] font-semibold transition-colors"
+                      style={{ color: on ? C.redDeep : C.inkNote }}
+                    >
+                      <span
+                        className="block h-[2px] shrink-0 transition-all"
+                        style={{ width: on ? 18 : 9, background: on ? C.red : `${C.ink}44` }}
+                      />
+                      {s.label}
+                    </a>
+                  </li>
+                );
+              })}
+            </ul>
+          </nav>
+        </aside>
+
+        <main className="min-w-0 max-w-3xl">{children}</main>
+      </div>
+
+      <SiteFooter />
     </div>
   );
 }
 
-/** A section of a content page. */
-export function Section({ title, children }: { title: string; children: ReactNode }) {
+/** A section of a content page. The id is what the index rail points at. */
+export function Section({
+  id,
+  title,
+  children,
+}: {
+  id: string;
+  title: string;
+  children: ReactNode;
+}) {
   return (
-    <section className="mt-12 md:mt-16">
+    <section id={id} className="mt-14 scroll-mt-28 first:mt-0 md:mt-16">
       <h2 className="font-black" style={{ ...T.sub, color: C.ink }}>
         {title}
       </h2>
@@ -215,8 +269,8 @@ export function P({ children }: { children: ReactNode }) {
  * A block only the team can write, rendered VISIBLY.
  *
  * The same decision as the Attributions page: an unfinished page must not be
- * able to pass for a finished one at a glance, either to a judge or to us. A
- * TODO in a comment is invisible on the deployed site; this is not.
+ * able to pass for a finished one at a glance, to a judge or to us. A TODO in
+ * a comment is invisible on the deployed site; this is not.
  */
 export function Awaiting({ what, children }: { what: string; children?: ReactNode }) {
   return (
@@ -236,5 +290,76 @@ export function Awaiting({ what, children }: { what: string; children?: ReactNod
         </div>
       )}
     </div>
+  );
+}
+
+/**
+ * The footer, on every content page.
+ *
+ * Competing wikis close with one; ours closed with a thin rule and two links.
+ * It carries the mark, the whole site map — including what is not written yet,
+ * which is honest and also shows a judge the shape of the wiki — and the
+ * attribution line iGEM expects to find.
+ */
+function SiteFooter() {
+  return (
+    <footer style={{ background: C.ink, color: C.paper }}>
+      <div className="mx-auto max-w-[92rem] px-6 py-14 md:px-10 md:py-16">
+        <div className="flex flex-wrap items-start justify-between gap-10">
+          <div>
+            <div className="flex items-center gap-2.5">
+              <span
+                className="grid h-[34px] w-[34px] shrink-0 place-items-center overflow-hidden rounded-full"
+                style={{ background: "#fff" }}
+              >
+                <img
+                  src={asset("logo-mark.webp")}
+                  alt=""
+                  width={28}
+                  height={34}
+                  className="h-[27px] w-auto"
+                />
+              </span>
+              <span className="text-[20px] font-extrabold leading-none">
+                Chemo<span style={{ color: C.redOnField }}>Guard</span>
+              </span>
+            </div>
+            <p className="mt-4 max-w-[38ch] text-[14px] leading-relaxed" style={{ opacity: 0.72 }}>
+              A pre-treatment test for DPYD variants, so a standard dose of fluoropyrimidine
+              chemotherapy is never the first thing that tells you something is wrong.
+            </p>
+          </div>
+
+          <nav>
+            <span className={L.note} style={{ opacity: 0.6 }}>
+              Pages
+            </span>
+            <ul className="mt-4 space-y-2">
+              {PAGES.map((p) => (
+                <li key={p.label}>
+                  {p.ready ? (
+                    <Link to={p.to} className="text-[14px] font-semibold hover:underline">
+                      {p.label}
+                    </Link>
+                  ) : (
+                    <span className="text-[14px] font-semibold" style={{ opacity: 0.4 }}>
+                      {p.label}
+                    </span>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </nav>
+        </div>
+
+        <div
+          className="mt-12 flex flex-wrap items-center justify-between gap-3 pt-6 text-[13px]"
+          style={{ borderTop: `1px solid ${C.paper}22`, opacity: 0.6 }}
+        >
+          <span>ChemoGuard · NIS Kazakhstan · iGEM 2026</span>
+          <span>Content on this wiki is the team&rsquo;s own unless attributed.</span>
+        </div>
+      </div>
+    </footer>
   );
 }
