@@ -103,7 +103,7 @@ export function Sequence({
     const t = step(distance);
     return (
       <span
-        className="font-sans text-[0.32em] font-bold uppercase"
+        className="font-sans text-[0.32em] font-bold uppercase px-2"
         style={{
           color: C.paper,
           opacity: t * 0.62,
@@ -118,8 +118,68 @@ export function Sequence({
     );
   };
 
+  /*
+    The strand this is a piece of, running behind the letters.
+
+    Without it the arrival was four glyphs alone in a very large purple field —
+    the client's own example of a screen that felt empty next to the DNA
+    section. It is also the honest picture: we have descended INTO the strand,
+    so the strand should still be there, just too magnified to read except at
+    the point of interest. It fades out toward the centre so the letters sit in
+    a clear window rather than fighting a pattern.
+  */
+  const Strand = () => (
+    <svg
+      viewBox="0 0 1200 260"
+      className="pointer-events-none absolute left-1/2 top-1/2 w-[128vw] max-w-none -translate-x-1/2 -translate-y-1/2"
+      aria-hidden="true"
+      style={{ opacity: step(2) * 0.5 }}
+    >
+      <defs>
+        <linearGradient id="sq-fade" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stopColor="#fff" stopOpacity="0" />
+          <stop offset="0.2" stopColor="#fff" stopOpacity="0.85" />
+          <stop offset="0.38" stopColor="#fff" stopOpacity="0" />
+          <stop offset="0.62" stopColor="#fff" stopOpacity="0" />
+          <stop offset="0.8" stopColor="#fff" stopOpacity="0.85" />
+          <stop offset="1" stopColor="#fff" stopOpacity="0" />
+        </linearGradient>
+        <mask id="sq-mask">
+          <rect x="0" y="0" width="1200" height="260" fill="url(#sq-fade)" />
+        </mask>
+      </defs>
+      <g mask="url(#sq-mask)" fill="none" stroke={C.paper} strokeWidth="3">
+        <path d="M0 130 C 100 40, 200 40, 300 130 C 400 220, 500 220, 600 130 C 700 40, 800 40, 900 130 C 1000 220, 1100 220, 1200 130" />
+        <path d="M0 130 C 100 220, 200 220, 300 130 C 400 40, 500 40, 600 130 C 700 220, 800 220, 900 130 C 1000 40, 1100 40, 1200 130" />
+      </g>
+      {/* rungs, coloured by the same base convention the hero taught */}
+      <g mask="url(#sq-mask)">
+        {Array.from({ length: 40 }, (_, i) => {
+          const x = i * 30 + 15;
+          const k = Math.sin((x / 300) * Math.PI);
+          const y1 = 130 - k * 88;
+          const y2 = 130 + k * 88;
+          return (
+            <line
+              key={i}
+              x1={x}
+              y1={y1}
+              x2={x}
+              y2={y2}
+              stroke={TONE[["A", "T", "G", "C"][i % 4] as string]}
+              strokeWidth="6"
+              strokeLinecap="round"
+              opacity="0.5"
+            />
+          );
+        })}
+      </g>
+    </svg>
+  );
+
   return (
-    <div className="pointer-events-none flex flex-col items-center">
+    <div className="pointer-events-none relative flex flex-col items-center">
+      <Strand />
       <div
         className="flex items-center font-mono font-bold"
         style={{ fontSize: "clamp(1.5rem, 4vw, 3.2rem)", letterSpacing: "0.3em" }}
@@ -152,8 +212,8 @@ export function Sequence({
             }}
           >
             <span
-              className="text-[0.62em] leading-none line-through"
-              style={{ color: C.paper, opacity: 0.9, letterSpacing: 0 }}
+              className="text-[0.72em] leading-none line-through"
+              style={{ color: C.paper, opacity: 1, letterSpacing: 0 }}
             >
               {REF_BASE}
             </span>
@@ -181,8 +241,28 @@ export function Sequence({
           </span>
         </span>
 
-        {/* intron position +2 — the second half of the donor signal */}
-        <Base letter={DONOR_SECOND} distance={1} />
+        {/*
+          Intron position +2, boxed to match the variant.
+
+          The whole claim of this frame is that these are a PAIR — the two
+          letters that together say "cut here". A solid red box beside a small
+          pale letter read as one important thing next to some background
+          typography, which is the opposite of that.
+        */}
+        <span
+          className="ml-1 inline-flex items-center justify-center rounded-[6px] md:ml-1.5"
+          style={{
+            width: "1.5em",
+            height: "1.6em",
+            letterSpacing: 0,
+            border: `2px solid ${C.paper}55`,
+            color: TONE[DONOR_SECOND],
+            opacity: step(1),
+            transform: `scale(${(0.86 + step(1) * 0.14).toFixed(3)})`,
+          }}
+        >
+          {DONOR_SECOND}
+        </span>
         <Region label="intron 14" distance={3} align="left" />
       </div>
 

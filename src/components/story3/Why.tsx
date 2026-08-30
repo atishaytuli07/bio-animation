@@ -196,7 +196,14 @@ export function Why() {
   const drugLabel = band(p, 0.2, 0.28, 0.44, 0.52);
   const gap = range(p, 0.34, 0.46);
   const link = range(p, 0.44, 0.58);
-  const enzymeLabel = band(p, 0.62, 0.7, 0.86, 0.92);
+  /*
+    Both tags were on screen together at the end, which is the crowding the
+    client described. The variant tag was driven by `link`, a range — so once
+    it reached 1 it stayed there for the rest of the section and never left.
+    Each tag now has its own band, and they hand over rather than accumulate.
+  */
+  const variantLabel = band(p, 0.46, 0.56, 0.62, 0.68);
+  const enzymeLabel = band(p, 0.7, 0.78, 0.84, 0.9);
   /*
     "One letter, and far less enzyme" is deliberately gone. The client found
     this screen crowded — figure, vessel, molecules, variant, enzyme, two tags,
@@ -208,7 +215,7 @@ export function Why() {
   const build = range(p, 0.56, 0.9);
   const alarm = range(p, 0.66, 0.86);
   const warm = range(p, 0.6, 0.88);
-  const lineC = beat(p, 0.82, 0.9, 1.2, 1.3);
+  const lineC = beat(p, 0.88, 0.95, 1.2, 1.3);
 
   const t = useTime(flow > 0.01);
 

@@ -113,7 +113,7 @@ function Underline({ index, active = false }: { index: number; active?: boolean 
  */
 const q = (v: number) => Math.round(v * 20) / 20;
 
-const JOURNEY = ["The gene", "The enzyme", "Two people", "Look closer", "Detection"] as const;
+const JOURNEY = ["The gene", "The enzyme", "Two people", "Inside the body", "Detection"] as const;
 
 /**
  * The scale stops named during the descent.
@@ -160,11 +160,17 @@ const SCALE_STOPS = [
  * inside the diagram keep their own look, and now they are the only thing that
  * looks like that.
  */
+/*
+  Chapter names are deliberately NOT the same words as the headline of the
+  scene they cover. "04 · Look closer" sitting above a headline reading "Look
+  closer." was the client's own complaint about redundancy, and renaming the
+  per-scene label into the rail had simply relocated it.
+*/
 const CHAPTERS = [
   { at: 0.0, n: "01", name: "The gene" },
   { at: 0.278, n: "02", name: "The enzyme" },
   { at: 0.378, n: "03", name: "Two people" },
-  { at: 0.694, n: "04", name: "Look closer" },
+  { at: 0.694, n: "04", name: "Inside the body" },
 ] as const;
 
 function StoryProgress() {
@@ -187,7 +193,13 @@ function StoryProgress() {
         opening screen — the hero states the chapter itself and does not need
         telling twice.
       */}
-      <div className="px-6 pt-3 md:px-10" style={{ opacity: q(easeOut(range(p, 0.062, 0.11))) }}>
+      {/*
+        Pinned to the SAME coordinate the per-scene labels used, which is also
+        the first line clear of the header. At `pt-3` it sat directly on top of
+        the logo — the bar is fixed to the very top of the viewport and the
+        header is right underneath it.
+      */}
+      <div className={L.label} style={{ opacity: q(easeOut(range(p, 0.062, 0.11))) }}>
         <span
           className={L.labelType}
           style={{
