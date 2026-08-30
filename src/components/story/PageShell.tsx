@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 
 import { asset, C, L, T } from "@/components/hero/palette";
 import { NAV } from "@/components/story/site-map";
@@ -29,6 +29,8 @@ export function PageShell({
   lede: string;
   children: ReactNode;
 }) {
+  const [menu, setMenu] = useState(false);
+
   return (
     <div className="min-h-screen" style={{ background: C.paper, color: C.ink }}>
       <header className="border-b" style={{ borderColor: `${C.ink}1a` }}>
@@ -76,10 +78,82 @@ export function PageShell({
             )}
           </nav>
 
-          <Link to="/new" className="text-[13px] font-bold lg:hidden" style={{ color: C.redDeep }}>
-            ← Story
-          </Link>
+          {/*
+            Below lg this was a single "← Story" link, so a reader on a tablet
+            or phone could leave a content page but could not reach any other
+            one. That is fine with two pages and broken with six. Same menu the
+            story route offers, same source of truth.
+          */}
+          <button
+            type="button"
+            aria-label="Menu"
+            aria-expanded={menu}
+            onClick={() => setMenu((v) => !v)}
+            className="flex size-9 items-center justify-center lg:hidden"
+            style={{
+              background: C.paper,
+              border: `2.5px solid ${C.ink}`,
+              borderRadius: 8,
+              boxShadow: `3px 3px 0 ${C.ink}`,
+            }}
+          >
+            <svg width="16" height="12" viewBox="0 0 16 12" aria-hidden="true">
+              {[1, 6, 11].map((y) => (
+                <line
+                  key={y}
+                  x1="1"
+                  y1={y}
+                  x2="15"
+                  y2={y}
+                  stroke={C.ink}
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                />
+              ))}
+            </svg>
+          </button>
         </div>
+        {menu && (
+          <div
+            className="mx-6 mb-4 lg:hidden"
+            style={{
+              background: C.paper,
+              border: `2.5px solid ${C.ink}`,
+              borderRadius: 10,
+              boxShadow: `4px 4px 0 ${C.ink}`,
+            }}
+          >
+            {NAV.map((page, i) =>
+              page.ready ? (
+                <Link
+                  key={page.label}
+                  to={page.to}
+                  onClick={() => setMenu(false)}
+                  className="block w-full px-5 py-3 text-left text-[15px] font-bold"
+                  style={{ color: C.ink, borderTop: i ? `1.5px solid ${C.ink}22` : undefined }}
+                >
+                  {page.label}
+                </Link>
+              ) : (
+                <span
+                  key={page.label}
+                  aria-disabled="true"
+                  className="flex w-full items-center justify-between px-5 py-3 text-left text-[15px] font-bold"
+                  style={{
+                    color: C.ink,
+                    opacity: 0.45,
+                    borderTop: i ? `1.5px solid ${C.ink}22` : undefined,
+                  }}
+                >
+                  {page.label}
+                  <span className={L.note} style={{ opacity: 0.7 }}>
+                    soon
+                  </span>
+                </span>
+              ),
+            )}
+          </div>
+        )}
       </header>
 
       <main className="mx-auto max-w-3xl px-6 pb-24 pt-14 md:px-10 md:pt-20">
