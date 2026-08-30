@@ -36,7 +36,7 @@ import { asset, C, L, T } from "@/components/hero/palette";
 
 export const Route = createFileRoute("/new")({
   head: () => ({
-    meta: [{ title: "ChemoGuard — hero concept" }, { name: "robots", content: "noindex" }],
+    meta: [{ title: "ChemoGuard" }, { name: "robots", content: "noindex" }],
   }),
   component: HeroConcept,
 });

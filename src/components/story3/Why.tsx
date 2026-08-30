@@ -572,20 +572,7 @@ export function Why() {
           className="absolute inset-x-0 bottom-[3vh] z-20 flex justify-center px-6"
           style={{ opacity: q(easeOut(flow)) }}
         >
-          {/*
-            The ring is positioned against THIS wrapper, not the full-width
-            row — inset on the row would draw a rounded rectangle across the
-            whole screen.
-          */}
           <span className="relative inline-flex">
-            {/* the resting invitation — stops as soon as the reader takes over */}
-            {!hot && (
-              <span
-                aria-hidden="true"
-                className="hold-invite pointer-events-none absolute rounded-full"
-                style={{ inset: "-6px", border: `2.5px solid ${C.ink}` }}
-              />
-            )}
             <button
               type="button"
               className="relative select-none overflow-hidden rounded-full px-5 py-2.5 text-[12px] font-bold tracking-[0.06em] transition-transform active:translate-y-px md:text-[13px]"
@@ -604,14 +591,20 @@ export function Why() {
               onPointerCancel={() => setHot(false)}
               onPointerLeave={() => setHot(false)}
             >
+              {/*
+                A hairline along the base, not a wash across the face. Filling
+                the whole button turned it into a loading bar — a progress toy
+                rather than a control, and cheap beside everything around it.
+                This says the same thing and stays out of the way.
+              */}
               <span
                 aria-hidden="true"
-                className="absolute inset-y-0 left-0"
+                className="absolute inset-x-0 bottom-0 h-[3px]"
                 style={{
-                  width: `${(Math.min(1, extra.current / 0.4) * 100).toFixed(0)}%`,
-                  background: `linear-gradient(90deg, ${C.coral}33, ${C.coral}77)`,
-                  borderRight: extra.current > 0.01 ? `2px solid ${C.coral}` : "none",
-                  transition: "width 120ms linear",
+                  transform: `scaleX(${Math.min(1, extra.current / 0.4).toFixed(3)})`,
+                  transformOrigin: "left",
+                  background: C.redDeep,
+                  transition: "transform 140ms linear",
                 }}
               />
               <span className="relative">{hot ? "Dosing…" : "Hold — give the standard dose"}</span>
