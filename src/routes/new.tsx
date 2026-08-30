@@ -37,7 +37,22 @@ import { asset, C, L, T } from "@/components/hero/palette";
 
 export const Route = createFileRoute("/new")({
   head: () => ({
-    meta: [{ title: "ChemoGuard" }, { name: "robots", content: "noindex" }],
+    /*
+      The title and the noindex were both set when this route was a
+      work-in-progress preview sitting beside the old homepage. It is the
+      homepage now: it needs a title a judge can read in a tab and a browser
+      history, and it should not be asking search engines to ignore it.
+    */
+    meta: [
+      { title: "ChemoGuard — one gene decides your dose" },
+      {
+        name: "description",
+        content:
+          "A DPYD variant can reduce how fast the body clears fluoropyrimidine chemotherapy. Follow the gene, the enzyme and the drug — and see why testing comes before the first dose.",
+      },
+      { property: "og:title", content: "ChemoGuard — one gene decides your dose" },
+      { property: "og:type", content: "website" },
+    ],
   }),
   component: HeroConcept,
 });

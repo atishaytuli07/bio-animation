@@ -29,6 +29,7 @@
  * the domain root. Pass the slug when the team has it.
  */
 import { spawn } from "node:child_process";
+import { readFileSync } from "node:fs";
 import { cp, mkdir, readdir, rm, writeFile } from "node:fs/promises";
 import { createServer } from "node:net";
 import { join, resolve } from "node:path";
@@ -36,8 +37,22 @@ import { join, resolve } from "node:path";
 const ROOT = resolve(import.meta.dirname, "..");
 const OUT = join(ROOT, "dist-static");
 
-/** Routes to export. Add a page here when a new route is built. */
-const ROUTES = ["/new", "/attributions"];
+/**
+ * Routes to export, READ FROM THE SITE MAP rather than listed again here.
+ *
+ * A second hand-maintained list is exactly the bug this project already fixed
+ * in the navigation: a page gets built, one list is updated and the other is
+ * not, and the page silently never ships. The site map is the single source,
+ * so a route that exists in the app is exported by definition.
+ */
+const ROUTES = (() => {
+  const src = readFileSync(join(ROOT, "src/components/story/site-map.ts"), "utf8");
+  const routes = [...src.matchAll(/to:\s*"([^"]+)"\s*,\s*ready:\s*(true|false)/g)]
+    .filter(([, , ready]) => ready === "true")
+    .map(([, to]) => to);
+  if (!routes.length) throw new Error("no ready routes found in site-map.ts — has its shape changed?");
+  return routes;
+})();
 /** Where "/" should land. iGEM's homepage is the story. */
 const HOME = "/new";
 

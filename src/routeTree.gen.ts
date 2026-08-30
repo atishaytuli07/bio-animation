@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AttributionsRouteImport } from './routes/attributions'
+import { Route as DescriptionRouteImport } from './routes/description'
 import { Route as NewRouteImport } from './routes/new'
 
 const IndexRoute = IndexRouteImport.update({
@@ -23,6 +24,11 @@ const AttributionsRoute = AttributionsRouteImport.update({
   path: '/attributions',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DescriptionRoute = DescriptionRouteImport.update({
+  id: '/description',
+  path: '/description',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const NewRoute = NewRouteImport.update({
   id: '/new',
   path: '/new',
@@ -32,30 +38,34 @@ const NewRoute = NewRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/attributions': typeof AttributionsRoute
+  '/description': typeof DescriptionRoute
   '/new': typeof NewRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/attributions': typeof AttributionsRoute
+  '/description': typeof DescriptionRoute
   '/new': typeof NewRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/attributions': typeof AttributionsRoute
+  '/description': typeof DescriptionRoute
   '/new': typeof NewRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/attributions' | '/new'
+  fullPaths: '/' | '/attributions' | '/description' | '/new'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/attributions' | '/new'
-  id: '__root__' | '/' | '/attributions' | '/new'
+  to: '/' | '/attributions' | '/description' | '/new'
+  id: '__root__' | '/' | '/attributions' | '/description' | '/new'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AttributionsRoute: typeof AttributionsRoute
+  DescriptionRoute: typeof DescriptionRoute
   NewRoute: typeof NewRoute
 }
 
@@ -75,6 +85,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AttributionsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/description': {
+      id: '/description'
+      path: '/description'
+      fullPath: '/description'
+      preLoaderRoute: typeof DescriptionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/new': {
       id: '/new'
       path: '/new'
@@ -88,6 +105,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AttributionsRoute: AttributionsRoute,
+  DescriptionRoute: DescriptionRoute,
   NewRoute: NewRoute,
 }
 export const routeTree = rootRouteImport
