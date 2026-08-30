@@ -22,9 +22,14 @@ export const C = {
   pink: "#F2839C",
   blue: "#4E92CF",
   /** The field behind the strand: lavender means genetics, so the DNA sits
-   *  literally inside its own meaning. */
-  lavender: "#8B6BD1",
-  lavenderDeep: "#5B3E9E",
+   *  literally inside its own meaning.
+   *
+   *  Lightened one step at the client's request — she liked the hue and did
+   *  not want the palette changed, only the weight of it. The deep tone moved
+   *  with it so the two still read as one family, and so the handover into the
+   *  pink section is a shorter distance to travel. */
+  lavender: "#A084DD",
+  lavenderDeep: "#7355B4",
   green: "#3FA877",
   /** Deep warm near-black. Every outline and every word uses it — this weight
    *  is what the reference wikis have and a pastel page does not. */

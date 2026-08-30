@@ -529,14 +529,26 @@ function HeroConcept() {
             White keyed out of the supplied JPEG and un-premultiplied, so the
             edges stay red instead of going pink on a coloured ground.
           */}
-              <img
-                src={asset("logo.webp")}
-                alt="ChemoGuard — NIS Kazakhstan, iGEM 2026"
-                width={34}
-                height={41}
-                className="h-[34px] w-auto shrink-0 md:h-[40px]"
-                style={{ filter: "drop-shadow(0 1px 0 rgba(255,255,255,0.35))" }}
-              />
+              {/*
+                On a white chip, because the supplied artwork is transparent
+                wherever it should be white — the reader's screen and the whole
+                inside of the ring are alpha 0, so on the purple ground the
+                page showed through and the mark lost its structure. Compositing
+                it onto white restores the original, and the chip keeps it
+                legible on every ground the story passes through.
+              */}
+              <span
+                className="grid h-[34px] w-[34px] shrink-0 place-items-center overflow-hidden rounded-full md:h-[40px] md:w-[40px]"
+                style={{ background: "#fff", boxShadow: `0 0 0 2px ${C.ink}1f` }}
+              >
+                <img
+                  src={asset("logo-mark.webp")}
+                  alt="ChemoGuard — NIS Kazakhstan, iGEM 2026"
+                  width={30}
+                  height={36}
+                  className="h-[27px] w-auto md:h-[32px]"
+                />
+              </span>
               <span
                 className="text-[21px] font-extrabold leading-none text-[color:var(--mark)] [--mark:var(--paper-c)] md:[--mark:var(--ink-c)]"
                 style={{ fontFamily: DISPLAY, letterSpacing: "-0.01em" }}

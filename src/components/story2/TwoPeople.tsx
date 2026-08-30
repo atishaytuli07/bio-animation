@@ -109,15 +109,15 @@ function IV({ dose, flow, flip }: { dose: number; flow: number; flip: boolean })
       )}
       {/* line to the arm */}
       <path
-        d="M74 162 C 74 240, 20 250, -34 318"
+        d="M74 162 C 74 214, 22 250, -30 226"
         fill="none"
         stroke={`${C.ink}55`}
         strokeWidth="3"
         strokeLinecap="round"
       />
       <rect
-        x="-42"
-        y="312"
+        x="-38"
+        y="221"
         width="14"
         height="6"
         rx="3"
@@ -137,8 +137,8 @@ function IV({ dose, flow, flip }: { dose: number; flow: number; flip: boolean })
               b2 = 3 * k * u * u,
               b3 = u * u * u;
             return [
-              b0 * 74 + b1 * 74 + b2 * 20 + b3 * -34,
-              b0 * 162 + b1 * 240 + b2 * 250 + b3 * 318,
+              b0 * 74 + b1 * 74 + b2 * 22 + b3 * -30,
+              b0 * 162 + b1 * 214 + b2 * 250 + b3 * 226,
             ];
           };
           const [x, y] = P(s);
@@ -363,8 +363,9 @@ export function TwoPeople() {
               className="mt-6 max-w-[34ch] text-center font-black md:mt-8"
               style={{ ...T.sub, color: C.paper }}
             >
-              One letter decides how much <span style={{ color: "#9BE8C4" }}>DPD</span> a body
-              builds — the enzyme that clears the drug.
+              A <span style={{ color: "#FFC9C4" }}>DPYD</span> variant can reduce{" "}
+              <span style={{ color: "#9BE8C4" }}>DPD</span> activity — limiting the body's ability
+              to clear 5-FU.
             </p>
           </div>
         )}
@@ -387,12 +388,19 @@ export function TwoPeople() {
               animate={active}
               seed={0}
             />
-            <div className="h-[92%]">
+            {/*
+              Taller than the figure on purpose. At 92% the bag hung level with
+              the patient's chest, so the only place the line could reach was
+              their legs — which is exactly what the client saw. A real stand is
+              taller than the person, and once it is, the tube descends to the
+              forearm the way it does in a ward.
+            */}
+            <div className="h-[118%]">
               <IV dose={dose} flow={flow} flip={false} />
             </div>
           </div>
           <div className="flex items-end gap-2 md:gap-4" style={{ height: "var(--fig2)" }}>
-            <div className="h-[92%]">
+            <div className="h-[118%]">
               <IV dose={dose} flow={flow} flip />
             </div>
             <Patient

@@ -42,10 +42,10 @@ import {
 const q = (v: number) => Math.round(v * 20) / 20;
 
 /** Red cells drifting past, so the tube reads as a blood vessel. */
-const RBC = Array.from({ length: 7 }, (_, i) => ({
+const RBC = Array.from({ length: 11 }, (_, i) => ({
   x: ((i * 0.37) % 1) * 0.9,
   phase: (i * 0.143) % 1,
-  r: 15 + ((i * 5) % 4) * 3,
+  r: 19 + ((i * 5) % 4) * 4,
   rot: (i * 53) % 180,
 }));
 
@@ -196,8 +196,15 @@ export function Why() {
   const drugLabel = band(p, 0.2, 0.28, 0.44, 0.52);
   const gap = range(p, 0.34, 0.46);
   const link = range(p, 0.44, 0.58);
-  const enzymeLabel = band(p, 0.5, 0.58, 0.76, 0.82);
-  const lineB = beat(p, 0.44, 0.52, 0.72, 0.79);
+  const enzymeLabel = band(p, 0.62, 0.7, 0.86, 0.92);
+  /*
+    "One letter, and far less enzyme" is deliberately gone. The client found
+    this screen crowded — figure, vessel, molecules, variant, enzyme, two tags,
+    a heading and a button all at once — and this line was the most redundant
+    thing in it: the two tags beside the diagram already say it, and say it
+    pointing at the thing they describe. One headline in, one out, tags in
+    between.
+  */
   const build = range(p, 0.56, 0.9);
   const alarm = range(p, 0.66, 0.86);
   const warm = range(p, 0.6, 0.88);
@@ -241,7 +248,6 @@ export function Why() {
 
   const COPY = [
     { on: lineA, text: <>Look closer.</> },
-    { on: lineB, text: <>One letter, and far less enzyme.</> },
     {
       on: lineC,
       text: (
@@ -316,14 +322,14 @@ export function Why() {
               aria-hidden="true"
             >
               <path
-                d="M-150 30 C -150 250, 250 300, 332 496"
+                d="M-150 30 C -150 260, 300 380, 366 626"
                 fill="none"
                 stroke={`${C.ink}66`}
                 strokeWidth="9"
                 strokeLinecap="round"
               />
               <path
-                d="M300 360 C 352 430, 358 600, 330 760"
+                d="M356 430 C 388 520, 390 660, 366 790"
                 fill="none"
                 stroke={C.lavenderDeep}
                 strokeWidth="13"
@@ -331,8 +337,8 @@ export function Why() {
                 opacity="0.5"
               />
               <rect
-                x="316"
-                y="486"
+                x="350"
+                y="628"
                 width="46"
                 height="20"
                 rx="10"
@@ -341,9 +347,9 @@ export function Why() {
                 strokeWidth="9"
               />
               <circle
-                cx="338"
-                cy="516"
-                r="122"
+                cx="373"
+                cy="656"
+                r="104"
                 fill="none"
                 stroke={C.ink}
                 strokeWidth="12"
@@ -351,7 +357,7 @@ export function Why() {
                 opacity="0.8"
               />
               <path
-                d="M446 516 L 690 516"
+                d="M485 656 L 700 656"
                 fill="none"
                 stroke={C.ink}
                 strokeWidth="11"
@@ -543,14 +549,7 @@ export function Why() {
               sub="barely made here"
               tone={C.green}
             />
-            <Tag
-              on={link}
-              x={57}
-              y={2}
-              title="the DPYD variant"
-              sub="from the gene, earlier"
-              tone={C.red}
-            />
+            <Tag on={link} x={57} y={2} title="DPYD variant" sub="c.1905+1G>A" tone={C.red} />
           </div>
         </div>
 

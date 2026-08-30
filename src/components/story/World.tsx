@@ -36,11 +36,14 @@ const DENSITY = [
   [0.1, 0.75],
   [0.18, 0.92], // the descent, deep in the purple
   [0.25, 1.0], // the sequence arrival — the emptiest frame in the story
-  [0.32, 0.88], // the enzyme bridge
-  [0.44, 0.45], // the two patients carry their own frame
-  [0.62, 0.42],
-  [0.75, 0.8], // into the bloodstream
-  [0.88, 0.55],
+  [0.32, 0.6], // the enzyme bridge: copy + diagram, so pull back
+  [0.44, 0.4], // the two patients carry their own frame
+  [0.62, 0.34],
+  // The bloodstream is the most information-dense screen on the site: figure,
+  // vessel, molecules, a tag and a control. The client asked for the ambient
+  // elements to stop competing there, so this is the quietest the world gets.
+  [0.75, 0.28],
+  [0.88, 0.42],
   [1.0, 0.4],
 ] as const;
 

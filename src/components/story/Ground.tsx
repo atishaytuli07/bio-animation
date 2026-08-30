@@ -43,9 +43,13 @@ const BASE = [
   [0.37, C.lavenderDeep],
   [0.48, `color-mix(in oklab, ${C.lavender} 85%, ${C.coral})`],
   [0.6, `color-mix(in oklab, ${C.lavenderDeep} 72%, ${C.red})`],
-  [0.7, `color-mix(in oklab, ${C.lavenderDeep} 44%, ${C.red})`],
-  [0.79, `color-mix(in oklab, ${C.pink} 62%, ${C.paper})`],
-  [0.87, `color-mix(in oklab, ${C.pink} 24%, ${C.paper})`],
+  // The purple→pink handover, taken in four steps rather than two: the client
+  // asked to keep this transition and only smooth it.
+  [0.68, `color-mix(in oklab, ${C.lavenderDeep} 52%, ${C.pink})`],
+  [0.73, `color-mix(in oklab, ${C.lavenderDeep} 30%, ${C.pink})`],
+  [0.78, `color-mix(in oklab, ${C.pink} 74%, ${C.paper})`],
+  [0.84, `color-mix(in oklab, ${C.pink} 40%, ${C.paper})`],
+  [0.9, `color-mix(in oklab, ${C.pink} 22%, ${C.paper})`],
   [1.0, `color-mix(in oklab, ${C.pink} 15%, ${C.paper})`],
 ] as const;
 
