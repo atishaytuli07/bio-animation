@@ -553,7 +553,7 @@ export function Why() {
               x={64}
               y={49}
               title="DPD enzyme"
-              sub="barely made here"
+              sub="less is made here"
               tone={C.green}
             />
             <Tag on={link} x={57} y={2} title="DPYD variant" sub="c.1905+1G>A" tone={C.red} />
@@ -572,35 +572,51 @@ export function Why() {
           className="absolute inset-x-0 bottom-[3vh] z-20 flex justify-center px-6"
           style={{ opacity: q(easeOut(flow)) }}
         >
-          <button
-            type="button"
-            className="relative select-none overflow-hidden rounded-full px-5 py-2.5 text-[12px] font-bold tracking-[0.06em] transition-transform active:translate-y-px md:text-[13px]"
-            style={{
-              background: C.paper,
-              color: C.ink,
-              border: `2.5px solid ${C.ink}`,
-              boxShadow: hot ? `1px 1px 0 ${C.ink}` : `3px 3px 0 ${C.ink}`,
-              touchAction: "none",
-            }}
-            onPointerDown={(e) => {
-              e.currentTarget.setPointerCapture(e.pointerId);
-              setHot(true);
-            }}
-            onPointerUp={() => setHot(false)}
-            onPointerCancel={() => setHot(false)}
-            onPointerLeave={() => setHot(false)}
-          >
-            <span
-              aria-hidden="true"
-              className="absolute inset-y-0 left-0"
+          {/*
+            The ring is positioned against THIS wrapper, not the full-width
+            row — inset on the row would draw a rounded rectangle across the
+            whole screen.
+          */}
+          <span className="relative inline-flex">
+            {/* the resting invitation — stops as soon as the reader takes over */}
+            {!hot && (
+              <span
+                aria-hidden="true"
+                className="hold-invite pointer-events-none absolute rounded-full"
+                style={{ inset: "-6px", border: `2.5px solid ${C.ink}` }}
+              />
+            )}
+            <button
+              type="button"
+              className="relative select-none overflow-hidden rounded-full px-5 py-2.5 text-[12px] font-bold tracking-[0.06em] transition-transform active:translate-y-px md:text-[13px]"
               style={{
-                width: `${(Math.min(1, extra.current / 0.4) * 100).toFixed(0)}%`,
-                background: `${C.coral}44`,
-                transition: "width 120ms linear",
+                background: C.paper,
+                color: C.ink,
+                border: `2.5px solid ${C.ink}`,
+                boxShadow: hot ? `1px 1px 0 ${C.ink}` : `3px 3px 0 ${C.ink}`,
+                touchAction: "none",
               }}
-            />
-            <span className="relative">{hot ? "Dosing…" : "Hold — give the standard dose"}</span>
-          </button>
+              onPointerDown={(e) => {
+                e.currentTarget.setPointerCapture(e.pointerId);
+                setHot(true);
+              }}
+              onPointerUp={() => setHot(false)}
+              onPointerCancel={() => setHot(false)}
+              onPointerLeave={() => setHot(false)}
+            >
+              <span
+                aria-hidden="true"
+                className="absolute inset-y-0 left-0"
+                style={{
+                  width: `${(Math.min(1, extra.current / 0.4) * 100).toFixed(0)}%`,
+                  background: `linear-gradient(90deg, ${C.coral}33, ${C.coral}77)`,
+                  borderRight: extra.current > 0.01 ? `2px solid ${C.coral}` : "none",
+                  transition: "width 120ms linear",
+                }}
+              />
+              <span className="relative">{hot ? "Dosing…" : "Hold — give the standard dose"}</span>
+            </button>
+          </span>
         </div>
       </div>
     </section>

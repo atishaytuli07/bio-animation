@@ -51,6 +51,12 @@ const DENSITY = [
  * x is a viewport percentage; depth drives both parallax speed and blur, so
  * the field has real front-to-back separation rather than being a flat sprinkle.
  * Everything sits outside the centre column, where the copy and figures live.
+ *
+ * That rule is right for every scene except the first. The hero is the only
+ * screen whose copy is LEFT-aligned rather than centred, so objects at x=6..21
+ * — safely outside a centre column — land squarely on its headline, paragraph
+ * and buttons. `heroClear` below steps them back while the hero is on screen
+ * and releases them once the descent begins.
  */
 const OBJECTS = [
   { k: "cell", x: 6, s: 0.5, tone: C.pink, depth: 0.9, phase: 0.05, sm: true },
@@ -93,6 +99,15 @@ export function World() {
   const p = usePageProgress();
   const density = num(p, DENSITY);
 
+  /*
+    1 while the hero fills the screen, 0 once the reader has scrolled past it.
+    Used to hold the left-hand objects back over the hero's copy column, which
+    is the one place in the story where content is not centred.
+  */
+  const overHero = Math.max(0, 1 - p / 0.085);
+  /** How much an object at this x is suppressed while the hero is up. */
+  const heroClear = (x: number) => (x < 44 ? 1 - overHero * 0.88 : 1);
+
   return (
     <div aria-hidden="true" className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
       {MOTES.map((m, i) => {
@@ -110,7 +125,8 @@ export function World() {
               width: m.r * 2,
               height: m.r * 2,
               background: i % 5 === 0 ? C.coral : i % 3 === 0 ? C.pink : C.paper,
-              opacity: Math.round(edge * density * (0.1 + m.depth * 0.3) * 20) / 20,
+              opacity:
+                Math.round(edge * density * heroClear(m.x) * (0.1 + m.depth * 0.3) * 20) / 20,
             }}
           />
         );
@@ -137,7 +153,8 @@ export function World() {
               left: `${o.x}%`,
               top: 0,
               transform: `translate(-50%,-50%) translateY(${top.toFixed(2)}vh) rotate(${(i * 47) % 360}deg)`,
-              opacity: Math.round(edge * density * (0.4 + o.depth * 0.5) * 20) / 20,
+              opacity:
+                Math.round(edge * density * heroClear(o.x) * (0.4 + o.depth * 0.5) * 20) / 20,
               filter: o.depth > 0.7 ? undefined : `blur(${((1 - o.depth) * 1.5).toFixed(2)}px)`,
             }}
           >

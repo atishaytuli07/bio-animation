@@ -464,3 +464,31 @@
   }
 }
 
+/*
+ * The hold control's resting invitation.
+ *
+ * A button that does nothing until pressed has to say so. This is a single
+ * soft ring breathing out of the button's edge — enough to read as "press
+ * me", quiet enough not to become a second thing competing for attention on
+ * an already busy screen. It stops the moment the reader starts holding,
+ * because by then it has done its job.
+ */
+@keyframes holdPulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0;
+  }
+  55% {
+    transform: scale(1.16);
+    opacity: 0.3;
+  }
+}
+.hold-invite {
+  animation: holdPulse 2.6s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .hold-invite {
+    animation: none;
+  }
+}

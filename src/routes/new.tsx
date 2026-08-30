@@ -130,7 +130,7 @@ const JOURNEY = ["The gene", "The enzyme", "Two people", "Inside the body", "Det
 const SCALE_STOPS = [
   // in/out are scroll positions; each is fully retired before the next arrives.
   // Overlapping them stacked two labels at the same coordinates.
-  { label: "Your genome", note: "about 3 billion letters", in: 0.34, out: 0.42 },
+  { label: "Your genome", note: "about three billion letters", in: 0.34, out: 0.42 },
   { label: "Chromosome 1", note: "1p21.3", in: 0.48, out: 0.56 },
   { label: "DPYD", note: "builds the enzyme that clears the drug", in: 0.6, out: 0.68 },
 ] as const;
@@ -224,6 +224,13 @@ function StoryProgress() {
 /** Scattered field of scientific elements — the "much less empty background". */
 const FIELD = [
   /*
+    DELIBERATELY FEW. The hero was running this array, a separate DOTS layer,
+    and the global World all at once — 58 drifting elements on the one screen
+    whose copy is left-aligned rather than centred. Three of them sat directly
+    on the paragraph, the button and the chapter label. What survives here is
+    only what the global world cannot do: objects that straddle the cream/purple
+    seam, which is what stops that edge reading as a wall.
+
     Positions are percentages of the viewport, and the layout changes shape at
     md: side-by-side above it, stacked below. Objects tuned for the seam
     therefore land on the copy once the columns stack, so the ones that would
@@ -232,10 +239,7 @@ const FIELD = [
 
     depth: 0 = far (small, soft, barely moves) … 1 = near (large, sharp, moves most)
   */
-  { k: "cell", x: 11, y: 87, s: 0.86, r: -6, tone: C.pink, depth: 1, hideSm: true },
-  { k: "mol", x: 22, y: 97, s: 0.6, r: 12, tone: C.coral, depth: 0.82, hideSm: true },
   { k: "enz", x: 72, y: 12, s: 0.5, r: 10, tone: C.green, depth: 0.5 },
-  { k: "cell", x: 20, y: 11, s: 0.44, r: -8, tone: C.blue, depth: 0.28 },
 
   /*
     Straddling the seam. The field's edge sits near x = 42%, so these sit ON
@@ -252,17 +256,6 @@ const FIELD = [
   { k: "cell", x: 95, y: 72, s: 0.5, r: -8, tone: C.blue, depth: 0.3, hideSm: true },
   { k: "mol", x: 90, y: 16, s: 0.38, r: 20, tone: C.coral, depth: 0.2 },
 ] as const;
-
-/** Small drifting particles — the drug moving through the frame. */
-const DOTS = Array.from({ length: 7 }, (_, i) => ({
-  // biased to the outer thirds so none land on the headline or paragraph
-  x: i % 2 === 0 ? ((i * 13) % 26) + 2 : ((i * 17) % 30) + 66,
-  y: (i * 67 + 13) % 100,
-  r: 3 + ((i * 11) % 4),
-  tone: [C.coral, C.pink, C.blue, C.green][i % 4],
-  d: 6 + ((i * 7) % 8),
-  delay: (i % 9) * 0.7,
-}));
 
 /* --------------------------------------------------------------- the page */
 
@@ -496,23 +489,6 @@ function HeroConcept() {
                 )}
               </div>
             ))}
-            {/* Particles are cheap and read as suspension; they stay. */}
-            {DOTS.map((d, i) => (
-              <span
-                key={`d${i}`}
-                className="absolute block rounded-full float"
-                style={{
-                  left: `${d.x}%`,
-                  top: `${d.y}%`,
-                  width: d.r * 2,
-                  height: d.r * 2,
-                  background: d.tone,
-                  opacity: 0.9,
-                  animationDelay: `${d.delay}s`,
-                  animationDuration: `${d.d}s`,
-                }}
-              />
-            ))}
           </div>
 
           {/* ---------------------------------------------------------- nav */}
@@ -694,8 +670,8 @@ function HeroConcept() {
                 className="mt-4 max-w-md text-[16px] font-medium leading-relaxed md:mt-6 md:text-[17px]"
                 style={{ color: `${C.ink}c4` }}
               >
-                One gene decides how your body clears a widely used chemotherapy drug. For some
-                people, the standard dose is the danger.
+                One gene sets how fast your body clears a widely used chemotherapy drug. For some
+                people, a standard dose is more than they can handle.
               </p>
 
               <div className="mt-5 flex flex-wrap items-center gap-3 md:mt-8">
@@ -791,14 +767,17 @@ function HeroConcept() {
                 style={{ top: "20vh", opacity: q(easeOut(on)) }}
               >
                 <span
-                  className="flex flex-col gap-1.5 text-[11px] font-bold uppercase tracking-[0.26em]"
+                  // Same spec as every other small label on the site. This had
+                  // its own tracking (0.26em) and its note had its own size and
+                  // spacing, so one kind of thing was wearing three costumes.
+                  className="flex flex-col gap-1.5 text-[11px] font-bold uppercase tracking-[0.22em]"
                   style={{ fontFamily: DISPLAY, color: C.paper }}
                 >
                   <span className="flex items-center gap-3">
                     <span className="block h-px w-8" style={{ background: `${C.paper}99` }} />
                     {stop.label}
                   </span>
-                  <span className="pl-11 text-[10px] font-semibold normal-case tracking-[0.06em] opacity-75">
+                  <span className="pl-11 text-[10px] font-semibold normal-case tracking-normal opacity-70 md:text-[11px]">
                     {stop.note}
                   </span>
                 </span>
@@ -832,7 +811,7 @@ function HeroConcept() {
                 transform: `translateY(${((1 - followIn) * 22).toFixed(1)}px)`,
               }}
             >
-              Follow the gene.
+              One gene. One letter.
             </p>
           </div>
 
@@ -870,9 +849,9 @@ function HeroConcept() {
                 transform: `translateY(${((1 - closing) * 18).toFixed(1)}px)`,
               }}
             >
-              Three billion letters.
+              About three billion letters.
               <br />
-              <span style={{ color: "#FFC9C4" }}>This one can change your dose.</span>
+              <span style={{ color: C.redOnField }}>This one can change your dose.</span>
             </p>
           </div>
         </div>

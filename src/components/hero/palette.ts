@@ -31,6 +31,15 @@ export const C = {
   lavender: "#A084DD",
   lavenderDeep: "#7355B4",
   green: "#3FA877",
+  /*
+    Tints for type set ON the deep field. The mid-tone red and green are built
+    for cream and go muddy against purple, so headlines were reaching for
+    hand-written hex — #FFC9C4 and #9BE8C4 appeared inline in three different
+    components. Same meanings, legible ground: these are the on-field variants
+    of red and green, and nothing should invent another one.
+  */
+  redOnField: "#FFC9C4",
+  greenOnField: "#9BE8C4",
   /** Deep warm near-black. Every outline and every word uses it — this weight
    *  is what the reference wikis have and a pastel page does not. */
   ink: "#241C2E",

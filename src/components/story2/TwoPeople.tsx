@@ -363,9 +363,9 @@ export function TwoPeople() {
               className="mt-6 max-w-[34ch] text-center font-black md:mt-8"
               style={{ ...T.sub, color: C.paper }}
             >
-              A <span style={{ color: "#FFC9C4" }}>DPYD</span> variant can reduce{" "}
-              <span style={{ color: "#9BE8C4" }}>DPD</span> activity — limiting the body's ability
-              to clear 5-FU.
+              A <span style={{ color: C.redOnField }}>DPYD</span> variant can reduce{" "}
+              <span style={{ color: C.greenOnField }}>DPD</span> activity — limiting the body's
+              ability to clear 5-FU.
             </p>
           </div>
         )}
@@ -440,7 +440,8 @@ export function TwoPeople() {
               transform: `translateY(${outcome.y.toFixed(1)}px)`,
             }}
           >
-            &hellip;doesn&rsquo;t mean the <span style={{ color: "#FFC9C4" }}>same outcome.</span>
+            &hellip;doesn&rsquo;t mean the{" "}
+            <span style={{ color: C.redOnField }}>same outcome.</span>
           </p>
         </div>
       </div>
