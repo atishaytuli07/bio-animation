@@ -28,7 +28,7 @@ export type Page = {
 export const PAGES: Page[] = [
   { label: "The story", to: "/new", ready: true },
   { label: "Description", to: "/description", ready: true },
-  { label: "Engineering", to: "/engineering", ready: false },
+  { label: "Engineering", to: "/engineering", ready: true },
   { label: "Human Practices", to: "/human-practices", ready: false },
   { label: "Safety", to: "/safety", ready: false },
   { label: "Team", to: "/team", ready: false },
