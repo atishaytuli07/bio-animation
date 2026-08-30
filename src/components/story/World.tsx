@@ -33,18 +33,18 @@ import { track, usePageProgress } from "@/hooks/use-page-progress";
 /** Presence across the story: high where a scene is sparse, low where it is busy. */
 const DENSITY = [
   [0.0, 0.5], // hero — the helix already fills the frame
-  [0.1, 0.75],
-  [0.18, 0.92], // the descent, deep in the purple
-  [0.25, 1.0], // the sequence arrival — the emptiest frame in the story
-  [0.32, 0.6], // the enzyme bridge: copy + diagram, so pull back
-  [0.44, 0.4], // the two patients carry their own frame
-  [0.62, 0.34],
+  [0.08, 0.75],
+  [0.14, 0.92], // the descent, deep in the purple
+  [0.19, 1.0], // the sequence arrival — the emptiest frame in the story
+  [0.25, 0.6], // the enzyme bridge: copy + diagram, so pull back
+  [0.34, 0.4], // the two patients carry their own frame
+  [0.48, 0.34],
   // The bloodstream is the most information-dense screen on the site: figure,
   // vessel, molecules, a tag and a control. The client asked for the ambient
   // elements to stop competing there, so this is the quietest the world gets.
-  [0.75, 0.28],
-  [0.88, 0.42],
-  [1.0, 0.4],
+  [0.6, 0.28],
+  [0.78, 0.42], // the closing section is calmer, so the world can breathe again
+  [1.0, 0.46],
 ] as const;
 
 /**

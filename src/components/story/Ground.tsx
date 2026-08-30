@@ -36,40 +36,49 @@ import { track, usePageProgress } from "@/hooks/use-page-progress";
  */
 const BASE = [
   [0.0, C.paper],
-  [0.05, C.paper],
-  [0.11, `color-mix(in oklab, ${C.lavender} 45%, ${C.paper})`],
-  [0.17, C.lavender],
-  [0.24, C.lavenderDeep],
-  [0.37, C.lavenderDeep],
-  [0.48, `color-mix(in oklab, ${C.lavender} 85%, ${C.coral})`],
-  [0.6, `color-mix(in oklab, ${C.lavenderDeep} 72%, ${C.red})`],
+  [0.04, C.paper],
+  [0.09, `color-mix(in oklab, ${C.lavender} 45%, ${C.paper})`],
+  [0.13, C.lavender],
+  [0.18, C.lavenderDeep],
+  [0.28, C.lavenderDeep],
+  [0.37, `color-mix(in oklab, ${C.lavender} 85%, ${C.coral})`],
+  [0.46, `color-mix(in oklab, ${C.lavenderDeep} 72%, ${C.red})`],
   // The purple→pink handover, taken in four steps rather than two: the client
   // asked to keep this transition and only smooth it.
-  [0.68, `color-mix(in oklab, ${C.lavenderDeep} 52%, ${C.pink})`],
-  [0.73, `color-mix(in oklab, ${C.lavenderDeep} 30%, ${C.pink})`],
-  [0.78, `color-mix(in oklab, ${C.pink} 74%, ${C.paper})`],
-  [0.84, `color-mix(in oklab, ${C.pink} 40%, ${C.paper})`],
-  [0.9, `color-mix(in oklab, ${C.pink} 22%, ${C.paper})`],
-  [1.0, `color-mix(in oklab, ${C.pink} 15%, ${C.paper})`],
+  [0.52, `color-mix(in oklab, ${C.lavenderDeep} 52%, ${C.pink})`],
+  [0.57, `color-mix(in oklab, ${C.lavenderDeep} 30%, ${C.pink})`],
+  [0.62, `color-mix(in oklab, ${C.pink} 74%, ${C.paper})`],
+  [0.68, `color-mix(in oklab, ${C.pink} 40%, ${C.paper})`],
+  [0.75, `color-mix(in oklab, ${C.pink} 22%, ${C.paper})`],
+  /*
+    The last section resolves toward a pale green. Green already means "a
+    validated result" everywhere else in this palette, so the ground itself
+    carries the ending rather than a colour chosen because it looked calm.
+  */
+  [0.84, `color-mix(in oklab, ${C.pink} 8%, ${C.paper})`],
+  [0.92, `color-mix(in oklab, ${C.green} 10%, ${C.paper})`],
+  [1.0, `color-mix(in oklab, ${C.green} 14%, ${C.paper})`],
 ] as const;
 
 /** The light in the room: strength of the wash, and where it falls from. */
 const LIGHT = [
   [0.0, 0],
-  [0.09, 0.2],
-  [0.18, 0.6],
-  [0.28, 0.66],
-  [0.5, 0.7],
-  [0.68, 0.58],
-  [0.81, 0.24],
-  [1.0, 0.1],
+  [0.07, 0.2],
+  [0.14, 0.6],
+  [0.22, 0.66],
+  [0.4, 0.7],
+  [0.52, 0.58],
+  [0.64, 0.24],
+  [0.78, 0.1],
+  [1.0, 0.06],
 ] as const;
 
 const ANGLE = [
   [0.0, 150],
-  [0.28, 168],
-  [0.69, 196],
-  [1.0, 212],
+  [0.21, 168],
+  [0.53, 196],
+  [0.75, 208],
+  [1.0, 218],
 ] as const;
 
 const num = (p: number, frames: readonly (readonly [number, number])[]) => {
@@ -97,12 +106,34 @@ export function Ground() {
       className="pointer-events-none fixed inset-0 -z-20"
       style={{ background: colour }}
     >
-      {/* the light: a soft wash that strengthens and swings through the descent */}
+      {/*
+        The light falls on the SUBJECT, not on the type.
+
+        The bloom used to sit at 50% 0% — the top centre of the frame, which is
+        exactly where every headline is pinned. It made the copy band the
+        brightest part of the screen, so cream type on it measured 2.84:1 and
+        the fix looked like it had to be inverting the type to near-black. It
+        did not. Moving the light down onto the figures, and letting the top of
+        the frame fall away, is how the scene would actually be lit — and it
+        gives the copy band its depth back without a scrim behind any word.
+      */}
       <div
         className="absolute inset-0"
         style={{
           opacity: light,
-          background: `linear-gradient(${angle.toFixed(0)}deg, rgba(255,255,255,0.16), rgba(255,255,255,0) 46%), radial-gradient(120% 80% at 50% 0%, rgba(255,255,255,0.14), rgba(255,255,255,0) 60%)`,
+          background: `linear-gradient(${angle.toFixed(0)}deg, rgba(255,255,255,0.14), rgba(255,255,255,0) 52%), radial-gradient(95% 62% at 50% 64%, rgba(255,255,255,0.2), rgba(255,255,255,0) 72%)`,
+        }}
+      />
+      {/*
+        The top of the room, further from the light. Scaled by the same `light`
+        value so it exists only where there is a lit field to fall away from —
+        on the cream sections at either end it is absent entirely.
+      */}
+      <div
+        className="absolute inset-x-0 top-0 h-[46%]"
+        style={{
+          opacity: light,
+          background: `linear-gradient(180deg, ${C.ink}4d, ${C.ink}00)`,
         }}
       />
       {/*

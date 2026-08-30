@@ -242,7 +242,7 @@ export function TwoPeople() {
   // Dissolve out across the measured boundary at 0.658, as the bloodstream
   // scene rises into the same frame.
   const pageP = usePageProgress();
-  const handoff = range(pageP, 0.676, 0.716);
+  const handoff = range(pageP, 0.508, 0.545);
 
   /* ---- beats ---------------------------------------------------------------
      enter → the same treatment → IDENTICAL, held → one clears, one fills →
@@ -420,7 +420,7 @@ export function TwoPeople() {
             className="text-center font-black"
             style={{
               ...T.headline,
-              color: C.ink,
+              color: C.paper,
               transform: `translateY(${title.y.toFixed(1)}px)`,
             }}
           >
@@ -434,7 +434,7 @@ export function TwoPeople() {
             className="text-center font-black"
             style={{
               ...T.headline,
-              color: C.ink,
+              color: C.paper,
               transform: `translateY(${outcome.y.toFixed(1)}px)`,
             }}
           >

@@ -1,6 +1,8 @@
 import { useRef, useState } from "react";
 
 import { asset, C, L, T } from "@/components/hero/palette";
+import { BOT, ENZYME, EY, H, Hex, TOP, VesselShell, W } from "@/components/story/vessel";
+import { usePageProgress } from "@/hooks/use-page-progress";
 import {
   band,
   beat,
@@ -41,76 +43,9 @@ import {
 
 const q = (v: number) => Math.round(v * 20) / 20;
 
-/** Red cells drifting past, so the tube reads as a blood vessel. */
-const RBC = Array.from({ length: 11 }, (_, i) => ({
-  x: ((i * 0.37) % 1) * 0.9,
-  phase: (i * 0.143) % 1,
-  r: 19 + ((i * 5) % 4) * 4,
-  rot: (i * 53) % 180,
-}));
-
 /** Molecules in flight. Every 4th is still cleared — the enzyme is reduced. */
 const IN_FLIGHT = 9;
 const CLEARED_EVERY = 4;
-
-/* --- the vessel's own coordinate space ----------------------------------- */
-const W = 360;
-const H = 520;
-const TOP = 10;
-const BOT = 492;
-/** Where the enzyme should be. */
-const EY = 272;
-
-/** The lumen: two soft walls, drawn as one closed path so it can be filled. */
-const LUMEN =
-  "M32 0 C 12 130, 52 260, 32 390 C 18 460, 38 500, 32 520 L 328 520 C 322 500, 342 460, 328 390 C 308 260, 348 130, 328 0 Z";
-const WALL_L = "M32 0 C 12 130, 52 260, 32 390 C 18 460, 38 500, 32 520";
-const WALL_R = "M328 0 C 348 130, 308 260, 328 390 C 342 460, 322 500, 328 520";
-/** The enzyme's outline, at the origin; positioned by its parent. */
-const ENZYME =
-  "M14 24 Q14 12 26 12 L54 12 Q66 12 66 24 L66 34 Q52 34 52 42 Q52 50 66 50 L66 58 Q66 70 54 70 L26 70 Q14 70 14 58 Z";
-
-/** A drug molecule, drawn natively in this SVG's units. */
-function Hex({
-  x,
-  y,
-  r,
-  tone,
-  o = 1,
-}: {
-  x: number;
-  y: number;
-  r: number;
-  tone: string;
-  o?: number;
-}) {
-  const pts = Array.from({ length: 6 }, (_, i) => {
-    const a = (i / 6) * Math.PI * 2 - Math.PI / 2;
-    return [x + Math.cos(a) * r, y + Math.sin(a) * r] as const;
-  });
-  return (
-    <g opacity={o}>
-      <polygon
-        points={pts.map((pt) => `${pt[0].toFixed(1)},${pt[1].toFixed(1)}`).join(" ")}
-        fill={tone}
-        stroke={C.ink}
-        strokeWidth="2.2"
-        strokeLinejoin="round"
-      />
-      {pts.map((pt, i) => (
-        <circle
-          key={i}
-          cx={pt[0]}
-          cy={pt[1]}
-          r={r * 0.22}
-          fill={C.paper}
-          stroke={C.ink}
-          strokeWidth="1.6"
-        />
-      ))}
-    </g>
-  );
-}
 
 /**
  * A small annotation pinned over the vessel, with a leader dot.
@@ -185,6 +120,12 @@ function Tag({
 export function Why() {
   const [ref, p] = useSmoothProgress<HTMLElement>(0.1);
   const [hot, setHot] = useState(false);
+
+  // Dissolve out across the measured boundary at 0.753, as the closing scene
+  // rises into the same frame. Without this the two overlap for a full screen
+  // of scroll with both painted.
+  const pageP = usePageProgress();
+  const handoff = range(pageP, 0.745, 0.782);
 
   /* ---- beats ---------------------------------------------------------------
      enter → look closer → the drug arrives → the gap → the letter connects →
@@ -272,7 +213,10 @@ export function Why() {
       style={{ height: "440vh", marginTop: "-100vh" }}
       className="relative"
     >
-      <div className="sticky top-0 h-screen overflow-hidden [--vessel:44vh] md:[--vessel:min(56vh,520px)]">
+      <div
+        className="sticky top-0 h-screen overflow-hidden [--vessel:44vh] md:[--vessel:min(56vh,520px)]"
+        style={{ opacity: 1 - q(handoff), visibility: handoff > 0.99 ? "hidden" : "visible" }}
+      >
         {/* The chapter label lives in the story rail now — see StoryProgress. */}
 
         {COPY.map((b, i) => (
@@ -377,71 +321,7 @@ export function Why() {
 
           <div className="relative w-fit shrink-0" style={{ height: "var(--vessel)" }}>
             <svg viewBox={`0 0 ${W} ${H}`} className="h-full w-auto select-none" aria-hidden="true">
-              <defs>
-                {/*
-                  Fade top and bottom. Without it the lumen ends in two flat
-                  horizontal edges and reads as a cut-out strip rather than a
-                  vessel running on through the body.
-                */}
-                <linearGradient id="wy-fade" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0" stopColor="#fff" stopOpacity="0" />
-                  <stop offset="0.14" stopColor="#fff" stopOpacity="1" />
-                  <stop offset="0.86" stopColor="#fff" stopOpacity="1" />
-                  <stop offset="1" stopColor="#fff" stopOpacity="0" />
-                </linearGradient>
-                <mask id="wy-mask">
-                  <rect x="0" y="0" width={W} height={H} fill="url(#wy-fade)" />
-                </mask>
-              </defs>
-
-              <g mask="url(#wy-mask)">
-                {/* Lit, not tinted: a pink lumen on the pink ground vanished. */}
-                <path
-                  d={LUMEN}
-                  fill={`${C.paper}${hot ? "9e" : "7a"}`}
-                  style={{ transition: "fill 300ms ease" }}
-                />
-                <path d={WALL_L} fill="none" stroke={C.ink} strokeWidth="3" />
-                <path d={WALL_R} fill="none" stroke={C.ink} strokeWidth="3" />
-              </g>
-
-              {/*
-                Red cells. The client called this "the enlarged vessel-like
-                area" — she could not tell what it was, and a plain tube is not
-                a blood vessel to anyone. Discs drifting past make it one
-                instantly, and they are a different SHAPE from the drug, not
-                just a different colour, so the two can never be confused.
-              */}
-              {flow > 0.01 &&
-                RBC.map((c, i) => {
-                  const s2 = (((ph * 0.09 + c.phase) % 1) + 1) % 1;
-                  const cx = 60 + c.x * 240;
-                  const cy = TOP + s2 * (BOT - TOP);
-                  return (
-                    <g
-                      key={`r${i}`}
-                      opacity={flow * 0.5}
-                      transform={`rotate(${c.rot} ${cx} ${cy})`}
-                    >
-                      <ellipse
-                        cx={cx}
-                        cy={cy}
-                        rx={c.r}
-                        ry={c.r * 0.62}
-                        fill={C.pink}
-                        opacity="0.85"
-                      />
-                      <ellipse
-                        cx={cx}
-                        cy={cy}
-                        rx={c.r * 0.45}
-                        ry={c.r * 0.26}
-                        fill={C.red}
-                        opacity="0.18"
-                      />
-                    </g>
-                  );
-                })}
+              <VesselShell id="wy" lit={hot} flow={flow} phase={ph} />
 
               {/* where the enzyme should be */}
               <path

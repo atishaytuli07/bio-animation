@@ -5,6 +5,7 @@ import { Helix } from "@/components/hero/Helix";
 import { Sequence } from "@/components/hero/Sequence";
 import { TwoPeople } from "@/components/story2/TwoPeople";
 import { Why } from "@/components/story3/Why";
+import { BeforeTheDose } from "@/components/story5/BeforeTheDose";
 import { Ground } from "@/components/story/Ground";
 import { World } from "@/components/story/World";
 import { usePageProgress } from "@/hooks/use-page-progress";
@@ -113,7 +114,13 @@ function Underline({ index, active = false }: { index: number; active?: boolean 
  */
 const q = (v: number) => Math.round(v * 20) / 20;
 
-const JOURNEY = ["The gene", "The enzyme", "Two people", "Inside the body", "Detection"] as const;
+const JOURNEY = [
+  "The gene",
+  "The enzyme",
+  "Two people",
+  "Inside the body",
+  "Before the first dose",
+] as const;
 
 /**
  * The scale stops named during the descent.
@@ -168,9 +175,10 @@ const SCALE_STOPS = [
 */
 const CHAPTERS = [
   { at: 0.0, n: "01", name: "The gene" },
-  { at: 0.278, n: "02", name: "The enzyme" },
-  { at: 0.378, n: "03", name: "Two people" },
-  { at: 0.694, n: "04", name: "Inside the body" },
+  { at: 0.211, n: "02", name: "The enzyme" },
+  { at: 0.287, n: "03", name: "Two people" },
+  { at: 0.529, n: "04", name: "Inside the body" },
+  { at: 0.753, n: "05", name: "Before the first dose" },
 ] as const;
 
 function StoryProgress() {
@@ -203,14 +211,14 @@ function StoryProgress() {
         <span
           className={L.labelType}
           style={{
-            color: p > 0.06 && p < 0.7 ? C.paper : C.redDeep,
+            color: p > 0.06 && p < 0.58 ? C.paper : C.redDeep,
             transition: "color 400ms ease",
           }}
         >
           <span
             className="block h-0.5 w-7"
             style={{
-              background: p > 0.06 && p < 0.7 ? C.paper : C.red,
+              background: p > 0.06 && p < 0.58 ? C.paper : C.red,
               transition: "background 400ms ease",
             }}
           />
@@ -270,7 +278,7 @@ function HeroConcept() {
     closing line has finished arriving.
   */
   const pageP = usePageProgress();
-  const handoff = range(pageP, 0.268, 0.306);
+  const handoff = range(pageP, 0.203, 0.238);
 
   /* ---- one section, four beats -------------------------------------------
      The principle: THE SCROLL IS THE MICROSCOPE. The reader's own hand is what
@@ -807,7 +815,15 @@ function HeroConcept() {
               style={{
                 fontFamily: DISPLAY,
                 ...T.headline,
-                color: C.ink,
+                /*
+                  Paper, like every other headline set on the field. This was
+                  briefly ink, chasing a contrast number — but near-black type
+                  on the purple reads as a caption stamped onto the scene, and
+                  it made the site speak in two voices on what looks to a
+                  reader like the same background. The ground carries the
+                  contrast now; the type stays in one voice.
+                */
+                color: C.paper,
                 transform: `translateY(${((1 - followIn) * 22).toFixed(1)}px)`,
               }}
             >
@@ -858,6 +874,7 @@ function HeroConcept() {
 
       <TwoPeople />
       <Why />
+      <BeforeTheDose />
 
       {/*
         The footer exists mainly to carry the Attributions link. iGEM requires
