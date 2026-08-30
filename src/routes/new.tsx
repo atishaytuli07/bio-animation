@@ -5,6 +5,7 @@ import { Helix } from "@/components/hero/Helix";
 import { Sequence } from "@/components/hero/Sequence";
 import { TwoPeople } from "@/components/story2/TwoPeople";
 import { Why } from "@/components/story3/Why";
+import { NAV } from "@/components/story/site-map";
 import { Ground } from "@/components/story/Ground";
 import { World } from "@/components/story/World";
 import { usePageProgress } from "@/hooks/use-page-progress";
@@ -583,17 +584,35 @@ function HeroConcept() {
               className="hidden items-center gap-9 md:flex"
               style={{ color: C.paper, fontFamily: DISPLAY }}
             >
-              {["Project", "Wet Lab", "Dry Lab", "Human Practices", "Team"].map((l, i) => (
-                <button
-                  key={l}
-                  type="button"
-                  className="group relative cursor-pointer whitespace-nowrap pb-2 text-[16px] font-bold focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-current"
-                  style={{ letterSpacing: "0.01em", fontFamily: "inherit", color: "inherit" }}
-                >
-                  {l}
-                  <Underline index={i} active={i === 0} />
-                </button>
-              ))}
+              {/*
+                Generated from the site map, not a hard-coded list. A page that
+                is not written yet renders as plain dimmed text with no link and
+                no pointer — an honest "not here yet" rather than a control that
+                silently does nothing, which is what these five were.
+              */}
+              {NAV.map((page, i) =>
+                page.ready ? (
+                  <Link
+                    key={page.label}
+                    to={page.to}
+                    className="group relative whitespace-nowrap pb-2 text-[16px] font-bold focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-current"
+                    style={{ letterSpacing: "0.01em", fontFamily: "inherit", color: "inherit" }}
+                  >
+                    {page.label}
+                    <Underline index={i} active={page.to === "/new"} />
+                  </Link>
+                ) : (
+                  <span
+                    key={page.label}
+                    aria-disabled="true"
+                    title="Not written yet"
+                    className="whitespace-nowrap pb-2 text-[16px] font-bold"
+                    style={{ letterSpacing: "0.01em", fontFamily: "inherit", opacity: 0.45 }}
+                  >
+                    {page.label}
+                  </span>
+                ),
+              )}
             </nav>
 
             {/* Phones had no navigation at all — the links were simply hidden below
@@ -631,7 +650,7 @@ function HeroConcept() {
 
           {menu && (
             <div
-              className="relative z-20 mx-6 mb-2 md:hidden"
+              className="absolute inset-x-6 top-[74px] z-30 md:hidden"
               style={{
                 background: C.paper,
                 border: `2.5px solid ${C.ink}`,
@@ -639,20 +658,40 @@ function HeroConcept() {
                 boxShadow: `4px 4px 0 ${C.ink}`,
               }}
             >
-              {["Project", "Wet Lab", "Dry Lab", "Human Practices", "Team"].map((l, i) => (
-                <button
-                  key={l}
-                  type="button"
-                  className="block w-full cursor-pointer px-5 py-3 text-left text-[15px] font-bold"
-                  style={{
-                    fontFamily: DISPLAY,
-                    color: C.ink,
-                    borderTop: i ? `1.5px solid ${C.ink}22` : undefined,
-                  }}
-                >
-                  {l}
-                </button>
-              ))}
+              {NAV.map((page, i) =>
+                page.ready ? (
+                  <Link
+                    key={page.label}
+                    to={page.to}
+                    onClick={() => setMenu(false)}
+                    className="block w-full px-5 py-3 text-left text-[15px] font-bold"
+                    style={{
+                      fontFamily: DISPLAY,
+                      color: C.ink,
+                      borderTop: i ? `1.5px solid ${C.ink}22` : undefined,
+                    }}
+                  >
+                    {page.label}
+                  </Link>
+                ) : (
+                  <span
+                    key={page.label}
+                    aria-disabled="true"
+                    className="flex w-full items-center justify-between px-5 py-3 text-left text-[15px] font-bold"
+                    style={{
+                      fontFamily: DISPLAY,
+                      color: C.ink,
+                      opacity: 0.45,
+                      borderTop: i ? `1.5px solid ${C.ink}22` : undefined,
+                    }}
+                  >
+                    {page.label}
+                    <span className={L.note} style={{ opacity: 0.7 }}>
+                      soon
+                    </span>
+                  </span>
+                ),
+              )}
             </div>
           )}
 
