@@ -5,7 +5,6 @@ import { Helix } from "@/components/hero/Helix";
 import { Sequence } from "@/components/hero/Sequence";
 import { TwoPeople } from "@/components/story2/TwoPeople";
 import { Why } from "@/components/story3/Why";
-import { BeforeTheDose } from "@/components/story5/BeforeTheDose";
 import { Ground } from "@/components/story/Ground";
 import { World } from "@/components/story/World";
 import { usePageProgress } from "@/hooks/use-page-progress";
@@ -175,10 +174,12 @@ const SCALE_STOPS = [
 */
 const CHAPTERS = [
   { at: 0.0, n: "01", name: "The gene" },
-  { at: 0.211, n: "02", name: "The enzyme" },
-  { at: 0.287, n: "03", name: "Two people" },
-  { at: 0.529, n: "04", name: "Inside the body" },
-  { at: 0.753, n: "05", name: "Before the first dose" },
+  { at: 0.203, n: "02", name: "The enzyme" },
+  { at: 0.276, n: "03", name: "Two people" },
+  { at: 0.509, n: "04", name: "Inside the body" },
+  // Not a new section — the same scene, after it turns. The rail names the
+  // argument even though the picture never restarts.
+  { at: 0.84, n: "05", name: "Before the first dose" },
 ] as const;
 
 function StoryProgress() {
@@ -211,14 +212,14 @@ function StoryProgress() {
         <span
           className={L.labelType}
           style={{
-            color: p > 0.06 && p < 0.58 ? C.paper : C.redDeep,
+            color: p > 0.06 && p < 0.6 ? C.paper : C.redDeep,
             transition: "color 400ms ease",
           }}
         >
           <span
             className="block h-0.5 w-7"
             style={{
-              background: p > 0.06 && p < 0.58 ? C.paper : C.red,
+              background: p > 0.06 && p < 0.6 ? C.paper : C.red,
               transition: "background 400ms ease",
             }}
           />
@@ -278,7 +279,9 @@ function HeroConcept() {
     closing line has finished arriving.
   */
   const pageP = usePageProgress();
-  const handoff = range(pageP, 0.203, 0.238);
+  const handoff = range(pageP, 0.196, 0.231);
+  /** True while the ground is the deep field rather than cream. */
+  const onField = pageP > 0.06 && pageP < 0.6;
 
   /* ---- one section, four beats -------------------------------------------
      The principle: THE SCROLL IS THE MICROSCOPE. The reader's own hand is what
@@ -546,14 +549,30 @@ function HeroConcept() {
                 />
               </span>
               <span
-                className="text-[21px] font-extrabold leading-none text-[color:var(--mark)] [--mark:var(--paper-c)] md:[--mark:var(--ink-c)]"
-                style={{ fontFamily: DISPLAY, letterSpacing: "-0.01em" }}
+                className="text-[21px] font-extrabold leading-none"
+                style={{
+                  fontFamily: DISPLAY,
+                  letterSpacing: "-0.01em",
+                  /*
+                    The wordmark obeys the same rule as every other word on the
+                    site: ink on cream, paper on the field. It was pinned to ink
+                    at md and up by a media query, which is right for the hero's
+                    cream half and wrong the moment the field merges to full
+                    purple underneath it.
+                  */
+                  color: onField ? C.paper : C.ink,
+                  transition: "color 400ms ease",
+                }}
               >
                 Chemo<span style={{ color: C.red }}>Guard</span>
               </span>
               <span
-                className="hidden text-[10px] tracking-[0.22em] text-[color:var(--mark)] opacity-60 [--mark:var(--paper-c)] sm:inline md:[--mark:var(--ink-c)]"
-                style={{ fontFamily: DISPLAY }}
+                className="hidden text-[10px] tracking-[0.22em] opacity-60 sm:inline"
+                style={{
+                  fontFamily: DISPLAY,
+                  color: onField ? C.paper : C.ink,
+                  transition: "color 400ms ease",
+                }}
               >
                 iGEM 2026
               </span>
@@ -676,7 +695,7 @@ function HeroConcept() {
 
               <p
                 className="mt-4 max-w-md text-[16px] font-medium leading-relaxed md:mt-6 md:text-[17px]"
-                style={{ color: `${C.ink}c4` }}
+                style={{ color: C.inkBody }}
               >
                 One gene sets how fast your body clears a widely used chemotherapy drug. For some
                 people, a standard dose is more than they can handle.
@@ -731,7 +750,7 @@ function HeroConcept() {
                   }}
                 >
                   <span
-                    className="flex items-center gap-2 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.18em]"
+                    className={`flex items-center gap-2 px-3 py-1.5 ${L.note}`}
                     style={{ color: C.paper, opacity: 0.75 }}
                   >
                     <svg width="26" height="10" viewBox="0 0 26 10" aria-hidden="true">
@@ -785,9 +804,7 @@ function HeroConcept() {
                     <span className="block h-px w-8" style={{ background: `${C.paper}99` }} />
                     {stop.label}
                   </span>
-                  <span className="pl-11 text-[10px] font-semibold normal-case tracking-normal opacity-70 md:text-[11px]">
-                    {stop.note}
-                  </span>
+                  <span className={`pl-11 normal-case opacity-70 ${L.sub}`}>{stop.note}</span>
                 </span>
               </div>
             );
@@ -874,7 +891,6 @@ function HeroConcept() {
 
       <TwoPeople />
       <Why />
-      <BeforeTheDose />
 
       {/*
         The footer exists mainly to carry the Attributions link. iGEM requires
@@ -887,7 +903,7 @@ function HeroConcept() {
         style={{ background: C.paper, borderTop: `2px solid ${C.ink}18` }}
       >
         <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-4">
-          <span className="text-[13px] font-semibold" style={{ color: `${C.ink}a8` }}>
+          <span className="text-[13px] font-semibold" style={{ color: C.inkNote }}>
             ChemoGuard · iGEM 2026
           </span>
           <Link

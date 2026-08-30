@@ -43,6 +43,14 @@ export const C = {
   /** Deep warm near-black. Every outline and every word uses it — this weight
    *  is what the reference wikis have and a pastel page does not. */
   ink: "#241C2E",
+  /*
+    Ink at reduced strength, named. An audit of every visible string found ink
+    running at THREE different alphas — c4, a0 and a hand-written 0.66 — for
+    what is really two jobs: body copy that sits under a headline, and a note
+    that sits under a title. Two tokens, so a third can never appear.
+  */
+  inkBody: "#241C2Ec4",
+  inkNote: "#241C2Ea0",
 };
 
 /**
@@ -93,6 +101,16 @@ export const L = {
   label: "absolute left-6 top-24 z-20 md:left-10 md:top-28",
   /** Chapter label typography — uppercase, letterspaced, always this size. */
   labelType: "inline-flex items-center gap-2.5 text-[11px] font-bold uppercase tracking-[0.22em]",
+  /*
+    In-scene uppercase annotation — a hint, a state, a unit. Distinct from the
+    chapter label on purpose: that is chrome and wears wider tracking, this is
+    part of the picture. The audit found these running at 10px/0.18em in one
+    place and 11px/0.18em in another, which is drift rather than intent.
+  */
+  note: "text-[11px] font-bold uppercase tracking-[0.18em]",
+  /** The small explanatory line under a title. Was 11px, 12px, and two
+   *  different trackings, for one job. */
+  sub: "text-[11px] font-semibold leading-snug tracking-normal",
   /** Where a stop's headline sits. One coordinate, every stop. */
   headline:
     "pointer-events-none absolute inset-x-0 top-[12vh] z-20 flex justify-center px-6 md:top-[14vh]",

@@ -2,7 +2,6 @@ import { useRef, useState } from "react";
 
 import { asset, C, L, T } from "@/components/hero/palette";
 import { BOT, ENZYME, EY, H, Hex, TOP, VesselShell, W } from "@/components/story/vessel";
-import { usePageProgress } from "@/hooks/use-page-progress";
 import {
   band,
   beat,
@@ -100,16 +99,10 @@ function Tag({
           boxShadow: `2px 2px 0 ${C.ink}`,
         }}
       >
-        <span
-          className="block text-[11px] font-black leading-none md:text-[12px]"
-          style={{ color: C.ink }}
-        >
+        <span className="block text-[13px] font-black leading-none" style={{ color: C.ink }}>
           {title}
         </span>
-        <span
-          className="mt-0.5 block text-[10px] font-semibold leading-none md:text-[11px]"
-          style={{ color: `${C.ink}a0` }}
-        >
+        <span className={`mt-0.5 block ${L.sub}`} style={{ color: C.inkNote }}>
           {sub}
         </span>
       </span>
@@ -121,42 +114,44 @@ export function Why() {
   const [ref, p] = useSmoothProgress<HTMLElement>(0.1);
   const [hot, setHot] = useState(false);
 
-  // Dissolve out across the measured boundary at 0.753, as the closing scene
-  // rises into the same frame. Without this the two overlap for a full screen
-  // of scroll with both painted.
-  const pageP = usePageProgress();
-  const handoff = range(pageP, 0.745, 0.782);
+  /* ---- ONE SCENE, TWO ACTS --------------------------------------------------
+     This used to be two sections that crossfaded into each other, and the
+     client caught it immediately: they show the SAME picture — the same man,
+     the same lens, the same vessel — so dissolving between them stacked two
+     figures and two headlines through each other for a whole screen of scroll.
 
-  /* ---- beats ---------------------------------------------------------------
-     enter → look closer → the drug arrives → the gap → the letter connects →
-     it piles up. Each line of copy lands on the frame that earns it, and no
-     two are ever on screen together.                                       */
-  const enter = range(p, 0.02, 0.12);
-  const lineA = beat(p, 0.04, 0.12, 0.3, 0.38);
-  const flow = band(p, 0.16, 0.24, 0.9, 0.96);
-  const drugLabel = band(p, 0.2, 0.28, 0.44, 0.52);
-  const gap = range(p, 0.34, 0.46);
-  const link = range(p, 0.44, 0.58);
-  /*
-    Both tags were on screen together at the end, which is the crowding the
-    client described. The variant tag was driven by `link`, a range — so once
-    it reached 1 it stayed there for the rest of the section and never left.
-    Each tag now has its own band, and they hand over rather than accumulate.
-  */
-  const variantLabel = band(p, 0.46, 0.56, 0.62, 0.68);
-  const enzymeLabel = band(p, 0.7, 0.78, 0.84, 0.9);
-  /*
-    "One letter, and far less enzyme" is deliberately gone. The client found
-    this screen crowded — figure, vessel, molecules, variant, enzyme, two tags,
-    a heading and a button all at once — and this line was the most redundant
-    thing in it: the two tags beside the diagram already say it, and say it
-    pointing at the thing they describe. One headline in, one out, tags in
-    between.
-  */
-  const build = range(p, 0.56, 0.9);
-  const alarm = range(p, 0.66, 0.86);
-  const warm = range(p, 0.6, 0.88);
-  const lineC = beat(p, 0.88, 0.95, 1.2, 1.3);
+     Nothing about the picture should change at the turn. What changes is its
+     STATE. The drug piles up under a standard dose; then the variant is known,
+     the dose comes down, the pile drains away and the enzyme fills in. One
+     vessel, one figure, one continuous scroll — the story turns, the scene
+     does not restart. It is also the client's own note about scenes
+     transforming into each other rather than being swapped.               */
+
+  /* act one — what a standard dose does */
+  const enter = easeOut(range(p, 0.01, 0.06));
+  const lineA = beat(p, 0.03, 0.09, 0.19, 0.25);
+  const flow = band(p, 0.1, 0.16, 0.97, 0.995);
+  const drugLabel = band(p, 0.13, 0.19, 0.28, 0.33);
+  const gap = range(p, 0.24, 0.32);
+  const link = range(p, 0.3, 0.4);
+  const variantLabel = band(p, 0.32, 0.38, 0.44, 0.49);
+  const build = range(p, 0.38, 0.56);
+  const alarm = range(p, 0.44, 0.58);
+  const enzymeLabel = band(p, 0.46, 0.52, 0.57, 0.62);
+  const lineB = beat(p, 0.56, 0.62, 0.67, 0.72);
+
+  /* the turn — and everything after it undoes what act one built */
+  const lineC = beat(p, 0.68, 0.74, 0.8, 0.85);
+  const result = band(p, 0.72, 0.78, 0.97, 0.995);
+  /** 9 molecules of standard dose come down to 4. */
+  const trim = range(p, 0.76, 0.85);
+  /** What had accumulated drains away — the payoff of the whole section. */
+  const drain = range(p, 0.79, 0.89);
+  /** The dashed absence fills in solid: enough enzyme for THIS dose. */
+  const heal = range(p, 0.81, 0.9);
+  const lineD = beat(p, 0.91, 0.96, 1.2, 1.3);
+  /** The in-vessel letter hands over to the report card at the turn. */
+  const handover = range(p, 0.74, 0.82);
 
   const t = useTime(flow > 0.01);
 
@@ -182,10 +177,11 @@ export function Why() {
   }
   const ph = phase.current;
 
-  const drugTone = alarm > 0.5 ? C.red : C.coral;
+  // Red while it is accumulating; back to coral once it is clearing again.
+  const drugTone = alarm > 0.5 && drain < 0.5 ? C.red : C.coral;
 
   // What could not be cleared, settling at the bottom of the frame.
-  const pileN = Math.min(18, Math.round((build + extra.current) * 14));
+  const pileN = Math.min(18, Math.round((build + extra.current) * 14 * (1 - drain)));
   const pile = Array.from({ length: pileN }, (_, i) => {
     const row = Math.floor(i / 6);
     const col = i % 6;
@@ -197,10 +193,19 @@ export function Why() {
   const COPY = [
     { on: lineA, text: <>Look closer.</> },
     {
-      on: lineC,
+      on: lineB,
       text: (
         <>
           So the drug <span style={{ color: C.red }}>stays.</span>
+        </>
+      ),
+    },
+    { on: lineC, text: <>What if we knew first?</> },
+    {
+      on: lineD,
+      text: (
+        <>
+          A dose that <span style={{ color: C.redDeep }}>fits.</span>
         </>
       ),
     },
@@ -210,13 +215,10 @@ export function Why() {
     <section
       id="why"
       ref={ref}
-      style={{ height: "440vh", marginTop: "-100vh" }}
+      style={{ height: "860vh", marginTop: "-100vh" }}
       className="relative"
     >
-      <div
-        className="sticky top-0 h-screen overflow-hidden [--vessel:44vh] md:[--vessel:min(56vh,520px)]"
-        style={{ opacity: 1 - q(handoff), visibility: handoff > 0.99 ? "hidden" : "visible" }}
-      >
+      <div className="sticky top-0 h-screen overflow-hidden [--vessel:44vh] md:[--vessel:min(56vh,520px)]">
         {/* The chapter label lives in the story rail now — see StoryProgress. */}
 
         {COPY.map((b, i) => (
@@ -323,22 +325,38 @@ export function Why() {
             <svg viewBox={`0 0 ${W} ${H}`} className="h-full w-auto select-none" aria-hidden="true">
               <VesselShell id="wy" lit={hot} flow={flow} phase={ph} />
 
-              {/* where the enzyme should be */}
+              {/*
+                The enzyme, in ONE shape that changes state rather than two
+                shapes that swap. Dashed and empty while the dose is standard —
+                the place where it should be. Then it fills solid: the variant
+                has not gone anywhere and DPD is still reduced, but at a dose
+                matched to it the enzyme there is enough. Same outline
+                throughout, so the reader watches it heal instead of watching
+                one drawing replace another.
+              */}
               <path
                 d={ENZYME}
                 transform={`translate(${W / 2 - 60} ${EY - 62}) scale(1.5)`}
-                fill="none"
+                fill={C.green}
+                fillOpacity={q(heal) * 0.9}
                 stroke={C.ink}
                 strokeWidth="2.4"
-                strokeDasharray="6 6"
+                strokeDasharray={heal > 0.5 ? undefined : "6 6"}
                 strokeLinejoin="round"
-                opacity={q(gap) * 0.85}
+                opacity={Math.max(q(gap) * 0.85, q(heal))}
               />
 
               {/*
                 The causal line: the variant the reader pulled out of the helix
                 in stop one returns, drops a hairline down the frame, and lands
                 on the empty place where the enzyme should have been.
+
+                It RETIRES at the turn. Its whole meaning is "this letter is why
+                there is a gap here", and after the dose is matched there is no
+                gap — leaving it pointing at a healthy enzyme says the opposite
+                of what the frame now shows. The letter has not gone away; it
+                has moved into the report card, where it is known information
+                rather than an unexplained thing in the blood.
               */}
               <path
                 d={`M${W / 2} 76 L ${W / 2} ${EY - 68}`}
@@ -349,11 +367,11 @@ export function Why() {
                 pathLength="1"
                 strokeDasharray="1"
                 strokeDashoffset={1 - q(link)}
-                opacity={q(link)}
+                opacity={q(link) * (1 - q(handover))}
               />
               <g
                 transform={`translate(${W / 2 - 15} ${34 - (1 - q(link)) * 12})`}
-                opacity={q(link)}
+                opacity={q(link) * (1 - q(handover))}
               >
                 <rect width="30" height="32" rx="6" fill={C.red} stroke={C.ink} strokeWidth="2.5" />
                 <text
@@ -369,10 +387,11 @@ export function Why() {
 
               {/* the drug */}
               {flow > 0.01 &&
-                Array.from({ length: IN_FLIGHT }, (_, i) => {
+                Array.from({ length: Math.max(4, Math.round(IN_FLIGHT - trim * 5)) }, (_, i) => {
                   const s = (((ph * 0.14 + i / IN_FLIGHT) % 1) + 1) % 1;
+                  // once the dose is matched, every molecule finds enzyme
+                  const cleared = heal > 0.5 || i % CLEARED_EVERY === 0;
                   const x = W / 2 + Math.sin(s * 8 + i * 1.7) * 96;
-                  const cleared = i % CLEARED_EVERY === 0;
 
                   // the one in four that still finds working enzyme
                   if (cleared && s > 0.52) {
@@ -436,7 +455,99 @@ export function Why() {
               sub="less is made here"
               tone={C.green}
             />
-            <Tag on={link} x={57} y={2} title="DPYD variant" sub="c.1905+1G>A" tone={C.red} />
+            <Tag
+              on={variantLabel}
+              x={57}
+              y={2}
+              title="DPYD variant"
+              sub="c.1905+1G>A"
+              tone={C.red}
+            />
+          </div>
+        </div>
+
+        {/*
+          THE RESULT, and the dose that follows from it. It arrives at the turn
+          and stays for the rest of the scene, so the reader can see WHY the
+          pile below it is draining. Drawn only in vocabulary already owned:
+          the red A badge from the descent, and the drug molecules from this
+          same vessel. The dose is something you can count — nine, four kept,
+          five fading — so "reduced" is a quantity, not a word.
+        */}
+        {/*
+          On a wide screen the card sits in the left third, beside the figure.
+
+          Centred at the top it collided with the headline above it and with
+          the vessel's own badge below it, while the left and right thirds of
+          the frame sat empty — so it was overlapping content AND leaving a
+          hole. Below md there is only one column, so it stays above the scene.
+        */}
+        <div
+          className="pointer-events-none absolute inset-x-0 top-[23vh] z-20 flex justify-center px-6 md:inset-x-auto md:left-[3vw] md:top-[184px] md:block md:px-0 lg:left-[6vw]"
+          style={{ opacity: q(easeOut(result)) }}
+        >
+          <div
+            className="rounded-xl px-4 py-3 md:max-w-[330px] md:px-5 md:py-4"
+            style={{
+              background: C.paper,
+              border: `2.5px solid ${C.ink}`,
+              boxShadow: `4px 4px 0 ${C.ink}`,
+              transform: `translateY(${((1 - easeOut(result)) * 12).toFixed(1)}px)`,
+            }}
+          >
+            <div className="flex items-center gap-3 md:gap-4">
+              <svg viewBox="0 0 30 32" className="h-7 w-auto md:h-8" aria-hidden="true">
+                <rect width="30" height="32" rx="6" fill={C.red} stroke={C.ink} strokeWidth="2.5" />
+                <text
+                  x="15"
+                  y="23"
+                  textAnchor="middle"
+                  fill="#fff"
+                  style={{ font: "800 17px ui-monospace, monospace" }}
+                >
+                  A
+                </text>
+              </svg>
+              <span>
+                <span
+                  className="block text-[13px] font-black leading-none"
+                  style={{ color: C.ink }}
+                >
+                  Variant found before treatment
+                </span>
+                <span className={`mt-1 block ${L.sub}`} style={{ color: C.inkNote }}>
+                  less DPD expected — so the dose is matched to it
+                </span>
+              </span>
+            </div>
+
+            <div className="mt-3 flex items-center gap-1.5 md:mt-4 md:gap-[7px]">
+              {Array.from({ length: 9 }, (_, i) => {
+                const dropped = i >= 4;
+                const gone = dropped
+                  ? easeOut(range(trim, (i - 4) * 0.12, (i - 4) * 0.12 + 0.4))
+                  : 0;
+                return (
+                  <svg
+                    key={i}
+                    viewBox="0 0 26 26"
+                    className="h-3.5 w-3.5 md:h-4 md:w-4"
+                    aria-hidden="true"
+                  >
+                    <g opacity={1 - gone * 0.86}>
+                      <Hex x={13} y={13} r={11} tone={C.coral} />
+                    </g>
+                  </svg>
+                );
+              })}
+            </div>
+            {/* its own line: beside nine molecules it wrapped to two */}
+            <span
+              className={`mt-2 block ${L.note}`}
+              style={{ color: C.ink, opacity: q(easeOut(trim)) * 0.7 }}
+            >
+              dose reduced
+            </span>
           </div>
         </div>
 
@@ -450,7 +561,9 @@ export function Why() {
         */}
         <div
           className="absolute inset-x-0 bottom-[3vh] z-20 flex justify-center px-6"
-          style={{ opacity: q(easeOut(flow)) }}
+          // the hold belongs to act one; once the test arrives it is not the
+          // reader's dose to give any more
+          style={{ opacity: q(easeOut(flow)) * (1 - q(range(p, 0.64, 0.7))) }}
         >
           <span className="relative inline-flex">
             <button

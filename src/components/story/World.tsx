@@ -35,15 +35,15 @@ const DENSITY = [
   [0.0, 0.5], // hero — the helix already fills the frame
   [0.08, 0.75],
   [0.14, 0.92], // the descent, deep in the purple
-  [0.19, 1.0], // the sequence arrival — the emptiest frame in the story
-  [0.25, 0.6], // the enzyme bridge: copy + diagram, so pull back
-  [0.34, 0.4], // the two patients carry their own frame
-  [0.48, 0.34],
-  // The bloodstream is the most information-dense screen on the site: figure,
+  [0.185, 1.0], // the sequence arrival — the emptiest frame in the story
+  [0.24, 0.6], // the enzyme bridge: copy + diagram, so pull back
+  [0.33, 0.4], // the two patients carry their own frame
+  [0.46, 0.34],
+  // Act one of the bloodstream is the densest screen on the site: figure,
   // vessel, molecules, a tag and a control. The client asked for the ambient
   // elements to stop competing there, so this is the quietest the world gets.
   [0.6, 0.28],
-  [0.78, 0.42], // the closing section is calmer, so the world can breathe again
+  [0.86, 0.42], // after the turn the frame is calmer, so the world breathes
   [1.0, 0.46],
 ] as const;
 
@@ -108,6 +108,16 @@ export function World() {
   /** How much an object at this x is suppressed while the hero is up. */
   const heroClear = (x: number) => (x < 44 ? 1 - overHero * 0.88 : 1);
 
+  /*
+    The header band. Objects drift through the top of the viewport, and one was
+    sitting directly behind the logo — this layer is behind the chrome, so it
+    read as a smudge under the mark rather than as depth. Faded by POSITION
+    rather than a mask on the container: a mask on a -z-10 layer did not take,
+    and fading each object as it enters the band means they dim on the way in
+    and brighten below it instead of popping.
+  */
+  const headerClear = (topVh: number) => Math.min(1, Math.max(0, (topVh - 7) / 9));
+
   return (
     <div aria-hidden="true" className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
       {MOTES.map((m, i) => {
@@ -126,7 +136,14 @@ export function World() {
               height: m.r * 2,
               background: i % 5 === 0 ? C.coral : i % 3 === 0 ? C.pink : C.paper,
               opacity:
-                Math.round(edge * density * heroClear(m.x) * (0.1 + m.depth * 0.3) * 20) / 20,
+                Math.round(
+                  edge *
+                    density *
+                    heroClear(m.x) *
+                    headerClear(-10 + y * 120) *
+                    (0.1 + m.depth * 0.3) *
+                    20,
+                ) / 20,
             }}
           />
         );
@@ -154,7 +171,9 @@ export function World() {
               top: 0,
               transform: `translate(-50%,-50%) translateY(${top.toFixed(2)}vh) rotate(${(i * 47) % 360}deg)`,
               opacity:
-                Math.round(edge * density * heroClear(o.x) * (0.4 + o.depth * 0.5) * 20) / 20,
+                Math.round(
+                  edge * density * heroClear(o.x) * headerClear(top) * (0.4 + o.depth * 0.5) * 20,
+                ) / 20,
               filter: o.depth > 0.7 ? undefined : `blur(${((1 - o.depth) * 1.5).toFixed(2)}px)`,
             }}
           >

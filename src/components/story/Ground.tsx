@@ -39,45 +39,53 @@ const BASE = [
   [0.04, C.paper],
   [0.09, `color-mix(in oklab, ${C.lavender} 45%, ${C.paper})`],
   [0.13, C.lavender],
-  [0.18, C.lavenderDeep],
-  [0.28, C.lavenderDeep],
-  [0.37, `color-mix(in oklab, ${C.lavender} 85%, ${C.coral})`],
-  [0.46, `color-mix(in oklab, ${C.lavenderDeep} 72%, ${C.red})`],
-  // The purple→pink handover, taken in four steps rather than two: the client
-  // asked to keep this transition and only smooth it.
-  [0.52, `color-mix(in oklab, ${C.lavenderDeep} 52%, ${C.pink})`],
-  [0.57, `color-mix(in oklab, ${C.lavenderDeep} 30%, ${C.pink})`],
-  [0.62, `color-mix(in oklab, ${C.pink} 74%, ${C.paper})`],
-  [0.68, `color-mix(in oklab, ${C.pink} 40%, ${C.paper})`],
-  [0.75, `color-mix(in oklab, ${C.pink} 22%, ${C.paper})`],
+  [0.17, C.lavenderDeep],
+  [0.26, C.lavenderDeep],
+  [0.35, `color-mix(in oklab, ${C.lavender} 85%, ${C.coral})`],
+  [0.44, `color-mix(in oklab, ${C.lavenderDeep} 72%, ${C.red})`],
+  // The purple→pink handover the client asked to keep, taken in four steps.
+  [0.5, `color-mix(in oklab, ${C.lavenderDeep} 52%, ${C.pink})`],
+  [0.55, `color-mix(in oklab, ${C.lavenderDeep} 30%, ${C.pink})`],
+  [0.6, `color-mix(in oklab, ${C.pink} 74%, ${C.paper})`],
+  [0.68, `color-mix(in oklab, ${C.pink} 46%, ${C.paper})`],
+  [0.78, `color-mix(in oklab, ${C.pink} 30%, ${C.paper})`],
   /*
-    The last section resolves toward a pale green. Green already means "a
-    validated result" everywhere else in this palette, so the ground itself
-    carries the ending rather than a colour chosen because it looked calm.
+    The turn is at 0.84, and the ground turns with it. Green already means "a
+    validated result" everywhere in this palette, so the resolution is carried
+    by a colour that already means something rather than one picked for calm.
   */
-  [0.84, `color-mix(in oklab, ${C.pink} 8%, ${C.paper})`],
-  [0.92, `color-mix(in oklab, ${C.green} 10%, ${C.paper})`],
-  [1.0, `color-mix(in oklab, ${C.green} 14%, ${C.paper})`],
+  [0.86, `color-mix(in oklab, ${C.pink} 10%, ${C.paper})`],
+  /*
+    Green for the resolution — it already means "a validated result" in this
+    palette — and then all the way back to paper for the last screen.
+
+    Ending on the exact colour the page opened with is the point: the reader
+    is returned to where they started, which is what closes the journey rather
+    than just stopping it. It is C.paper itself, not a hex sampled from a
+    screenshot, so the two ends are the same value and can never drift apart.
+  */
+  [0.92, `color-mix(in oklab, ${C.green} 13%, ${C.paper})`],
+  [1.0, C.paper],
 ] as const;
 
 /** The light in the room: strength of the wash, and where it falls from. */
 const LIGHT = [
   [0.0, 0],
   [0.07, 0.2],
-  [0.14, 0.6],
-  [0.22, 0.66],
-  [0.4, 0.7],
-  [0.52, 0.58],
-  [0.64, 0.24],
+  [0.13, 0.6],
+  [0.2, 0.66],
+  [0.38, 0.7],
+  [0.5, 0.58],
+  [0.62, 0.24],
   [0.78, 0.1],
-  [1.0, 0.06],
+  [1.0, 0.05],
 ] as const;
 
 const ANGLE = [
   [0.0, 150],
-  [0.21, 168],
-  [0.53, 196],
-  [0.75, 208],
+  [0.2, 168],
+  [0.51, 196],
+  [0.84, 208],
   [1.0, 218],
 ] as const;
 
@@ -133,7 +141,7 @@ export function Ground() {
         className="absolute inset-x-0 top-0 h-[46%]"
         style={{
           opacity: light,
-          background: `linear-gradient(180deg, ${C.ink}4d, ${C.ink}00)`,
+          background: `linear-gradient(180deg, ${C.ink}5e, ${C.ink}00)`,
         }}
       />
       {/*

@@ -106,7 +106,7 @@ function Section({ title, entries }: { title: string; entries: Entry[] }) {
             {e.note && (
               <dd
                 className="mt-2 max-w-[62ch] text-[14px] leading-relaxed md:text-[15px]"
-                style={{ color: `${C.ink}c4` }}
+                style={{ color: C.inkBody }}
               >
                 {e.note}
               </dd>
@@ -135,7 +135,7 @@ function Attributions() {
         </h1>
         <p
           className="mt-5 max-w-[62ch] text-[15px] leading-relaxed md:text-[17px]"
-          style={{ color: `${C.ink}c4` }}
+          style={{ color: C.inkBody }}
         >
           What the team made, what came from elsewhere, and where generative AI was used. iGEM asks
           every team to declare this. We would rather over-declare than leave a reader guessing.
@@ -150,7 +150,7 @@ function Attributions() {
           </h2>
           <p
             className="mt-3 max-w-[62ch] text-[14px] leading-relaxed md:text-[15px]"
-            style={{ color: `${C.ink}c4` }}
+            style={{ color: C.inkBody }}
           >
             This page is not finished. The items below can only be written by the people who did the
             work, and they are shown here rather than hidden so that an incomplete page is never

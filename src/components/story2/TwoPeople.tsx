@@ -242,7 +242,7 @@ export function TwoPeople() {
   // Dissolve out across the measured boundary at 0.658, as the bloodstream
   // scene rises into the same frame.
   const pageP = usePageProgress();
-  const handoff = range(pageP, 0.508, 0.545);
+  const handoff = range(pageP, 0.489, 0.526);
 
   /* ---- beats ---------------------------------------------------------------
      enter → the same treatment → IDENTICAL, held → one clears, one fills →
@@ -267,7 +267,10 @@ export function TwoPeople() {
   const slots = range(p, 0.08, 0.2);
   const pp = range(p, 0.24, 1);
 
-  const enter = range(pp, 0.02, 0.16);
+  // easeOut, not linear: a linear fade leaves the figures, stands and bags
+  // all half-transparent for about half a screen of scrolling, which reads as
+  // an unfinished render rather than an entrance.
+  const enter = easeOut(range(pp, 0.01, 0.11));
   const title = beat(pp, 0.12, 0.2, 0.6, 0.68);
   const flow = band(pp, 0.2, 0.26, 0.88, 0.94);
   const dose = range(pp, 0.2, 0.9);
