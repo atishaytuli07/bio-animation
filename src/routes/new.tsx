@@ -5,7 +5,7 @@ import { Helix } from "@/components/hero/Helix";
 import { Sequence } from "@/components/hero/Sequence";
 import { TwoPeople } from "@/components/story2/TwoPeople";
 import { Why } from "@/components/story3/Why";
-import { NAV } from "@/components/story/site-map";
+import { NAV, PAGES } from "@/components/story/site-map";
 import { Ground } from "@/components/story/Ground";
 import { World } from "@/components/story/World";
 import { usePageProgress } from "@/hooks/use-page-progress";
@@ -113,6 +113,9 @@ function Underline({ index, active = false }: { index: number; active?: boolean 
  * steps is smooth to the eye and a twentieth of the work.
  */
 const q = (v: number) => Math.round(v * 20) / 20;
+
+/** The page the hero's second button promises, once it exists. */
+const DESCRIPTION = PAGES.find((p) => p.to === "/description");
 
 const JOURNEY = [
   "The gene",
@@ -581,7 +584,9 @@ function HeroConcept() {
             {/* These links sit over the deep field, so they are paper-white, not
             ink — dark type on the purple was unreadable. */}
             <nav
-              className="hidden items-center gap-9 md:flex"
+              // lg, not md: six items overflow a 768px viewport and the last
+              // two were clipped off the right edge.
+              className="hidden items-center gap-9 lg:flex"
               style={{ color: C.paper, fontFamily: DISPLAY }}
             >
               {/*
@@ -623,7 +628,7 @@ function HeroConcept() {
               aria-label="Menu"
               aria-expanded={menu}
               onClick={() => setMenu((v) => !v)}
-              className="flex size-10 items-center justify-center md:hidden"
+              className="flex size-10 items-center justify-center lg:hidden"
               style={{
                 background: C.paper,
                 border: `2.5px solid ${C.ink}`,
@@ -650,7 +655,7 @@ function HeroConcept() {
 
           {menu && (
             <div
-              className="absolute inset-x-6 top-[74px] z-30 md:hidden"
+              className="absolute inset-x-6 top-[74px] z-30 lg:hidden"
               style={{
                 background: C.paper,
                 border: `2.5px solid ${C.ink}`,
@@ -750,22 +755,44 @@ function HeroConcept() {
                     borderRadius: 6,
                     boxShadow: `4px 4px 0 ${C.ink}`,
                   }}
+                  onClick={() => {
+                    /*
+                      This did nothing at all. It is the site's primary call to
+                      action, sitting under the headline on the opening screen,
+                      and pressing it was silent — the same fault as the five
+                      nav buttons. It now starts the descent.
+                    */
+                    const quiet = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+                    window.scrollTo({
+                      top: window.innerHeight * 1.1,
+                      behavior: quiet ? "auto" : "smooth",
+                    });
+                  }}
                 >
                   Follow the gene
                 </button>
-                <button
-                  className="px-6 py-3 text-[15px] font-bold transition-transform hover:-translate-y-0.5"
-                  style={{
-                    fontFamily: DISPLAY,
-                    background: C.paper,
-                    color: C.ink,
-                    border: `2.5px solid ${C.ink}`,
-                    borderRadius: 6,
-                    boxShadow: `4px 4px 0 ${C.ink}`,
-                  }}
-                >
-                  Explore the project
-                </button>
+                {/*
+                  The second call to action pointed nowhere either. It is
+                  rendered from the site map, so it appears the moment the page
+                  it promises exists and stays absent until then — one working
+                  button beats one working button and one that lies.
+                */}
+                {DESCRIPTION?.ready && (
+                  <Link
+                    to={DESCRIPTION.to}
+                    className="px-6 py-3 text-[15px] font-bold transition-transform hover:-translate-y-0.5"
+                    style={{
+                      fontFamily: DISPLAY,
+                      background: C.paper,
+                      color: C.ink,
+                      border: `2.5px solid ${C.ink}`,
+                      borderRadius: 6,
+                      boxShadow: `4px 4px 0 ${C.ink}`,
+                    }}
+                  >
+                    Explore the project
+                  </Link>
+                )}
               </div>
             </div>
 
