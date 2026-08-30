@@ -258,13 +258,11 @@
   }
 }
 
-
 /*
  * A size step down from story-line, for beats whose longest line is too many
  * characters to survive at 6.5rem. Same voice, just set to fit — use it
  * whenever a two-line beat is wrapping to three.
  */
-
 
 /* Poster display — the mockup's loud title voice. Wordmark and hero. */
 
@@ -321,123 +319,15 @@
   animation: grain-drift 700ms steps(3) infinite;
 }
 
-@keyframes grain-drift {
-  0% {
-    background-position: 0 0;
-  }
-  33% {
-    background-position: -30px 20px;
-  }
-  66% {
-    background-position: 20px -30px;
-  }
-  100% {
-    background-position: 0 0;
-  }
-}
-
 /* The cold open breathes — a slow swell behind the words so the screen reads
    as a space the story is about to happen in, not a flat holding colour. */
-@keyframes loader-breathe {
-  0%,
-  100% {
-    transform: scale(1);
-    opacity: 0.8;
-  }
-  50% {
-    transform: scale(1.1);
-    opacity: 1;
-  }
-}
-
-.loader-breathe {
-  animation: loader-breathe 7.5s ease-in-out infinite;
-  will-change: transform, opacity;
-}
 
 /* Indeterminate hairline sweep for the loading note. */
-@keyframes sweep {
-  0% {
-    transform: translateX(-100%);
-  }
-  100% {
-    transform: translateX(300%);
-  }
-}
-
-.sweep {
-  animation: sweep 1.4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-}
 
 /* Headline words rising into place. Pure CSS so it plays at first paint,
    before hydration — the hero must never be a blank screen waiting on JS. */
-@keyframes word-in {
-  from {
-    transform: translateY(105%) rotate(2.4deg) scale(0.96);
-    opacity: 0.1;
-    filter: blur(6px);
-  }
-  to {
-    transform: none;
-    opacity: 1;
-    filter: none;
-  }
-}
-
-.word-in {
-  display: inline-block;
-  animation: word-in 900ms cubic-bezier(0.16, 1, 0.3, 1) both;
-  will-change: transform, filter;
-}
 
 /* Aurora drift behind the hero helix — transform only, so it stays off the main thread. */
-@keyframes aurora-a {
-  0%,
-  100% {
-    transform: translate3d(0, 0, 0) scale(1);
-  }
-  50% {
-    transform: translate3d(5%, -4%, 0) scale(1.12);
-  }
-}
-@keyframes aurora-b {
-  0%,
-  100% {
-    transform: translate3d(0, 0, 0) scale(1.05);
-  }
-  50% {
-    transform: translate3d(-6%, 3%, 0) scale(1);
-  }
-}
-@keyframes aurora-c {
-  0%,
-  100% {
-    transform: translate3d(0, 0, 0) scale(1);
-  }
-  50% {
-    transform: translate3d(3%, 5%, 0) scale(1.1);
-  }
-}
-
-.aurora-a {
-  animation: aurora-a 19s ease-in-out infinite;
-}
-.aurora-b {
-  animation: aurora-b 23s ease-in-out infinite;
-}
-.aurora-c {
-  animation: aurora-c 27s ease-in-out infinite;
-}
-
-@keyframes pulse-soft {
-  0%,
-  100% {
-    opacity: 0.35;
-  }
-  50% {
-    opacity: 1;
-  }
-}
 
 @media (prefers-reduced-motion: reduce) {
   html {
@@ -446,20 +336,5 @@
   .grain,
   .aurora-a,
   .aurora-b,
-  .aurora-c {
-    animation: none;
-  }
-  /* The headline still arrives — it just arrives already in place. */
-  .word-in {
-    animation-duration: 1ms;
-    animation-delay: 0ms !important;
-  }
-  .sweep {
-    animation: none;
-    width: 100%;
-    opacity: 0.5;
-  }
-  .loader-breathe {
-    animation: none;
-  }
-}
+    /* The headline still arrives — it just arrives already in place. */
+      }

@@ -794,20 +794,20 @@ function HeroConcept() {
             className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center px-6"
             style={{ opacity: q(followIn), visibility: followIn < 0.02 ? "hidden" : "visible" }}
           >
-            <span
-              aria-hidden="true"
-              className="absolute inset-0"
-              style={{
-                background: `radial-gradient(44% 24% at 50% 50%, ${C.lavenderDeep}cc, transparent 72%)`,
-              }}
-            />
+            {/*
+              No scrim. There used to be a purple radial blob behind this line
+              AND a text halo on it, both compensating for the same mistake:
+              paper-coloured type on a ground that is still cream at this point
+              in the scroll. Measured at 1.22:1 once the halo came off — not a
+              contrast problem to paper over, a wrong colour. It is ink, which
+              is what the ground here actually calls for, and measures 12:1.
+            */}
             <p
               className="relative text-center font-black"
               style={{
                 fontFamily: DISPLAY,
                 ...T.headline,
-                color: C.paper,
-                textShadow: `0 4px 26px ${C.lavenderDeep}`,
+                color: C.ink,
                 transform: `translateY(${((1 - followIn) * 22).toFixed(1)}px)`,
               }}
             >
@@ -845,7 +845,6 @@ function HeroConcept() {
                 fontFamily: DISPLAY,
                 ...T.sub,
                 color: C.paper,
-                textShadow: `0 4px 30px ${C.lavenderDeep}`,
                 transform: `translateY(${((1 - closing) * 18).toFixed(1)}px)`,
               }}
             >

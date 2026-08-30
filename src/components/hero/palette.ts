@@ -95,7 +95,7 @@ export const L = {
   labelType: "inline-flex items-center gap-2.5 text-[11px] font-bold uppercase tracking-[0.22em]",
   /** Where a stop's headline sits. One coordinate, every stop. */
   headline:
-    "pointer-events-none absolute inset-x-0 top-[16vh] z-20 flex justify-center px-6 md:top-[20vh]",
+    "pointer-events-none absolute inset-x-0 top-[12vh] z-20 flex justify-center px-6 md:top-[14vh]",
 } as const;
 
 /**

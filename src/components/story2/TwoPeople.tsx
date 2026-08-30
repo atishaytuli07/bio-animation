@@ -420,8 +420,7 @@ export function TwoPeople() {
             className="text-center font-black"
             style={{
               ...T.headline,
-              color: C.paper,
-              textShadow: `0 4px 24px ${C.lavenderDeep}88`,
+              color: C.ink,
               transform: `translateY(${title.y.toFixed(1)}px)`,
             }}
           >
@@ -435,8 +434,7 @@ export function TwoPeople() {
             className="text-center font-black"
             style={{
               ...T.headline,
-              color: C.paper,
-              textShadow: `0 4px 24px ${C.lavenderDeep}88`,
+              color: C.ink,
               transform: `translateY(${outcome.y.toFixed(1)}px)`,
             }}
           >

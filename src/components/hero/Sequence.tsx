@@ -233,7 +233,12 @@ export function Sequence({
               border: `2px solid ${lit ? C.red : `${C.paper}66`}`,
               color: lit ? "#fff" : C.paper,
               transform: `scale(${(step(0) * (lit ? 1 + flip * 0.06 : 1)).toFixed(3)})`,
-              boxShadow: lit ? `0 10px 34px -8px ${C.red}` : "none",
+              /*
+                No glow. A 34px red bloom behind the letter was doing what a
+                neon sign does — the box is already the loudest object in the
+                frame because it is the only filled red thing on the page, and
+                a halo only made it look like a template.
+              */
               transition: "background .45s ease, border-color .45s ease, color .45s ease",
             }}
           >
