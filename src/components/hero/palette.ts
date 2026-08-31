@@ -128,9 +128,48 @@ export const L = {
   /** The small explanatory line under a title. Was 11px, 12px, and two
    *  different trackings, for one job. */
   sub: "text-[11px] font-semibold leading-snug tracking-normal",
-  /** Where a stop's headline sits. One coordinate, every stop. */
+  /**
+   * Where a stop's headline sits. One coordinate, every stop.
+   *
+   * A PIXEL FLOOR ON PHONES ONLY. Desktop stays a pure fraction, and the
+   * difference is not arbitrary.
+   *
+   * The chapter label sits at a fixed `top-24` / `md:top-28` — 96px and 112px.
+   * On a phone the headline wraps to the FULL WIDTH, so it runs straight
+   * through that label: measured, "03 · Two people" over "The same treatment."
+   * at 93% on a 360px phone, and "05 · Before the first dose" over "What if we
+   * knew first?" at 100%. The 140px floor clears it.
+   *
+   * A floor was tried on desktop too, and it was worse than the bug. At 156px
+   * on a 1366x768 laptop the headline dropped 49px and landed on the IV stands
+   * in the two-patient scene — a headline over the artwork is more visible than
+   * a headline near a small label. Desktop headlines are centred and the label
+   * is far left, so vertically they can share a band without touching.
+   *
+   * THE SHORT-DESKTOP CASE IS SOLVED SIDEWAYS, not downwards.
+   *
+   * At 1024x768 a long headline — "…doesn't mean the same outcome." — is wide
+   * enough that its centred box reaches back to the label on the left, measured
+   * at 45% of the label's area. Two conditions have to hold at once: SHORT, so
+   * 14vh falls under the label's 112px, and WIDE, so the line is long enough to
+   * get there.
+   *
+   * Pushing it down is what put a headline on the IV stands. So it is capped
+   * instead, and only on short viewports: the line wraps to two, stays centred,
+   * and its left edge lands clear of the label. `100vw - 34rem` leaves 272px of
+   * margin each side, which clears the widest chapter name at every width where
+   * the media query applies. Tall screens never see the cap.
+   */
   headline:
-    "pointer-events-none absolute inset-x-0 top-[12vh] z-20 flex justify-center px-6 md:top-[14vh]",
+    "pointer-events-none absolute inset-x-0 top-[max(140px,19vh)] z-20 flex justify-center px-6 md:top-[14vh]",
+  /**
+   * Applied to the headline's own <p>, beside T.headline.
+   *
+   * Keeps a centred line clear of the chapter label on short desktops without
+   * moving it down into the artwork. See `headline` above for why the cap is
+   * conditioned on viewport HEIGHT.
+   */
+  headlineWidth: "md:[@media(max-height:900px)]:max-w-[calc(100vw-34rem)]",
 } as const;
 
 /**

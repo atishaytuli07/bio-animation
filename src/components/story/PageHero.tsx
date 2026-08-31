@@ -165,10 +165,23 @@ export function PageHero({
         blend; the mask was solving a problem that did not exist and creating
         one that did.
       */}
+      {/*
+        SHE APPEARS ON PHONES TOO.
+
+        This was `hidden md:block`, so a phone got badge, title, two rules and a
+        lede panel on flat purple with nothing else — the emptiest screen on the
+        site, on the device most readers will use. The figure is the reason
+        these heroes stopped looking templated, and hiding it below 768px threw
+        that away exactly where it was needed most.
+
+        She is smaller there and anchored to the bottom-right corner, and the
+        copy block carries extra bottom padding on mobile so the two occupy
+        different bands instead of the same one.
+      */}
       {plate && (
         <div
           aria-hidden={plate.alt ? undefined : "true"}
-          className="pointer-events-none absolute bottom-0 right-0 hidden h-[92%] md:block"
+          className="pointer-events-none absolute bottom-0 right-0 block h-[152px] md:h-[92%]"
         >
           <img
             src={asset(plate.src)}
@@ -221,7 +234,13 @@ export function PageHero({
         ))}
       </div>
 
-      <div className="relative mx-auto max-w-[92rem] px-6 py-14 md:px-10 md:py-20">
+      {/*
+        `pb-40` on mobile only when a plate is present: it is the band the
+        figure stands in, so the lede is not sharing a corner with her.
+      */}
+      <div
+        className={`relative mx-auto max-w-[92rem] px-6 pt-14 md:px-10 md:py-20 ${plate ? "pb-40" : "pb-14"} md:pb-20`}
+      >
         <div className="max-w-[46rem]">
           {/* the badge, in the site's paper/ink/offset-shadow language */}
           <span

@@ -375,6 +375,20 @@ function HeroConcept() {
   const recede = range(p, 0.8, 1);
   // The statement arrives after the caption has gone and the breath has passed.
   const closing = range(p, 0.87, 0.93);
+  /**
+   * The sequence retires at the very end of the scene.
+   *
+   * `assemble` is a `range`, so it reaches 1 and stays — the letters were still
+   * fully painted when the section unpinned and began scrolling away. On a
+   * 360px phone that dragged the whole assembly UP through the story rail, and
+   * "02 · THE ENZYME" ended up printed over a ghost of "A / T / INTRON 14".
+   *
+   * This is the third time a `range` has been used where the element needed to
+   * leave. It runs 0.96 → 1.0, after the closing statement has had its hold and
+   * while the scene is already dissolving, so nothing is taken off screen that
+   * the reader is still reading.
+   */
+  const seqOut = range(p, 0.96, 1);
   /*
     Her phrase, once, before the annotations start narrating.
 
@@ -929,12 +943,27 @@ function HeroConcept() {
             return (
               <div
                 key={stop.label}
-                // Left-anchored, not centred. Centred, the label sat exactly
-                // where the growing strand passes and was crossed by the
-                // backbone; the left half of the frame is empty for the whole
-                // descent, so the "you are here" reads cleanly there.
-                className="pointer-events-none absolute left-6 z-20 md:left-10"
-                style={{ top: "20vh", opacity: q(easeOut(on)) }}
+                /*
+                  Left-anchored, not centred. Centred, the label sat exactly
+                  where the growing strand passes and was crossed by the
+                  backbone; the left half of the frame is empty for the whole
+                  descent, so the "you are here" reads cleanly there.
+
+                  AND IT HAS A PIXEL FLOOR, because it shares that column with
+                  the chapter label in the story rail — which sits at a fixed
+                  `top-24` / `md:top-28`, ending near 120px and 136px.
+
+                  This was a bare `top: 20vh`. On a short window that is SMALLER
+                  than the fixed label: 88px on a 439px-tall window against the
+                  label's 96px, so "YOUR GENOME" printed directly on top of
+                  "01 · THE GENE" and both became unreadable. Exactly the same
+                  fault as the headline had — a viewport fraction compared
+                  against a constant — in a third place.
+
+                  Any element pinned to this left column needs the same floor.
+                */
+                className="pointer-events-none absolute left-6 top-[max(140px,20vh)] z-20 md:left-10 md:top-[max(156px,20vh)]"
+                style={{ opacity: q(easeOut(on)) }}
               >
                 <span
                   // Same spec as every other small label on the site. This had
@@ -998,7 +1027,10 @@ function HeroConcept() {
           */}
           <div
             className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center px-4"
-            style={{ visibility: assemble < 0.02 ? "hidden" : "visible" }}
+            style={{
+              opacity: 1 - q(seqOut),
+              visibility: assemble < 0.02 || seqOut > 0.99 ? "hidden" : "visible",
+            }}
           >
             <Sequence assemble={assemble} flip={flip} recede={recede} />
           </div>

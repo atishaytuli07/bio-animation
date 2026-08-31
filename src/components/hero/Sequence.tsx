@@ -172,7 +172,9 @@ export function Sequence({
     const t = step(distance);
     return (
       <span
-        className="font-sans text-[0.32em] font-bold uppercase px-2"
+        /* 0.4em, floored at 11px: these are the smallest strings in the scene
+           and at 0.32em of the old mobile size they rendered under 8px. */
+        className="font-sans text-[max(11px,0.4em)] font-bold uppercase px-1.5 md:px-2"
         style={{
           color: C.paper,
           opacity: t * 0.62,
@@ -294,9 +296,19 @@ export function Sequence({
           opacity: 1 - far * 0.3,
         }}
       >
+        {/*
+          The lower bound is 2rem, not 1.5rem.
+
+          Everything in this block is sized in `em` off this one value, so it
+          set the scale of the whole climax of the descent — and at 4vw a
+          390px phone resolved to the 1.5rem floor, which made the boxed letters
+          36px, the locus line 13px and the region labels (0.32em) SEVEN POINT
+          SEVEN pixels. The most important frame in the story was its least
+          legible one on the device most people will read it on.
+        */}
         <div
           className="flex items-center font-mono font-bold"
-          style={{ fontSize: "clamp(1.5rem, 4vw, 3.2rem)", letterSpacing: "0.3em" }}
+          style={{ fontSize: "clamp(2rem, 7vw, 3.2rem)", letterSpacing: "0.24em" }}
         >
           {/* the end of exon 14 — named, not spelled out */}
           <Region label="exon 14" distance={3} align="right" />

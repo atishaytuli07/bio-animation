@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 
 import { asset, C, L, T } from "@/components/hero/palette";
+import { usePageProgress } from "@/hooks/use-page-progress";
 import { BOT, ENZYME, EY, H, Hex, TOP, VesselShell, W } from "@/components/story/vessel";
 import {
   band,
@@ -120,6 +121,7 @@ function Tag({
 
 export function Why() {
   const [ref, p] = useSmoothProgress<HTMLElement>(0.1);
+  const pageP = usePageProgress();
   const [hot, setHot] = useState(false);
 
   /* ---- ONE SCENE, TWO ACTS --------------------------------------------------
@@ -187,7 +189,46 @@ export function Why() {
    * Nothing about the enzyme moves on this beat now. What moves is the load.
    */
   const matched = range(p, 0.81, 0.9);
-  const lineD = beat(p, 0.91, 0.96, 1.2, 1.3);
+  /*
+    "A dose that fits." — and it LEAVES, which it did not before.
+
+    Two separate faults were fixed here, and the second was caused by the first.
+
+    1. Its out-window was 1.2 → 1.3, past anything progress can reach, so it
+       never retired. At the end of the page it scrolled up under the story rail
+       still at full opacity: 64% over "05 · Before the first dose" on a 430px
+       phone, 65% measured while actually wheel-scrolling at 1024.
+
+    2. Moving it earlier to make room for the scene's exit put it INSIDE lineC's
+       departure — the same mistake, and the same rule, as lineB/lineC above.
+       lineC clears 12% opacity at 0.844; at an entrance of 0.82 this crossed it
+       at 0.822, and "What if we knew first?" sat under "A dose that fits." at up
+       to 65%. Entering at 0.86 crosses at 0.862, a clear 0.018 after lineC has
+       gone.
+
+    Full by roughly 0.88, which leaves a hold of about 45vh before the stage
+    begins to fade at local 0.933.
+  */
+  const lineD = beat(p, 0.86, 0.91, 0.96, 0.99);
+  /**
+   * The scene leaves as a whole — driven by REAL SCROLL, not by the spring.
+   *
+   * The other two stops dissolve into the one after them; this is the last, so
+   * it had no exit at all and simply scrolled out from under the rail with
+   * every element at full opacity. At the end of the page that put the result
+   * card over "05 · Before the first dose" at 65%.
+   *
+   * The first attempt used the section's own `p`, and it did not work. `p` is
+   * spring-smoothed: it LAGS a real scroll by a fair fraction of a second, so
+   * by the time it reached the fade window the stage had already unpinned and
+   * travelled up under the rail. Measured with a continuous wheel rather than a
+   * jump, the overlap was still 65%.
+   *
+   * `usePageProgress` reads the document position directly, so the fade happens
+   * where the reader actually is. Anything anchored to the moment a section
+   * leaves the viewport belongs on page progress, not on section progress.
+   */
+  const exit = range(pageP, 0.955, 0.99);
   /** The in-vessel letter hands over to the report card at the turn. */
   const handover = range(p, 0.74, 0.82);
 
@@ -265,13 +306,16 @@ export function Why() {
         was rebuilt to stop being. The composition may simplify on a small
         screen; the character and the causal link may not disappear.
       */}
-      <div className="sticky top-0 h-screen overflow-hidden [--fig3:27vh] [--vessel:38vh] md:[--fig3:46vh] md:[--vessel:min(56vh,520px)]">
+      <div
+        className="sticky top-0 h-screen overflow-hidden [--fig3:27vh] [--vessel:38vh] md:[--fig3:46vh] md:[--vessel:min(56vh,520px)]"
+        style={{ opacity: 1 - q(exit), visibility: exit > 0.99 ? "hidden" : "visible" }}
+      >
         {/* The chapter label lives in the story rail now — see StoryProgress. */}
 
         {COPY.map((b, i) => (
           <div key={i} className={L.headline} style={{ opacity: q(b.on.o) }}>
             <p
-              className="text-center font-black"
+              className={`text-center font-black ${L.headlineWidth}`}
               style={{
                 ...T.headline,
                 color: C.ink,
@@ -574,7 +618,17 @@ export function Why() {
           hole. Below md there is only one column, so it stays above the scene.
         */}
         <div
-          className="pointer-events-none absolute inset-x-0 top-[23vh] z-20 flex justify-center px-6 md:inset-x-auto md:left-[3vw] md:top-[184px] md:block md:px-0 lg:left-[6vw]"
+          /*
+            On a phone this sits BELOW the headline, and the floor is in pixels
+            for the same reason the headline's is: 23vh was 170px on a 740px
+            phone, and once the headline gained its own floor at 140px its two
+            wrapped lines ran to about 236px — the card and "What if we knew
+            first?" measured 100% overlap at 320 and 360.
+
+            248px clears the headline's deepest wrap. On md and up the card
+            moves out of the centre column entirely, so this does not apply.
+          */
+          className="pointer-events-none absolute inset-x-0 top-[max(248px,33vh)] z-20 flex justify-center px-6 md:inset-x-auto md:left-[3vw] md:top-[184px] md:block md:px-0 lg:left-[6vw]"
           style={{ opacity: q(easeOut(result)) }}
         >
           <div

@@ -439,7 +439,7 @@ export function TwoPeople() {
         {/* "The same treatment." — arrives with the drip, leaves before the split */}
         <div className={L.headline} style={{ opacity: q(title.o) }}>
           <p
-            className="text-center font-black"
+            className={`text-center font-black ${L.headlineWidth}`}
             style={{
               ...T.headline,
               color: C.paper,
@@ -453,7 +453,7 @@ export function TwoPeople() {
         {/* "…doesn't mean the same outcome." — only after the split has happened */}
         <div className={L.headline} style={{ opacity: q(outcome.o) }}>
           <p
-            className="text-center font-black"
+            className={`text-center font-black ${L.headlineWidth}`}
             style={{
               ...T.headline,
               color: C.paper,
