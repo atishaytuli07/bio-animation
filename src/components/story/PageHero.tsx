@@ -1,5 +1,5 @@
 import { Cell, Enzyme, Molecule } from "@/components/hero/elements";
-import { C, L, T, R } from "@/components/hero/palette";
+import { asset, C, L, T, R } from "@/components/hero/palette";
 import { useTime } from "@/hooks/use-scroll-progress";
 
 /**
@@ -26,21 +26,59 @@ import { useTime } from "@/hooks/use-scroll-progress";
 /** Per-page illustration, composed from the shared elements. */
 export type Art = { k: "cell" | "mol" | "enz"; x: number; y: number; s: number; tone: string }[];
 
-/** The arrangement each page uses. Deliberately few, and never behind the copy. */
+/**
+ * An illustrated character plate for a page hero.
+ *
+ * THE TITLE IS NEVER PART OF THE IMAGE. Several of these were generated with
+ * the page name drawn into the artwork — a person holding a "DESCRIPTION" sign
+ * — and they cannot be used that way. Raster type is invisible to a screen
+ * reader, soft at any size but its native one, locked to a typeface that is not
+ * ours, and impossible to change when the display face is chosen. The plate
+ * carries the picture; the heading stays live HTML on top of it.
+ *
+ * The plates are cutouts with real alpha, so they sit on the purple field
+ * rather than in a box on it. `lead` is the horizontal share of the image the
+ * figure actually occupies, which is how the copy column knows how much room it
+ * has before the two would collide.
+ */
+export type Plate = {
+  /** Path in public/, resolved through asset() for the wiki's base path. */
+  src: string;
+  /** Empty: this is decorative and the heading beside it carries the meaning. */
+  alt?: string;
+  /** Roughly where the figure starts, as a fraction of the plate's width. */
+  lead?: number;
+};
+
+/**
+ * The arrangement each page uses. Deliberately few, and never behind the copy.
+ *
+ * WHEN A PAGE HAS A CHARACTER PLATE, THE OBJECTS MOVE — they do not disappear.
+ * Removing them entirely was tried and it was the wrong fix: the page lost the
+ * depth that ties it to the story's travelling world. The actual fault was
+ * placement. These coordinates are percentages of the right-hand 42% band, and
+ * the figure occupies roughly x 47→100 of that same band, so anything past 45
+ * lands ON her — which is how a molecule ended up in her hair and a cell beside
+ * her head.
+ *
+ * So a plate page keeps its objects and confines them to x 8→42: the corridor
+ * between the copy column and the figure, where they read as the space she is
+ * standing in rather than as debris stuck to her.
+ */
 export const ART = {
   description: [
-    { k: "cell", x: 26, y: 24, s: 1.15, tone: C.pink },
-    { k: "mol", x: 62, y: 14, s: 0.8, tone: C.coral },
-    { k: "enz", x: 72, y: 52, s: 0.9, tone: C.green },
-    { k: "mol", x: 38, y: 68, s: 0.62, tone: C.coral },
-    { k: "cell", x: 82, y: 80, s: 0.7, tone: C.blue },
+    { k: "cell", x: 14, y: 22, s: 0.92, tone: C.pink },
+    { k: "mol", x: 34, y: 12, s: 0.6, tone: C.coral },
+    { k: "enz", x: 8, y: 62, s: 0.66, tone: C.green },
+    { k: "mol", x: 30, y: 78, s: 0.5, tone: C.coral },
+    { k: "cell", x: 42, y: 44, s: 0.46, tone: C.blue },
   ],
   engineering: [
-    { k: "enz", x: 30, y: 22, s: 1.05, tone: C.green },
-    { k: "enz", x: 66, y: 30, s: 0.7, tone: C.green },
-    { k: "mol", x: 46, y: 56, s: 0.9, tone: C.coral },
-    { k: "cell", x: 76, y: 70, s: 0.85, tone: C.lavender },
-    { k: "mol", x: 22, y: 74, s: 0.6, tone: C.coral },
+    { k: "enz", x: 16, y: 20, s: 0.86, tone: C.green },
+    { k: "enz", x: 38, y: 40, s: 0.5, tone: C.green },
+    { k: "mol", x: 10, y: 62, s: 0.62, tone: C.coral },
+    { k: "cell", x: 32, y: 80, s: 0.54, tone: C.lavender },
+    { k: "mol", x: 40, y: 10, s: 0.44, tone: C.coral },
   ],
   generic: [
     { k: "cell", x: 30, y: 26, s: 1.0, tone: C.pink },
@@ -50,7 +88,33 @@ export const ART = {
   ],
 } satisfies Record<string, Art>;
 
-export function PageHero({ title, lede, art }: { title: string; lede: string; art: Art }) {
+/**
+ * The character plate each page opens with, where one exists.
+ *
+ * One rule decides whether a plate earns its place: it has to say something
+ * about THIS page before the reader has read a word. A scientist holding a DNA
+ * strand belongs on Description, whose whole subject is what one letter of it
+ * does. The same figure holding a sign that reads "Description" would say only
+ * what the heading beside it already says, which is decoration.
+ */
+export const PLATE = {
+  description: { src: "hero-description.webp", lead: 0.5 },
+  engineering: { src: "hero-engineering.webp", lead: 0.55 },
+} satisfies Record<string, Plate>;
+
+export function PageHero({
+  title,
+  lede,
+  art,
+  plate,
+}: {
+  title: string;
+  lede: string;
+  art: Art;
+  /* `| undefined` explicitly: exactOptionalPropertyTypes is on, so a caller
+     forwarding an absent plate is passing undefined, not omitting the key. */
+  plate?: Plate | undefined;
+}) {
   /*
     The elements drift, slowly, the way they do on the homepage. This is the
     only motion on a content page and it is nearly imperceptible by design —
@@ -85,10 +149,55 @@ export function PageHero({ title, lede, art }: { title: string; lede: string; ar
         }}
       />
 
-      {/* the illustration, right half only, never under the copy */}
+      {/*
+        THE CHARACTER PLATE.
+
+        Anchored to the bottom-right and allowed to run to the section's floor,
+        so she stands IN the hero rather than floating in a panel on it. The
+        left half of the plate is transparent, which is where the badge, the
+        heading and the lede sit — the composition is the reason this particular
+        plate was chosen over the others.
+
+        NO MASK. There was a left-to-right gradient here to blend the cutout's
+        glow into the field, and it was eating the DNA strand she is holding —
+        the one part of the plate that carries the page's meaning. The alpha the
+        generator produced is already soft at the edges, so there is nothing to
+        blend; the mask was solving a problem that did not exist and creating
+        one that did.
+      */}
+      {plate && (
+        <div
+          aria-hidden={plate.alt ? undefined : "true"}
+          className="pointer-events-none absolute bottom-0 right-0 hidden h-[92%] md:block"
+        >
+          <img
+            src={asset(plate.src)}
+            alt={plate.alt ?? ""}
+            draggable={false}
+            className="h-full w-auto select-none object-contain object-bottom"
+            style={{
+              /*
+                A whisper of drift, on the same clock and at the same amplitude
+                as the objects around her. Without it she is a sticker on a
+                moving background; with it she is in the same room.
+              */
+              transform: `translateY(${(Math.sin(t * 0.26) * 4).toFixed(2)}px)`,
+              filter: "drop-shadow(0 18px 26px rgba(36,28,46,0.28))",
+            }}
+          />
+        </div>
+      )}
+
+      {/*
+        The scattered elements. They stay on plate pages — see ART above for why
+        their coordinates change instead. On a plate page they sit slightly back
+        so the figure stays the subject, but they are still there: they are what
+        connects this hero to the world travelling through the whole story.
+      */}
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-y-0 right-0 hidden w-[42%] md:block"
+        style={plate ? { opacity: 0.72 } : undefined}
       >
         {art.map((a, i) => (
           <div

@@ -45,7 +45,12 @@ const AI_USE: Entry[] = [
   {
     what: "Character illustrations",
     who: "Generated with an AI image model, then edited by the team",
-    note: "The two patient figures in “Two people” and “Look closer” are AI-generated raster illustrations. They were keyed, defringed and colour-corrected by the team before use. They depict no real person and are not photographs.",
+    note: "The two patient figures in “Two people” and “Look closer”, and the illustrated scientists that open the documentation pages, are AI-generated raster illustrations. They were keyed, defringed, colour-corrected and re-encoded by the team before use. They depict no real person, they are not photographs, and no member of the team is portrayed by any of them.",
+  },
+  {
+    what: "Page headings and titles",
+    who: "Set in live text by the team — never part of an image",
+    note: "Some of the illustrations were generated with a page title drawn into the artwork. None is used that way. Every heading on this wiki is real text so that it can be read by a screen reader, scaled without softening, and set in the site’s own typeface. Where a figure appears to hold a sign, the words beside her are HTML.",
   },
   {
     what: "Wiki code and interaction design",

@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 
 import { C, R } from "@/components/hero/palette";
-import { ART } from "@/components/story/PageHero";
+import { ART, PLATE } from "@/components/story/PageHero";
 import { Awaiting, P, PageShell, Section } from "@/components/story/PageShell";
 import { Figure } from "@/components/story/Figure";
 import { ChainFigure, DoseFigure, SpliceFigure } from "@/components/story/diagrams";
@@ -60,6 +60,7 @@ function Description() {
       title="Description"
       lede="Two people can be given the same chemotherapy, at the same dose, on the same day, and one of them can be harmed by it. This page explains why, and what we propose to do about it."
       art={ART.description}
+      plate={PLATE.description}
       sections={SECTIONS}
     >
       <Section id="problem" title="The problem">

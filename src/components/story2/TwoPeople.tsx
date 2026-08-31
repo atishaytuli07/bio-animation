@@ -1,4 +1,3 @@
-import { Cell, Enzyme, Molecule } from "@/components/hero/elements";
 import { asset, C, L, T } from "@/components/hero/palette";
 import { usePageProgress } from "@/hooks/use-page-progress";
 import {
@@ -26,24 +25,19 @@ import {
  * mask so the tint is inside the person rather than a rectangle over them.
  *
  * The room warms as B's load climbs. It does NOT go dark: the client rejected
- * near-black sections outright, and the brief's rule is that the emotional
- * arc is carried by saturation and hue, never by darkness.
+ * near-black sections outright, and the brief's rule is that the emotional arc
+ * is carried by saturation and hue, never by darkness. That warming is not done
+ * here — it comes from <Ground />, whose keyframes at page 0.35 and 0.44 mix
+ * coral and then red into the field while this scene is on screen. This file
+ * used to compute its own `warm` value for it, which stopped being read when
+ * the colour moved to the ground and sat here as dead code afterwards.
+ *
+ * The scattered ambient objects are not here either, for the same reason: they
+ * belong to <World />, which travels the whole story. A local FIELD2 array
+ * lingered here long after that move.
  */
 
 const q = (v: number) => Math.round(v * 20) / 20;
-
-/** The world, placed. Figures occupy roughly x 22–78%; copy sits at y 14–28%. */
-const FIELD2 = [
-  // hideSm: the ones that land behind a head or on the label once the figures
-  // sit close together on a phone
-  { k: "cell", x: 8, y: 34, s: 0.62, r: -6, tone: C.pink, depth: 0.9, hideSm: true },
-  { k: "mol", x: 14, y: 12, s: 0.44, r: 12, tone: C.coral, depth: 0.5, hideSm: true },
-  { k: "enz", x: 9, y: 54, s: 0.4, r: -12, tone: C.green, depth: 0.35, hideSm: true },
-  { k: "mol", x: 50, y: 52, s: 0.5, r: -8, tone: C.coral, depth: 0.8 },
-  { k: "cell", x: 91, y: 36, s: 0.56, r: 8, tone: C.blue, depth: 0.8, hideSm: true },
-  { k: "enz", x: 88, y: 12, s: 0.42, r: 14, tone: C.green, depth: 0.4 },
-  { k: "mol", x: 93, y: 56, s: 0.36, r: 20, tone: C.coral, depth: 0.3, hideSm: true },
-] as const;
 
 /** IV stand, bag, drip chamber and line — all SVG, so the dose can move. */
 /**
@@ -263,9 +257,23 @@ export function TwoPeople() {
     remapped to 0→1, so the two-patient beat is unchanged in shape and simply
     starts later.
   */
-  const bridge = beat(p, 0.02, 0.09, 0.2, 0.27);
-  const slots = range(p, 0.08, 0.2);
-  const pp = range(p, 0.24, 1);
+  /*
+    THE BRIDGE WAITS FOR THE PREVIOUS SCENE TO FINISH LEAVING.
+
+    It used to open at local 0.02, which is page 0.209 — inside the descent's
+    handoff window of 0.196 → 0.231. So the enzyme diagram was arriving while
+    "About three billion letters. This one can change your dose." was still on
+    screen fading out: two unrelated pieces of information sharing a frame at
+    the one boundary that most needed to feel clean.
+
+    Opening at 0.13 puts it at page 0.243, which is after the descent has fully
+    dissolved at 0.231, with a short breath in between. The cost is that the
+    two-patient act loses about 64vh — it runs 377vh instead of 441vh — and that
+    is a fair price for a boundary that reads as one continuous move.
+  */
+  const bridge = beat(p, 0.13, 0.2, 0.3, 0.37);
+  const slots = range(p, 0.19, 0.31);
+  const pp = range(p, 0.35, 1);
 
   // easeOut, not linear: a linear fade leaves the figures, stands and bags
   // all half-transparent for about half a screen of scrolling, which reads as
@@ -278,7 +286,6 @@ export function TwoPeople() {
   const clearA = range(pp, 0.54, 0.74);
   const buildB = range(pp, 0.54, 0.8);
   const alarm = range(pp, 0.6, 0.82);
-  const warm = range(pp, 0.58, 0.86);
   const outcome = beat(pp, 0.8, 0.9, 1.2, 1.3);
 
   const fillA = uptake * (1 - clearA);
@@ -379,7 +386,19 @@ export function TwoPeople() {
           style={{
             bottom: "16vh",
             opacity: q(enter),
-            transform: `translateY(${((1 - enter) * 30).toFixed(1)}px)`,
+            /*
+              The camera is still moving when this scene starts, and it settles
+              here rather than cutting to rest.
+
+              The previous scene ends on a pull-back away from the DNA, so the
+              patients enter a fraction oversized and ease down to their resting
+              size — the read is a camera decelerating to a stop, not a new
+              composition being placed. Six percent is deliberately almost
+              nothing: enough that the boundary feels continuous, not enough to
+              register as the figures themselves moving.
+            */
+            transform: `translateY(${((1 - enter) * 30).toFixed(1)}px) scale(${(1 + (1 - enter) * 0.06).toFixed(4)})`,
+            transformOrigin: "50% 100%",
           }}
         >
           <div className="flex items-end gap-2 md:gap-4" style={{ height: "var(--fig2)" }}>

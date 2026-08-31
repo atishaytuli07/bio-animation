@@ -37,6 +37,80 @@ agreed.
 Things already decided, already argued, or already rejected. **Read this before
 proposing anything** — most of it was learned by getting it wrong first.
 
+## The story is LOCKED at nine beats. Do not propose a tenth, and do not reorder.
+
+Agreed 31 August 2026, after several rounds of restructuring. The homepage tells
+these nine beats and stops:
+
+1. **Hero** — DNA, ChemoGuard, the illustrated world
+2. **The gene** — descend to DPYD and the variant; `c.1905+1G>A`, G→A
+3. **The enzyme** — one letter decides how much DPD this body builds
+4. **Patients** — the same treatment, two people
+5. **Medicine** — the identical drug enters both, and for a long beat nothing separates them
+6. **Two paths** — she clears it, he does not
+7. **Inside** — follow the drug into his bloodstream and find the shortfall
+8. **The question** — *"What if we knew first?"*
+9. **The solution** — from genetic result to treatment decision; *"A dose that fits."*
+
+**Results, experiments, Human Practices and Safety are NOT cinematic beats.**
+They belong in the documentation pages, which is also where iGEM judges look for
+them. A scroll animation is the wrong instrument for evidence. An earlier
+version of this list ran to eleven beats and added Results and Impact as scenes;
+that was scope growth wearing a lock's clothing, and it was dropped.
+
+**The order is the built order and it is deliberate.** The gene is *planted*
+first and *explained* last: scene one shows the variant without saying what it
+does, scene two shows two people diverging, and scene three reveals the
+mechanism when the red A drops onto the enzyme. A mystery-first reorder — meet
+the patients, then go find the gene — was considered and rejected, because it
+throws away the recognition that makes scene three land, it contradicts
+"follow the gene" as the organising idea, and it would mean re-measuring five
+chapter thresholds, sixteen ground keyframes, three handoffs and about thirty
+beat windows.
+
+## The governing rules for every transition
+
+> **1. Every visual transition must answer the question created by the previous
+> scene.**
+>
+> **2. Nothing that belongs to the visual environment may blink off between
+> beats. Nothing that is the narrative object may be suddenly replaced by
+> another version of itself.**
+
+The first is what makes nine beats read as one story rather than nine
+impressive sections. Apply it before adding any motion: if a transition does not
+answer something the reader is already wondering, it is decoration.
+
+The second was written after the descent's ending was diagnosed, and both
+halves of it had already been broken:
+
+- **Environment blinking.** The hero's colour field painted its own copy of the
+  surface pattern, and `<Ground />` painted another at a different alpha. At the
+  handover the texture fell from 0.0555 white to 0.0113 — a fivefold drop that
+  never recovered. One layer owns it now.
+- **The narrative object replaced by another version of itself.** The helix died
+  in the right-hand column while a second, wider strand was born in the centre.
+  Two drawings of the same molecule, cross-faded. That is why the scene read as
+  assembled rather than continuous, and no amount of opacity tuning would have
+  fixed it.
+
+**A corollary that is easy to miss:** a scene ending needs *staged* beats, not
+just non-overlapping ones. Two holds where nothing happens — one after the flip,
+one after the caption leaves — are what make the retreat read as a decision
+rather than as the next item in a queue. Budget an ending in **vh of scroll**,
+not in progress numbers that look far enough apart.
+
+## The order of work
+
+story → storyboard → visual grammar → hero → transitions → implementation.
+
+**Never** story → redesign → story → redesign. That cycle has already run
+several times and the client has explicitly asked for refinement instead.
+
+One amendment: **real scientific content is not last.** It has to be requested
+in parallel, because beats 7–9 and four page sections cannot be finished without
+it and the freeze does not move.
+
 ## The client rejected these. Do not bring them back.
 
 | Rejected | Why |
@@ -71,14 +145,25 @@ proposing anything** — most of it was learned by getting it wrong first.
    so the element never leaves. This exact bug appeared **twice** in
    `Why.tsx`. If something is still on screen long after its moment, check this
    first.
-4. **Chapter names must not repeat the headline beneath them.** "03 · LOOK
+4. **Two consecutive `beat`s need a GAP, not merely non-overlapping windows.**
+   `beat` eases the entrance and leaves the exit linear, so the ramps are not
+   symmetric: an entrance is at 0.88 a third of the way through while an exit
+   is still at 0.55 there. `lineB` (out 0.67→0.72) and `lineC` (in 0.68→0.74)
+   looked fine and put **both headlines above half opacity between p 0.6909 and
+   0.6975** — dissolving through each other at the turn. Solve for where each
+   crosses 0.45 rather than eyeballing the windows.
+   Corollary: the audit's collision check samples 60 scroll positions, so a
+   window this narrow is caught roughly one run in five. **A single green
+   collisions run is not proof.** Run it several times.
+5. **Chapter names must not repeat the headline beneath them.** "03 · LOOK
    CLOSER" above "Look closer." was the client's own complaint; renaming the
    label into the rail kept the redundancy until the chapter became "Inside the
    body".
-5. **One kind of thing, one spec.** Audits found four corner radii, three
+6. **One kind of thing, one spec.** Audits found four corner radii, three
    specs for one small label, three ink alphas, and two loose hex values. All
-   now named in `palette.ts`.
-6. **No control that does nothing.** Five nav buttons and both hero CTAs were
+   now named in `palette.ts` — though `borderRadius: 8` in `new.tsx` and three
+   files importing `R` without using it mean this is not fully held. Open.
+7. **No control that does nothing.** Five nav buttons and both hero CTAs were
    dead. Audit for this after any structural change.
 
 ## Reference wikis
@@ -151,21 +236,81 @@ Local progress `p`, 0→1 across 420vh.
 
 | Beat | Window | What happens |
 |---|---|---|
-| `heroOut` | 0.06 → 0.20 | the hero copy leaves |
-| `merge` | 0.08 → 0.44 | the cream/purple field grows to full screen |
-| `zoom` | 0.12 → 0.66 | the helix magnifies, centred on the **variant's live position** |
-| `followIn` | 0.16–0.24, out 0.30–0.36 | "One gene. One letter." |
-| `focus` | 0.44 → 0.72 | the variant rung isolates |
-| `flatten` | 0.66 → 0.80 | the strand's radius collapses |
-| `assemble` | 0.70 → 0.88 | letters arrive **outward from the variant** |
-| `flip` | 0.86 → 0.94 | G becomes A |
-| `closing` | 0.90 → 0.98 | "About three billion letters. / This one can change your dose." |
-| `handoff` | page 0.196 → 0.231 | dissolves into scene 2 |
+| `heroOut` | 0.05 → 0.17 | the hero copy leaves |
+| `merge` | 0.07 → 0.38 | the cream/purple field grows to full screen |
+| `zoom` | 0.10 → 0.54 | the helix magnifies, centred on the **variant's live position** |
+| `followIn` | 0.17–0.24, out 0.28–0.33 | "One gene. One letter." |
+| `focus` | 0.36 → 0.58 | the variant rung isolates |
+| `flatten` | 0.52 → 0.64 | the strand's radius collapses |
+| `assemble` | 0.56 → 0.70 | letters arrive **outward from the variant** |
+| `flip` | 0.70 → 0.76 | G becomes A |
+| *(hold)* | 0.76 → 0.80 | **nothing moves** — the variant alone, 17vh |
+| **`recede`** | **0.80 → 1.00** | **the camera pulls back — the story's only reversal** |
+| *(caption out)* | 0.806 → 0.85 | the explanatory sentence leaves |
+| *(breath)* | 0.85 → 0.87 | **nothing on screen but the receding DNA**, 8vh |
+| `closing` | 0.87 → 0.93 | "About three billion letters. / This one can change your dose." |
+| *(hold)* | 0.93 → 0.955 | the statement sits alone, 10vh |
+| `handoff` | page 0.196 → 0.231 | dissolves into scene 2, **while the camera is still moving** |
+
+**The descent was compressed to pay for the ending.** Every beat before `flip`
+now lands earlier. The section height is unchanged at 420vh *deliberately*: all
+page-level numbers — the five chapter thresholds, the sixteen ground keyframes,
+the world's density schedule, the boundaries at 0.31 and 0.658 — are measured
+against it and stay valid. Re-proportioning inside the scene costs nothing;
+changing its height would have cost all of them.
+
+### The pull-back
+
+The whole descent pushes **in** — genome, chromosome, gene, sequence, one base.
+`recede` is the single moment the camera reverses, and it is what earns a
+closing line about scale.
+
+It is **not** a scale-down, because scaling one element reads as that element
+being deleted to make room for text. What sells a camera move is **differential
+motion**: near things change fast, far things barely change. So:
+
+| Layer | Through the retreat |
+|---|---|
+| the letters (nearest) | scale 1 → 0.58, lift 3.4vh, opacity 1 → 0.70 |
+| the strand behind them | **40 → 80 rungs**, half-period 300 → 150 units |
+| its contrast | opacity 0.50 → 0.33, stroke 6 → 3.6 |
+| the ground | **does not move at all** |
+
+The strand *densifying* is the point. Retreating from a molecule fits more of it
+in frame, so the picture performs "about three billion letters" at the moment
+the statement says it, instead of the copy asserting something the image does
+not show. It gains **extent** and loses **contrast** at the same time — distance
+drains contrast — which is what stops it competing with the statement now in
+front of it. More DNA, quieter DNA.
+
+Measured across the retreat (`scripts/measure-descent.mjs`):
+
+```
+page 0.158  strand 0.500 (40 rungs)  caption 0.80  statement 0     ← hold
+page 0.168  strand 0.442 (48 rungs)  caption 0.39  statement 0     ← retreat begins
+page 0.178  strand 0.372 (64 rungs)  caption 0     statement 0.25  ← caption gone first
+page 0.186  strand 0.344 (74 rungs)  caption 0     statement 1.00
+page 0.196  strand 0.331 (80 rungs)  caption 0     statement 1.00  ← hold
+page 0.212  strand 0.182 (80 rungs)  caption 0     statement 0.55  ← releases
+```
+
+The caption reaches 0 before the statement leaves 0.25. That gap is the breath,
+and it is the thing the ending was missing.
 
 Scale annotations during the descent: *your genome · about three billion
-letters* → *chromosome 1 · 1p21.3* → *DPYD · builds the enzyme that clears the
-drug*. Each is fully retired before the next arrives — overlapping them stacked
-two labels at the same coordinates.
+letters* (0.34) → *chromosome 1 · 1p21.3* (0.47) → *DPYD · builds the enzyme
+that clears the drug* (0.60). Each is fully retired before the next arrives —
+overlapping them stacked two labels at the same coordinates.
+
+**Their spacing is arithmetic, not taste.** The renderer adds a 0.06 out-ramp,
+so a label is on screen until `out + 0.06`; two `in` values must therefore be at
+least `(out − in) + 0.06 = 0.13` apart. Compressing the descent for the new
+ending broke this and put *Chromosome 1* at 0.75 opacity directly on top of
+*DPYD* at 0.35. **Neither the collision audit nor a first version of the label
+check caught it** — see the harness notes at the end for why. `followIn` obeys
+the same rule from the other side: it starts at 0.17 where the hero copy
+finishes leaving, and the first label waits until 0.34 because `followIn` is
+still above 12% until 0.324.
 
 **The helix is interactive.** Drag rotates it 1:1 with no decay while held;
 hovering a rung reveals its base-pair letters. `DRAG_SENS 0.012`,
@@ -211,23 +356,34 @@ unrotated, B at `translateY(5.9)` rotated 1.1°.
 showed the same picture, so the dissolve stacked two figures and two headlines
 through each other. Now the picture never restarts — its **state** changes.
 
+**The patient renders at every width.** He was `hidden md:block`, so below
+768px this scene was a tube floating on a colour with no body attached — a
+generic biology lesson, which is the one thing it was rebuilt to stop being.
+The premise is that we are inside the man the reader just watched accumulate the
+drug, so the composition may simplify on a phone but the character cannot
+vanish. Measured after the fix: 53×180px at 375, 67×228px at 390, 138×471px at
+768, gap to the vessel 7.5–30.7px, no overflow and no collisions. The vessel
+came down from 44vh to 38vh on phones to make room. **Honest limit:** at 375px
+the lens reads at roughly 26px across and the cannula at 6px — the causal
+gesture survives, the fine detail is at the edge of legibility.
+
 | Beat | Window | What happens |
 |---|---|---|
 | `enter` | eased 0.01 → 0.06 | figure + vessel |
 | `lineA` | 0.03–0.09, out 0.19–0.25 | "Look closer." |
 | `flow` | 0.10–0.16, out 0.97–0.995 | the drug arrives |
 | `drugLabel` | 0.13–0.19, out 0.28–0.33 | **5-FU named before anything accumulates** |
-| `gap` | 0.24 → 0.32 | the dashed empty enzyme site |
+| `gap` | 0.24 → 0.32 | the enzyme fades in, drawn as a level: dashed full outline, filled just under half |
 | `link` | 0.30 → 0.40 | the red A drops a hairline onto it |
 | `variantLabel` | 0.32–0.38, out 0.44–0.49 | "DPYD variant / c.1905+1G>A" |
 | `build` / `alarm` | 0.38 → 0.56 / 0.58 | the pile grows and goes red |
 | `enzymeLabel` | 0.46–0.52, out 0.57–0.62 | "DPD enzyme / less is made here" |
-| `lineB` | 0.56–0.62, out 0.67–0.72 | "So the drug stays." |
-| **`lineC`** | **0.68–0.74, out 0.80–0.85** | **"What if we knew first?" — the turn** |
+| `lineB` | 0.56–0.62, out 0.655–0.70 | "So the drug stays." |
+| **`lineC`** | **0.70–0.76, out 0.80–0.85** | **"What if we knew first?" — the turn** |
 | `result` | 0.72–0.78 | the result card; the in-vessel A hands over to it |
 | `trim` | 0.76 → 0.85 | nine dose molecules become four |
 | `drain` | 0.79 → 0.89 | **the pile drains away** |
-| `heal` | 0.81 → 0.90 | the dashed enzyme fills solid green |
+| `matched` | 0.81 → 0.90 | every molecule now finds enzyme — **the enzyme itself does not change** |
 | `lineD` | 0.91 → 0.96 | "A dose that fits." |
 
 The turn is the payoff and it only works because it is the **same pile** the
@@ -237,6 +393,26 @@ in, the dose is not the reader's to give.
 **One molecule in four is cleared even before the turn.** DPYD variants reduce
 activity, they do not abolish it, so the animation itself encodes "reduced, not
 absent" rather than relying on a caption to walk it back.
+
+**The enzyme is drawn as a level, and it never changes.** A dashed outline is
+the full complement of DPD a body would normally make; solid green fills just
+under half its height (the clip cuts at y=44 of a shape spanning y 12→70). That
+is the same claim scene two makes with five slots and two filled. Neither
+drawing is a measurement of a real genotype and neither pretends to be — what
+matters is that the two scenes AGREE, and that both say "reduced", not "absent".
+
+It used to be empty under a standard dose and solid green after the test, which
+told the reader that **lowering the dose restored the enzyme**. It does not. A
+carrier makes the same reduced amount before the test and after it — the only
+thing that changes is how much drug arrives. The payoff is carried by the
+molecules and the draining pile, which is the thesis of the whole scene: *the
+body did not change, the dose did.*
+
+Measured, not asserted: green pixels inside the enzyme's box across page 0.70 →
+0.97 run **2232–2239, a spread of 0.3%**. The harness is
+`scripts/measure-enzyme.mjs`; it samples three frames per stop because drug
+molecules cross the shape on a time clock and a single screenshot reads an
+occluded frame as the enzyme having shrunk.
 
 ## Continuity — how the site stopped reading as slides
 
@@ -339,9 +515,69 @@ an explicit "soon". Never a control that silently does nothing.
 ## The page system
 
 **`PageShell`** — sticky header, hero, section index, content column, footer.
-**`PageHero`** — badge, display title, two-rule treatment, lede panel, and an
-illustration composed from the story's own `Cell` / `Molecule` / `Enzyme`. Art
-arrangements live in `ART` in `PageHero.tsx`; a new page costs a config object.
+**`PageHero`** — badge, display title, two-rule treatment, lede panel, an
+optional illustrated character, and objects composed from the story's own
+`Cell` / `Molecule` / `Enzyme`. Arrangements live in `ART`, characters in
+`PLATE`; a new page costs a config object.
+
+### Character plates — and the one rule that governs them
+
+**A heading is NEVER part of an image.** Several plates were generated with the
+page name drawn into the artwork — a figure holding a "DESCRIPTION" sign — and
+none is used. Raster type is invisible to a screen reader, soft at any size but
+its native one, welded to a typeface that is not ours, and impossible to change
+when the display face is finally chosen. The plate carries the picture; the
+heading stays live HTML beside it.
+
+**A plate has to say something about its own page.** A scientist holding a DNA
+strand belongs on Description, whose subject is what one letter of it does. The
+same figure holding a sign reading "Description" says only what the heading
+three inches away already says.
+
+| Page | Plate | Says |
+|---|---|---|
+| Description | `hero-description.webp` | a scientist holding a DNA strand |
+| Engineering | `hero-engineering.webp` | the same cast, mid-build, holding a part-assembled cartridge |
+
+Two recurring characters rather than a new face per page, so the pages read as
+one world. Both are cutouts with real alpha, anchored bottom-right, standing
+*in* the hero rather than boxed on it.
+
+**The objects move, they do not vanish.** A figure occupies roughly the right
+22% of the viewport, which is the same band the scattered objects used — a
+molecule landed in her hair and a cell beside her head. Deleting them was tried
+and was wrong: the page lost the depth that ties it to the story's travelling
+world. `ART` coordinates are percentages of the right-hand 42% band, and on a
+plate page they are confined to x 8→42, the corridor between the copy and the
+figure.
+
+**No mask on a plate.** A left-edge gradient was added to blend a halo that did
+not exist and it ate the DNA strand — the one element carrying the page's
+meaning. The generated alpha is already soft.
+
+### The closing band
+
+Above the footer on every content page: two figures leaning in from the left and
+right edges with the wordmark ghosted between them. They are **cropped by the
+frame on purpose** — entering it, not posed inside it, so the page reads as
+having a world that continues past its edges.
+
+It is two crops of one source plate. Used whole, both figures sit side by side
+in the middle with empty space either side, which reads as a layout that lost
+its centre.
+
+### Image weight
+
+Every plate is converted with ffmpeg to WebP at display width:
+
+```bash
+ffmpeg -i in.png -vf "scale=1400:-1:flags=lanczos" \
+  -c:v libwebp -q:v 78 -preset picture -compression_level 6 out.webp
+```
+
+**1415 kB → 73 kB, alpha preserved (`yuva420p`).** The generated PNGs totalled
+18 MB against a 947 kB site; the whole of `public/` is now 750 kB. Originals
+live in `assets-src/heroes/`, outside the build.
 **`Section` / `P` / `Awaiting`** — the content primitives.
 **`Figure`** + `diagrams.tsx` — figures that reuse the story's diagrams.
 
@@ -531,6 +767,54 @@ inventories rather than pass/fail — read them, do not skim them.
 These lived in a temp directory for most of the build, which meant every fresh
 session either rebuilt them or skipped the check. That is why they are in the
 repo now.
+
+**`audit.mjs` needs `playwright`, and for a while the repo did not have it.**
+The script was committed without its dependency, so from a clean checkout the
+harness that is supposed to gate commits died on a missing module. It is a
+devDependency now. If `bun run audit` ever fails to start, that is the first
+thing to check.
+
+### Two claim-specific harnesses
+
+Both need the dev server up. They exist because each encodes a claim that the
+general audit cannot see.
+
+```bash
+node scripts/measure-enzyme.mjs   # the enzyme is constant across the turn
+node scripts/measure-figure.mjs   # scene 3's patient renders at phone widths
+node scripts/measure-descent.mjs  # the pull-back, layer by layer, with frames
+node scripts/measure-labels.mjs   # never two pieces of copy in one slot
+```
+
+**`measure-labels.mjs` exists because `audit.mjs collisions` has a blind spot,
+and it took four attempts to write one that worked.** Worth reading before
+trusting any new check:
+
+| Attempt | Why it reported a false green |
+|---|---|
+| 1 | 150 samples across the page = 0.0067 stride against a 0.004-wide fault; a 70ms settle on a spring-smoothed value |
+| 2 | Bucketed by rounded position, so two lines of one column read as "stacked" |
+| 3 | Selector `p, span[class*='uppercase']` could not **see** the labels — their span has element children, and the inner spans carry no such class |
+| 4 | Works: selects any element owning a text node, compares by rectangle intersection, excludes ancestor/descendant pairs and `<svg>` internals |
+
+The collision check misses this class from the other direction: it keeps only
+`children.length === 0`, and these labels are never leaves. It also gates at
+0.45 opacity, which is right for "is this readable" and wrong for "are two
+things smeared over each other" — this one gates at 0.12, where a smear becomes
+perceptible.
+
+**A check that has never been run against a known failure is not evidence.**
+Break the thing on purpose, watch it go red, put it back. Attempts 1–3 all
+passed against the defect they were written for.
+
+`measure-enzyme.mjs` samples **three frames per scroll stop and takes the
+largest**. Drug molecules cross the enzyme on a time clock independent of
+scroll, so a single screenshot measures "the enzyme minus whatever was in front
+of it at that millisecond" — that read a passing hexagon as a 13% shrink.
+
+It also compares only the stops where the shape is at least half drawn: `gap`
+fades it in on purpose, and including the ramp compares the entrance against
+the steady state and reports a 100% "change" that is really just the fade.
 
 ## Credentials
 

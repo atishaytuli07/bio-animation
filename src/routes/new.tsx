@@ -111,15 +111,6 @@ function Underline({ index, active = false }: { index: number; active?: boolean 
 }
 
 /**
- * The journey, as the client described it: "follow the highlighted DPYD region
- * into the DNA and gradually discover why two people can respond differently
- * to the same treatment, then move into detection and finally ChemoGuard."
- *
- * Only the first stop is built. The rest are listed because the progress rail
- * has to show a whole journey to mean anything — a reader needs to see where
- * they are going, not just where they are.
- */
-/**
  * Quantise a scroll-driven value to 20 steps.
  *
  * A value that changes by a thousandth every frame repaints exactly as hard as
@@ -132,13 +123,11 @@ const q = (v: number) => Math.round(v * 20) / 20;
 /** The page the hero's second button promises, once it exists. */
 const DESCRIPTION = PAGES.find((p) => p.to === "/description");
 
-const JOURNEY = [
-  "The gene",
-  "The enzyme",
-  "Two people",
-  "Inside the body",
-  "Before the first dose",
-] as const;
+/*
+  The five stop names the reader travels through live in CHAPTERS below, which
+  is what the story rail actually renders. A second, identical list sat here
+  unused after the rail stopped drawing its own labels.
+*/
 
 /**
  * The scale stops named during the descent.
@@ -155,9 +144,23 @@ const JOURNEY = [
 const SCALE_STOPS = [
   // in/out are scroll positions; each is fully retired before the next arrives.
   // Overlapping them stacked two labels at the same coordinates.
-  { label: "Your genome", note: "about three billion letters", in: 0.34, out: 0.42 },
-  { label: "Chromosome 1", note: "1p21.3", in: 0.48, out: 0.56 },
-  { label: "DPYD", note: "builds the enzyme that clears the drug", in: 0.6, out: 0.68 },
+  //
+  //
+  // SPACING IS LOAD-BEARING, and it is not `out` to `in`. The renderer below
+  // adds a 0.06 out-ramp, so a label is still on screen until `out + 0.06`.
+  // Two `in` values must therefore be at least (out − in) + 0.06 = 0.13 apart.
+  //
+  // Compressing the descent for the ending broke exactly this, briefly: at
+  // 0.28/0.39/0.49 the first cleared at 0.41 while the second began rising at
+  // 0.39, and at p 0.51 two labels sat at the same coordinates at 0.167 and
+  // 0.333 opacity. The collision audit did not catch it because both were under
+  // its 0.45 threshold — the same class of fault the comment above describes.
+  //
+  // These start where "One gene. One letter." finishes leaving, and each is
+  // fully clear at the exact progress the next begins.
+  { label: "Your genome", note: "about three billion letters", in: 0.34, out: 0.41 },
+  { label: "Chromosome 1", note: "1p21.3", in: 0.47, out: 0.54 },
+  { label: "DPYD", note: "builds the enzyme that clears the drug", in: 0.6, out: 0.67 },
 ] as const;
 
 /**
@@ -316,23 +319,83 @@ function HeroConcept() {
      The drama of DPYD is scale: three billion letters, and one of them decides
      whether a standard dose treats you or harms you. That is the idea this
      screen exists to carry, and nothing before it says so.                  */
-  const heroOut = 1 - range(p, 0.06, 0.2);
-  const zoom = range(p, 0.12, 0.66);
-  const focus = range(p, 0.44, 0.72);
-  const flatten = range(p, 0.66, 0.8);
-  const assemble = range(p, 0.7, 0.88);
-  const flip = range(p, 0.86, 0.94);
-  const closing = range(p, 0.9, 0.98);
-  // Her phrase, once, before the annotations start narrating. It is fully
-  // gone by 0.36 so it never shares the frame with a scale label.
-  const followIn = band(p, 0.16, 0.24, 0.3, 0.36);
+  /*
+    THE DESCENT WAS COMPRESSED TO PAY FOR THE ENDING.
+
+    The scene used to spend everything up to p 0.88 travelling inward and then
+    tried to fit the flip, the caption, the retreat and the closing statement
+    into the last twelfth — about half a screen of scroll for four separate
+    pieces of information. They had nowhere to go but on top of each other,
+    which is exactly what the client saw: a strand, a caption and a headline
+    all sharing one frame with no staging between them.
+
+    Every beat below therefore lands earlier, and the whole of p 0.76 → 1.0 is
+    given to the ending: hold, retreat, caption out, a breath, statement.
+
+    THE SECTION HEIGHT IS UNCHANGED at 420vh, deliberately. Page-level numbers
+    are measured against it — the five chapter thresholds, the sixteen ground
+    keyframes, the world's density schedule, the section boundaries at 0.31 and
+    0.658 — and re-proportioning inside the scene leaves every one of them
+    valid. Changing the height would not have.
+  */
+  const heroOut = 1 - range(p, 0.05, 0.17);
+  const zoom = range(p, 0.1, 0.54);
+  const focus = range(p, 0.36, 0.58);
+  const flatten = range(p, 0.52, 0.64);
+  const assemble = range(p, 0.56, 0.7);
+  const flip = range(p, 0.7, 0.76);
+  /*
+    THE ENDING, BUDGETED IN SCROLL RATHER THAN IN NUMBERS THAT LOOKED RIGHT.
+
+    p 0.70 → 1.0 is 0.30 of a 420vh section: 126vh, and seven things have to
+    happen in it. Written out as distances, because "these windows do not
+    overlap" is not the same as "each beat has room to be read":
+
+      flip        0.70 → 0.76   25vh   G becomes A
+      hold        0.76 → 0.80   17vh   the variant alone, nothing moving
+      recede      0.80 → 1.00   84vh   the camera pulls back (runs under the rest)
+      caption out 0.806 → 0.85  18vh   the explanatory sentence leaves
+      breath      0.85 → 0.87    8vh   nothing on screen but the receding DNA
+      closing in  0.87 → 0.93   25vh   the statement arrives
+      hold        0.93 → 0.955  10vh   it sits alone before the scene dissolves
+
+    The hold at 0.76 and the breath at 0.85 are the two places that deliberately
+    do nothing. They are what make the retreat read as a decision rather than as
+    the next item in a queue, and they are what the scene was missing.
+  */
+  /**
+   * The camera reverses. The whole story so far has gone inward — genome,
+   * chromosome, gene, sequence, one base — and this is the single moment it
+   * pulls back out, which is what earns the closing line about scale.
+   *
+   * It keeps running past the end of this section on purpose: the handoff into
+   * the two-patient scene happens while the camera is still moving, so that
+   * boundary is a continuation rather than a cut.
+   */
+  const recede = range(p, 0.8, 1);
+  // The statement arrives after the caption has gone and the breath has passed.
+  const closing = range(p, 0.87, 0.93);
+  /*
+    Her phrase, once, before the annotations start narrating.
+
+    It starts at 0.17, which is exactly where the hero copy finishes leaving,
+    and it is clear before the first scale label arrives at 0.34. Both edges
+    matter and both were wrong at some point: at 0.14 it was arriving while
+    "It starts with one gene." was still at 15% opacity, so two headlines in
+    different columns ghosted through each other for about 5vh.
+
+    Solve these against the OPACITY crossings, not the window numbers. An
+    element is still perceptible well into its out-ramp — this one is above 12%
+    until 0.324, which is why the first label waits until 0.34.
+  */
+  const followIn = band(p, 0.17, 0.24, 0.28, 0.33);
   // The cream side gives way as we travel in, so the two halves become one
   // space rather than staying a split screen.
-  const merge = range(p, 0.08, 0.44);
+  const merge = range(p, 0.07, 0.38);
   // How far inward the reader has travelled; the ambient scene defers to it.
-  const travel = range(p, 0.12, 0.6);
+  const travel = range(p, 0.1, 0.5);
   // Objects clear out well before the first annotation lands.
-  const ambientOut = range(p, 0.06, 0.26);
+  const ambientOut = range(p, 0.05, 0.22);
 
   useEffect(() => {
     if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
@@ -442,25 +505,24 @@ function HeroConcept() {
                 travelling world becomes visible behind the strand.
               */
               opacity: 1 - range(merge, 0.72, 1),
-              // Striping layered over the field, the way GlycoGarden stripes its
-              // green. It is barely visible and it is the difference between a
-              // colour and a surface.
-              //
-              // It also drifts, very slowly. This is the one exception to the
-              // "no ambient motion" rule and it earns it: a continuous surface
-              // moving reads as LIGHT passing over the scene, where discrete
-              // objects bobbing read as things jiggling. 48s per cycle, so you
-              // register it as atmosphere rather than as animation.
+              /*
+                Grain and colour only — NO STRIPES.
+
+                This field used to paint its own copy of the surface pattern at
+                rgba(255,255,255,0.05) while <Ground /> painted another at
+                0.06 × light × 0.55. When the field dissolved into the ground the
+                texture fell from 0.0555 white to 0.0113 and never came back:
+                measured, and visible on screen as the pattern blinking off
+                halfway through the descent.
+
+                The pattern belongs to the environment, not to whichever scene
+                is on top of it, so <Ground /> owns it outright now and this
+                layer contributes nothing to it. Dissolving this field is
+                therefore a pure colour handover with no texture change at all.
+              */
               backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='0.1'/%3E%3C/svg%3E"), linear-gradient(160deg, ${C.lavender}, ${C.lavenderDeep})`,
             }}
-          >
-            {/*
-          The drifting stripes live on their own child and move by transform.
-          Animating background-position repaints the entire field every frame
-          (~9fps); a transform is composited and repaints nothing.
-        */}
-            <span className="sheen absolute inset-x-0 top-0 block h-[300%]" />
-          </div>
+          />
           {/* a thin ink keyline along the field edge — the reference wikis all
           outline their shapes rather than letting them dissolve */}
           <div
@@ -938,7 +1000,7 @@ function HeroConcept() {
             className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center px-4"
             style={{ visibility: assemble < 0.02 ? "hidden" : "visible" }}
           >
-            <Sequence assemble={assemble} flip={flip} />
+            <Sequence assemble={assemble} flip={flip} recede={recede} />
           </div>
 
           {/*
@@ -997,7 +1059,8 @@ function HeroConcept() {
         </div>
       </footer>
 
-      <style>{`
+      <style>
+        {`
         /*
           One authored entrance with anticipation and overshoot, instead of
           eight objects bobbing on infinite sine loops. Ambient motion
@@ -1090,19 +1153,16 @@ function HeroConcept() {
           }
         }
 
-        /* The field's stripes drift — light moving across the scene. */
-        .sheen {
-          background-image: repeating-linear-gradient(
-            102deg,
-            rgba(255, 255, 255, 0.05) 0 3px,
-            transparent 3px 26px
-          );
-          animation: sheen 60s linear infinite;
-        }
-        @keyframes sheen {
-          from { transform: translate3d(0, -33.333%, 0); }
-          to   { transform: translate3d(0, 0, 0); }
-        }
+        /*
+          The surface pattern used to live here as .sheen, painted by this
+          scene's colour field. It is environment, not scenery, so it moved to
+          .env-stripes in styles.css and is drawn once, by Ground.
+          See the note on the field above for what that fixed.
+
+          (No backticks in this block: it is a template literal, and a stray
+          one silently ends the CSS string and turns the rest of the stylesheet
+          into TypeScript. It did exactly that, and the build caught it.)
+        */
 
         /* Hover paints the marker stroke on, left to right. */
         .group:hover [data-underline] { opacity: 1 !important; transform: scaleX(1) !important; }
@@ -1116,9 +1176,11 @@ function HeroConcept() {
 
         @media (prefers-reduced-motion: reduce) {
           .enter, .float { animation: none; }
-          .sheen { animation: none; }
+          /* .env-stripes carries its own reduced-motion rule in styles.css,
+             beside the animation it disables. */
         }
-      `}</style>
+      `}
+      </style>
     </main>
   );
 }

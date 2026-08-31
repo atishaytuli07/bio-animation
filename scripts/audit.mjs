@@ -87,9 +87,15 @@ async function sweep(browser) {
           .map((e) => (e.textContent || "").trim().slice(0, 24));
         return { ovX: document.documentElement.scrollWidth > innerWidth + 1, clipped };
       }, EFF);
-      say(!r.ovX && !r.clipped.length, `${tag.padEnd(8)} ${p.padEnd(15)} ${r.ovX ? "overflows-x " : ""}${r.clipped.length ? "clipped: " + r.clipped.join(", ") : ""}`);
+      say(
+        !r.ovX && !r.clipped.length,
+        `${tag.padEnd(8)} ${p.padEnd(15)} ${r.ovX ? "overflows-x " : ""}${r.clipped.length ? "clipped: " + r.clipped.join(", ") : ""}`,
+      );
     }
-    say(!errs.length, `${tag.padEnd(8)} console        ${errs.length ? [...new Set(errs)].slice(0, 2).join(" | ") : ""}`);
+    say(
+      !errs.length,
+      `${tag.padEnd(8)} console        ${errs.length ? [...new Set(errs)].slice(0, 2).join(" | ") : ""}`,
+    );
     await pg.close();
   }
 }
@@ -111,16 +117,33 @@ async function contrast(browser) {
         return [...document.querySelectorAll("h1,h2,p,a,button")]
           .filter((e) => {
             const b = e.getBoundingClientRect();
-            return e.children.length === 0 && (e.textContent || "").trim() && eff(e) > 0.75 && b.top > 0 && b.bottom < innerHeight && b.width > 24 && b.height > 8;
+            return (
+              e.children.length === 0 &&
+              (e.textContent || "").trim() &&
+              eff(e) > 0.75 &&
+              b.top > 0 &&
+              b.bottom < innerHeight &&
+              b.width > 24 &&
+              b.height > 8
+            );
           })
           .slice(0, 8)
           .map((e) => {
             const b = e.getBoundingClientRect();
-            return { t: (e.textContent || "").trim().slice(0, 26), fs: Math.round(parseFloat(getComputedStyle(e).fontSize)), x: Math.round(b.x), y: Math.round(b.y), w: Math.min(Math.round(b.width), 620), h: Math.round(b.height) };
+            return {
+              t: (e.textContent || "").trim().slice(0, 26),
+              fs: Math.round(parseFloat(getComputedStyle(e).fontSize)),
+              x: Math.round(b.x),
+              y: Math.round(b.y),
+              w: Math.min(Math.round(b.width), 620),
+              h: Math.round(b.height),
+            };
           });
       }, EFF);
       for (const t of boxes) {
-        const img = PNG.sync.read(await pg.screenshot({ clip: { x: t.x, y: t.y, width: t.w, height: t.h } }));
+        const img = PNG.sync.read(
+          await pg.screenshot({ clip: { x: t.x, y: t.y, width: t.w, height: t.h } }),
+        );
         let dark = [255, 255, 255];
         let light = [0, 0, 0];
         for (let i = 0; i < img.data.length; i += 4) {
@@ -131,7 +154,8 @@ async function contrast(browser) {
         const c = ratio(dark, light);
         // WCAG AA: 3:1 for >=24px (or >=18.66px bold), 4.5:1 otherwise.
         const need = t.fs >= 24 ? 3 : 4.5;
-        if (c < need) say(false, `${p} @${f}  ${c.toFixed(2)}:1 (needs ${need})  ${t.fs}px  ${t.t}`);
+        if (c < need)
+          say(false, `${p} @${f}  ${c.toFixed(2)}:1 (needs ${need})  ${t.fs}px  ${t.t}`);
       }
     }
   }
@@ -149,21 +173,43 @@ async function controls(browser) {
     const H = await pg.evaluate(() => document.documentElement.scrollHeight - innerHeight);
     const dead = new Set();
     for (let i = 0; i <= 20; i++) {
-      await pg.evaluate((y) => window.scrollTo({ top: y, behavior: "instant" }), Math.round((H * i) / 20));
+      await pg.evaluate(
+        (y) => window.scrollTo({ top: y, behavior: "instant" }),
+        Math.round((H * i) / 20),
+      );
       await pg.waitForTimeout(120);
       for (const d of await pg.evaluate((es) => {
         const eff = eval(es);
-        return [...document.querySelectorAll("button,a")]
-          .filter((e) => {
-            const b = e.getBoundingClientRect();
-            return eff(e) > 0.3 && b.width > 10 && b.bottom > 0 && b.top < innerHeight;
-          })
-          .filter((e) =>
-            e.tagName === "A"
-              ? !e.getAttribute("href")
-              : !Object.keys(e).some((k) => k.startsWith("__react") && /onClick|onPointerDown/.test(JSON.stringify(Object.keys(e[k]?.memoizedProps || {})))),
-          )
-          .map((e) => (e.textContent || "").trim().slice(0, 24) || e.getAttribute("aria-label") || "(icon)");
+        return (
+          [...document.querySelectorAll("button,a")]
+            .filter((e) => {
+              const b = e.getBoundingClientRect();
+              return eff(e) > 0.3 && b.width > 10 && b.bottom > 0 && b.top < innerHeight;
+            })
+            /*
+            `tagName` is UPPERCASE for HTML elements and case-preserved for SVG
+            ones, so an SVG <a> reports "a" and this read it as a button with no
+            handler. It flagged the four working links in the engineering cycle
+            diagram as dead controls. Compare case-insensitively.
+          */
+            .filter((e) =>
+              e.tagName.toUpperCase() === "A"
+                ? !e.getAttribute("href")
+                : !Object.keys(e).some(
+                    (k) =>
+                      k.startsWith("__react") &&
+                      /onClick|onPointerDown/.test(
+                        JSON.stringify(Object.keys(e[k]?.memoizedProps || {})),
+                      ),
+                  ),
+            )
+            .map(
+              (e) =>
+                (e.textContent || "").trim().slice(0, 24) ||
+                e.getAttribute("aria-label") ||
+                "(icon)",
+            )
+        );
       }, EFF))
         dead.add(d);
     }
@@ -181,28 +227,49 @@ async function collisions(browser) {
   const H = await pg.evaluate(() => document.documentElement.scrollHeight - innerHeight);
   const hits = new Set();
   for (let i = 0; i <= 60; i++) {
-    await pg.evaluate((y) => window.scrollTo({ top: y, behavior: "instant" }), Math.round((H * i) / 60));
+    await pg.evaluate(
+      (y) => window.scrollTo({ top: y, behavior: "instant" }),
+      Math.round((H * i) / 60),
+    );
     await pg.waitForTimeout(110);
     for (const h of await pg.evaluate((es) => {
       const eff = eval(es);
       const items = [...document.querySelectorAll("h1,h2,p,span,button,a")]
         .filter((e) => {
           const b = e.getBoundingClientRect();
-          return e.children.length === 0 && (e.textContent || "").trim() && eff(e) > 0.45 && b.bottom > 0 && b.top < innerHeight && b.width > 14 && b.height > 6;
+          return (
+            e.children.length === 0 &&
+            (e.textContent || "").trim() &&
+            eff(e) > 0.45 &&
+            b.bottom > 0 &&
+            b.top < innerHeight &&
+            b.width > 14 &&
+            b.height > 6
+          );
         })
-        .map((e) => ({ t: (e.textContent || "").trim().slice(0, 22), b: e.getBoundingClientRect() }));
+        .map((e) => ({
+          t: (e.textContent || "").trim().slice(0, 22),
+          b: e.getBoundingClientRect(),
+        }));
       const out = [];
       for (let a = 0; a < items.length; a++)
         for (let c = a + 1; c < items.length; c++) {
           const A = items[a].b;
           const B = items[c].b;
-          if (Math.min(A.right, B.right) - Math.max(A.left, B.left) > 6 && Math.min(A.bottom, B.bottom) - Math.max(A.top, B.top) > 6) out.push(`${items[a].t} / ${items[c].t}`);
+          if (
+            Math.min(A.right, B.right) - Math.max(A.left, B.left) > 6 &&
+            Math.min(A.bottom, B.bottom) - Math.max(A.top, B.top) > 6
+          )
+            out.push(`${items[a].t} / ${items[c].t}`);
         }
       return out;
     }, EFF))
       hits.add(h);
   }
-  say(hits.size === 0, hits.size ? [...hits].slice(0, 5).join("  ·  ") : "none across 60 scroll positions");
+  say(
+    hits.size === 0,
+    hits.size ? [...hits].slice(0, 5).join("  ·  ") : "none across 60 scroll positions",
+  );
   await pg.close();
 }
 
@@ -217,18 +284,31 @@ async function system(browser) {
     await pg.waitForTimeout(1600);
     const H = await pg.evaluate(() => document.documentElement.scrollHeight - innerHeight);
     for (let i = 0; i <= 30; i++) {
-      await pg.evaluate((y) => window.scrollTo({ top: y, behavior: "instant" }), Math.round((H * i) / 30));
+      await pg.evaluate(
+        (y) => window.scrollTo({ top: y, behavior: "instant" }),
+        Math.round((H * i) / 30),
+      );
       await pg.waitForTimeout(90);
       const r = await pg.evaluate((es) => {
         const eff = eval(es);
         return [...document.querySelectorAll("h1,h2,p,span,button,a,li")]
           .filter((e) => {
             const b = e.getBoundingClientRect();
-            return e.children.length === 0 && (e.textContent || "").trim() && eff(e) > 0.55 && b.bottom > 0 && b.top < innerHeight && b.width > 14;
+            return (
+              e.children.length === 0 &&
+              (e.textContent || "").trim() &&
+              eff(e) > 0.55 &&
+              b.bottom > 0 &&
+              b.top < innerHeight &&
+              b.width > 14
+            );
           })
           .map((e) => {
             const s = getComputedStyle(e);
-            return { k: `${Math.round(parseFloat(s.fontSize))}px/${s.fontWeight}/${s.letterSpacing}${s.textTransform === "uppercase" ? "/upper" : ""}`, c: s.color };
+            return {
+              k: `${Math.round(parseFloat(s.fontSize))}px/${s.fontWeight}/${s.letterSpacing}${s.textTransform === "uppercase" ? "/upper" : ""}`,
+              c: s.color,
+            };
           });
       }, EFF);
       for (const x of r) {
@@ -238,10 +318,14 @@ async function system(browser) {
     }
   }
   console.log("  type specs in use:");
-  for (const [k, v] of [...specs].sort((a, b) => b[1] - a[1])) console.log(`    ${String(v).padStart(4)}  ${k}`);
+  for (const [k, v] of [...specs].sort((a, b) => b[1] - a[1]))
+    console.log(`    ${String(v).padStart(4)}  ${k}`);
   console.log("  text colours in use:");
-  for (const [k, v] of [...colours].sort((a, b) => b[1] - a[1])) console.log(`    ${String(v).padStart(4)}  ${k}`);
-  console.log("  → two specs that differ only slightly for the same job are drift. Name them in palette.ts.");
+  for (const [k, v] of [...colours].sort((a, b) => b[1] - a[1]))
+    console.log(`    ${String(v).padStart(4)}  ${k}`);
+  console.log(
+    "  → two specs that differ only slightly for the same job are drift. Name them in palette.ts.",
+  );
   await pg.close();
 }
 
@@ -257,17 +341,35 @@ async function copy(browser) {
     await pg.goto(BASE + p, { waitUntil: "networkidle" });
     await pg.waitForTimeout(1800);
     for (const t of await pg.evaluate(() =>
-      [...document.querySelectorAll("h1,h2,h3,p,li,figcaption,button,a,span")].filter((e) => e.children.length === 0).map((e) => (e.textContent || "").trim()).filter((t) => t.length > 3),
+      [...document.querySelectorAll("h1,h2,h3,p,li,figcaption,button,a,span")]
+        .filter((e) => e.children.length === 0)
+        .map((e) => (e.textContent || "").trim())
+        .filter((t) => t.length > 3),
     ))
       strings.add(t);
   }
-  const sentences = [...strings].flatMap((t) => t.split(/(?<=[.?!])\s+/)).map((s) => s.trim()).filter((s) => s.length > 12);
+  const sentences = [...strings]
+    .flatMap((t) => t.split(/(?<=[.?!])\s+/))
+    .map((s) => s.trim())
+    .filter((s) => s.length > 12);
 
   const banned = sentences.filter((s) => BANNED.test(s));
   BANNED.lastIndex = 0;
-  say(!banned.length, `banned vocabulary: ${banned.length ? banned.slice(0, 3).map((s) => s.slice(0, 44)).join(" | ") : "none"}`);
+  say(
+    !banned.length,
+    `banned vocabulary: ${
+      banned.length
+        ? banned
+            .slice(0, 3)
+            .map((s) => s.slice(0, 44))
+            .join(" | ")
+        : "none"
+    }`,
+  );
 
-  const notJust = sentences.filter((s) => /\bnot (just|only|merely|simply)\b[^.?!]{0,60}\b(but|it['’]s)\b/i.test(s));
+  const notJust = sentences.filter((s) =>
+    /\bnot (just|only|merely|simply)\b[^.?!]{0,60}\b(but|it['’]s)\b/i.test(s),
+  );
   say(!notJust.length, `"not just X but Y": ${notJust.length || "none"}`);
 
   const dashed = sentences.filter((s) => (s.match(/—/g) || []).length > 0).length;
@@ -276,16 +378,24 @@ async function copy(browser) {
 
   const lens = sentences.map((s) => s.split(/\s+/).length).sort((a, b) => a - b);
   const spread = lens[lens.length - 1] - lens[0];
-  say(spread > 15, `sentence length ${lens[0]}–${lens[lens.length - 1]} words, median ${lens[Math.floor(lens.length / 2)]} (uniform length reads as generated)`);
+  say(
+    spread > 15,
+    `sentence length ${lens[0]}–${lens[lens.length - 1]} words, median ${lens[Math.floor(lens.length / 2)]} (uniform length reads as generated)`,
+  );
 
   const open = new Map();
   for (const s of sentences) {
-    const w = s.split(/\s+/)[0].replace(/[^A-Za-z]/g, "").toLowerCase();
+    const w = s
+      .split(/\s+/)[0]
+      .replace(/[^A-Za-z]/g, "")
+      .toLowerCase();
     if (w.length > 1) open.set(w, (open.get(w) || 0) + 1);
   }
   const top = [...open].sort((a, b) => b[1] - a[1]).slice(0, 3);
   console.log(`  note  most repeated openers: ${top.map(([w, c]) => `"${w}" ×${c}`).join(", ")}`);
-  console.log("  → a repeated opener is fine for a UI label appearing many times, and a tic in prose.");
+  console.log(
+    "  → a repeated opener is fine for a UI label appearing many times, and a tic in prose.",
+  );
   await pg.close();
 }
 

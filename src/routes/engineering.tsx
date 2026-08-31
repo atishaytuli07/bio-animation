@@ -1,8 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 
 import { C, L, R } from "@/components/hero/palette";
-import { ART } from "@/components/story/PageHero";
+import { ART, PLATE } from "@/components/story/PageHero";
 import { Awaiting, P, PageShell, Section } from "@/components/story/PageShell";
+import { Figure } from "@/components/story/Figure";
+import { CycleFigure } from "@/components/story/diagrams";
 
 /**
  * Engineering.
@@ -90,6 +92,7 @@ function Engineering() {
       title="Engineering"
       lede="How the project was designed, built, tested and then changed because of what the testing showed. Each pass round the cycle is recorded here, including the ones that did not work."
       art={ART.engineering}
+      plate={PLATE.engineering}
       sections={SECTIONS}
     >
       <Section id="cycle" title="The cycle">
@@ -98,6 +101,18 @@ function Engineering() {
           build, test and learn changes what the next pass attempts — and the passes that failed are
           the ones that explain why the final design looks the way it does.
         </P>
+        {/*
+          The paragraph above says the work is not a straight line. Until this
+          figure existed the page then drew one: four identical panels in a
+          column. A claim and a picture that contradict each other is worse than
+          either alone, and this is the page iGEM judges against the loop.
+        */}
+        <Figure
+          label="Figure 1 · the engineering cycle"
+          caption="Each phase feeds the next, and the last feeds the first. The return from Learn to Design is the part the criterion rewards — a second pass that exists because the first one taught something. Select a phase to jump to it."
+        >
+          <CycleFigure />
+        </Figure>
       </Section>
 
       {CYCLE.map((step, i) => (

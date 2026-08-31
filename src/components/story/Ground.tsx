@@ -89,6 +89,31 @@ const ANGLE = [
   [1.0, 218],
 ] as const;
 
+/**
+ * The surface pattern's own opacity track — deliberately NOT tied to `light`.
+ *
+ * It used to ride `light * 0.55`, which meant the texture rose and fell with
+ * the lighting. Lighting is a mood; a surface is a fact. When the hero's colour
+ * field (which painted its own identical stripes at a higher alpha) dissolved
+ * into this layer, the pattern dropped fivefold and stayed there. The stripes
+ * now live here alone, and this track holds them CONSTANT for the whole
+ * coloured stretch of the story.
+ *
+ * It ramps up while the hero's field is still opaque on top of it, so by the
+ * time that field begins to fade at page 0.069 the surface underneath is
+ * already identical and there is nothing to see change. It leaves only at the
+ * very end, as the ground returns to cream and white-on-cream stripes would be
+ * invisible anyway.
+ */
+const PATTERN = [
+  [0.0, 0],
+  [0.03, 0],
+  [0.055, 1],
+  [0.88, 1],
+  [0.97, 0],
+  [1.0, 0],
+] as const;
+
 const num = (p: number, frames: readonly (readonly [number, number])[]) => {
   const { from, to, t } = track(p, frames);
   return from + (to - from) * t;
@@ -100,6 +125,7 @@ export function Ground() {
   const base = track(p, BASE);
   const light = num(p, LIGHT);
   const angle = num(p, ANGLE);
+  const pattern = num(p, PATTERN);
 
   // color-mix nests, so two arbitrary keyframe colours blend without needing
   // to parse either of them into channels.
@@ -145,18 +171,22 @@ export function Ground() {
         }}
       />
       {/*
-        The stripes the client liked in the DNA section, kept — but as part of
-        the ground rather than owned by one scene, so they arrive and leave by
-        fading instead of appearing at a boundary.
+        The stripes the client liked in the DNA section — and now the ONLY
+        place on the site that draws them.
+
+        The hero's colour field used to paint its own copy at a different alpha,
+        so the handover between the two was a visible fivefold drop in texture.
+        A surface belongs to the environment, not to whichever scene happens to
+        be on screen, so it is declared once here and held constant across every
+        beat. See PATTERN above and `.env-stripes` in styles.css.
+
+        The wrapper clips; the inner element is 300% tall and drifts upward by
+        transform, which composites. Animating the background-position instead
+        repaints the full viewport every frame and measured about 9fps.
       */}
-      <div
-        className="absolute inset-0"
-        style={{
-          opacity: light * 0.55,
-          backgroundImage:
-            "repeating-linear-gradient(102deg, rgba(255,255,255,0.06) 0 3px, transparent 3px 26px)",
-        }}
-      />
+      <div className="absolute inset-0 overflow-hidden" style={{ opacity: pattern }}>
+        <span className="env-stripes absolute inset-x-0 top-0 block h-[300%]" />
+      </div>
     </div>
   );
 }

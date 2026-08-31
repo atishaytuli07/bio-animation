@@ -236,3 +236,199 @@ export function DoseFigure() {
     </div>
   );
 }
+
+/**
+ * The engineering cycle, drawn as a cycle.
+ *
+ * WHY THIS EXISTS. The Engineering page opened by saying "engineering is not a
+ * straight line from an idea to a result" and then presented four identical
+ * dashed panels stacked vertically — a straight line. Four boxes that look the
+ * same, in a column, is a form with four empty fields, and it was the weakest
+ * thing on the site. iGEM judges this page against whether a team went round
+ * the loop more than once, so the loop is the one shape the page has to show.
+ *
+ * ALL SVG, including the text. A CSS grid of boxes with an SVG arrow layer over
+ * it drifts out of alignment the moment the two are measured differently; here
+ * the nodes and the arrows share one coordinate space and cannot separate.
+ *
+ * The nodes are real links to the sections below, which is the only interaction
+ * on the page. It is navigation rather than decoration: a reader who wants
+ * Test can go to Test.
+ *
+ * THE RETURN ARROW IS THE POINT. Design → Build → Test is a process; the arrow
+ * from Learn back to Design is what makes it a cycle, and it is the thing the
+ * criterion actually rewards. It is drawn heavier, in the interface red the
+ * section rail already uses, and it is the only arrow that is labelled.
+ */
+const CYCLE_NODES = [
+  { n: "01", name: "Design", id: "design", x: 40, y: 30 },
+  { n: "02", name: "Build", id: "build", x: 380, y: 30 },
+  { n: "03", name: "Test", id: "test", x: 380, y: 268 },
+  { n: "04", name: "Learn", id: "learn", x: 40, y: 268 },
+] as const;
+
+const NODE_W = 200;
+const NODE_H = 96;
+
+export function CycleFigure() {
+  const [ref, seen] = useSeen<HTMLDivElement>();
+
+  /** Each arrow draws itself, in order, after the nodes have landed. */
+  const draw = (i: number) => ({
+    strokeDasharray: 1,
+    strokeDashoffset: seen ? 0 : 1,
+    transition: `stroke-dashoffset 520ms ${ease} ${420 + i * 190}ms`,
+  });
+
+  return (
+    <div ref={ref}>
+      <svg viewBox="0 0 620 394" className="h-auto w-full" role="img" aria-label="">
+        <defs>
+          <marker
+            id="cyc-head"
+            viewBox="0 0 10 10"
+            refX="8"
+            refY="5"
+            markerWidth="5.5"
+            markerHeight="5.5"
+            orient="auto-start-reverse"
+          >
+            <path d="M0 0 L10 5 L0 10 z" fill={C.ink} />
+          </marker>
+          <marker
+            id="cyc-head-red"
+            viewBox="0 0 10 10"
+            refX="8"
+            refY="5"
+            markerWidth="5.5"
+            markerHeight="5.5"
+            orient="auto-start-reverse"
+          >
+            <path d="M0 0 L10 5 L0 10 z" fill={C.redDeep} />
+          </marker>
+        </defs>
+
+        {/* Design → Build, along the top */}
+        <path
+          d="M252 78 L 368 78"
+          fill="none"
+          stroke={C.ink}
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          markerEnd="url(#cyc-head)"
+          pathLength={1}
+          style={draw(0)}
+        />
+        {/* Build → Test, down the right */}
+        <path
+          d="M480 138 L 480 256"
+          fill="none"
+          stroke={C.ink}
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          markerEnd="url(#cyc-head)"
+          pathLength={1}
+          style={draw(1)}
+        />
+        {/* Test → Learn, back along the bottom */}
+        <path
+          d="M368 316 L 252 316"
+          fill="none"
+          stroke={C.ink}
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          markerEnd="url(#cyc-head)"
+          pathLength={1}
+          style={draw(2)}
+        />
+        {/*
+          Learn → Design. The one that closes the loop, and the only one that
+          carries a label — everything above it is a process, and this is what
+          makes it a cycle.
+        */}
+        <path
+          d="M140 256 L 140 138"
+          fill="none"
+          stroke={C.redDeep}
+          strokeWidth="3.5"
+          strokeLinecap="round"
+          markerEnd="url(#cyc-head-red)"
+          pathLength={1}
+          style={draw(3)}
+        />
+        <text
+          x="128"
+          y="202"
+          textAnchor="end"
+          style={{
+            fontSize: 12,
+            fontWeight: 700,
+            letterSpacing: "0.14em",
+            textTransform: "uppercase",
+            fill: C.redDeep,
+            opacity: seen ? 1 : 0,
+            transition: `opacity 420ms ${ease} 1100ms`,
+          }}
+        >
+          again
+        </text>
+
+        {CYCLE_NODES.map((node, i) => (
+          <a key={node.id} href={`#${node.id}`}>
+            <g
+              style={{
+                opacity: seen ? 1 : 0,
+                transform: seen ? "translateY(0)" : "translateY(10px)",
+                transition: `opacity 420ms ${ease} ${i * 110}ms, transform 420ms ${ease} ${i * 110}ms`,
+              }}
+            >
+              {/* the offset shadow every pressable thing on this site wears */}
+              <rect
+                x={node.x + 4}
+                y={node.y + 4}
+                width={NODE_W}
+                height={NODE_H}
+                rx={R.md}
+                fill={C.ink}
+              />
+              <rect
+                x={node.x}
+                y={node.y}
+                width={NODE_W}
+                height={NODE_H}
+                rx={R.md}
+                fill={C.paper}
+                stroke={C.ink}
+                strokeWidth="2.5"
+              />
+              <text
+                x={node.x + 22}
+                y={node.y + 36}
+                style={{
+                  fontSize: 12,
+                  fontWeight: 700,
+                  letterSpacing: "0.18em",
+                  fill: C.redDeep,
+                }}
+              >
+                {node.n}
+              </text>
+              <text
+                x={node.x + 22}
+                y={node.y + 70}
+                style={{
+                  fontSize: 27,
+                  fontWeight: 800,
+                  letterSpacing: "-0.02em",
+                  fill: C.ink,
+                }}
+              >
+                {node.name}
+              </text>
+            </g>
+          </a>
+        ))}
+      </svg>
+    </div>
+  );
+}

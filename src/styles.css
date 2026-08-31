@@ -245,6 +245,75 @@
   --font-hand: "Segoe Script", "Bradley Hand", "Comic Sans MS", "Chalkboard SE", cursive;
 }
 
+/*
+ * The environment's surface pattern.
+ *
+ * THIS LIVES IN EXACTLY ONE PLACE, and that is the whole point. The stripes
+ * used to be painted twice: once by the hero's colour field and once by the
+ * shared ground, at different alphas (0.05 against 0.06 × light × 0.55). So
+ * when the field handed over to the ground the pattern dropped roughly fivefold
+ * and never recovered — measured 0.0555 white before the handover and 0.0113
+ * after it. On screen that reads as the texture blinking off mid-scene, which
+ * is one of the things that makes a page feel assembled rather than continuous.
+ *
+ * The rule it now obeys: nothing belonging to the environment may blink off
+ * between beats. One layer, one alpha, one opacity track, owned by <Ground />.
+ *
+ * The drift is the one piece of ambient motion the story allows itself. A
+ * continuous surface moving reads as light passing over the scene, where
+ * discrete objects bobbing read as things jiggling. 60s per cycle, so it
+ * registers as atmosphere rather than as animation, and it moves by transform
+ * so it composites instead of repainting.
+ */
+.env-stripes {
+  background-image: repeating-linear-gradient(
+    102deg,
+    rgba(255, 255, 255, 0.05) 0 3px,
+    transparent 3px 26px
+  );
+  animation: env-stripes-drift 60s linear infinite;
+}
+@keyframes env-stripes-drift {
+  from {
+    transform: translate3d(0, -33.333%, 0);
+  }
+  to {
+    transform: translate3d(0, 0, 0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .env-stripes {
+    animation: none;
+  }
+}
+
+/*
+ * The footer's drifting elements.
+ *
+ * The row is duplicated in the markup and this translates by exactly -50%, so
+ * the second copy lands where the first began and the loop has no seam. A
+ * percentage keeps that true at any viewport width, which a pixel value would
+ * not. 44s because it should register as the page breathing, not as something
+ * moving across it.
+ */
+.footer-drift {
+  animation: footer-drift 44s linear infinite;
+  will-change: transform;
+}
+@keyframes footer-drift {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .footer-drift {
+    animation: none;
+  }
+}
+
 @layer base {
   html {
     scroll-behavior: smooth;
@@ -253,7 +322,8 @@
   body {
     /* The variable package registers this exact family name; "Instrument
        Sans" alone matches nothing and falls through to the system stack. */
-    font-family: "Instrument Sans Variable", "Instrument Sans", ui-sans-serif, system-ui, sans-serif;
+    font-family:
+      "Instrument Sans Variable", "Instrument Sans", ui-sans-serif, system-ui, sans-serif;
     letter-spacing: -0.015em;
   }
 }

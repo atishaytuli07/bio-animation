@@ -1,8 +1,9 @@
 import { Link } from "@tanstack/react-router";
 import { useEffect, useState, type ReactNode } from "react";
 
+import { Cell, Enzyme, Molecule } from "@/components/hero/elements";
 import { asset, C, L, T, R } from "@/components/hero/palette";
-import { PageHero, type Art } from "@/components/story/PageHero";
+import { PageHero, type Art, type Plate } from "@/components/story/PageHero";
 import { NAV, PAGES } from "@/components/story/site-map";
 
 /**
@@ -28,12 +29,15 @@ export function PageShell({
   title,
   lede,
   art,
+  plate,
   sections,
   children,
 }: {
   title: string;
   lede: string;
   art: Art;
+  /** Optional illustrated character for the hero. See PLATE in PageHero. */
+  plate?: Plate | undefined;
   /** Ids and labels for the index rail; must match the <Section id>s below. */
   sections: { id: string; label: string }[];
   children: ReactNode;
@@ -188,7 +192,7 @@ export function PageShell({
         )}
       </header>
 
-      <PageHero title={title} lede={lede} art={art} />
+      <PageHero title={title} lede={lede} art={art} plate={plate} />
 
       <div className="mx-auto flex max-w-[92rem] gap-12 px-6 pb-24 pt-12 md:px-10 md:pt-16">
         {/*
@@ -228,6 +232,7 @@ export function PageShell({
         <main className="min-w-0 max-w-3xl">{children}</main>
       </div>
 
+      <ClosingBand />
       <SiteFooter />
     </div>
   );
@@ -301,65 +306,235 @@ export function Awaiting({ what, children }: { what: string; children?: ReactNod
  * which is honest and also shows a judge the shape of the wiki — and the
  * attribution line iGEM expects to find.
  */
+/**
+ * The band that closes a content page, above the footer.
+ *
+ * Two figures lean in from the left and right edges with a gap between them,
+ * and the page's last words sit in that gap. It is the one place on a
+ * documentation page where the illustration is allowed to be the loudest thing,
+ * because by then the reader has finished the content and the job of the frame
+ * is to sign off rather than to inform.
+ *
+ * They are CROPPED BY THE EDGES on purpose — entering the frame rather than
+ * posed inside it. A figure fully contained in a box reads as an illustration
+ * placed on the page; one walking in from off-screen reads as the page having a
+ * world that continues past it, which is the same idea the story's travelling
+ * world is built on.
+ *
+ * The plate is a single wide cutout that already contains both figures with a
+ * gap, so this costs one 98 kB image rather than two.
+ */
+function ClosingBand() {
+  return (
+    <section
+      aria-hidden="true"
+      className="relative overflow-hidden"
+      style={{
+        background: `linear-gradient(180deg, ${C.paper}, color-mix(in oklab, ${C.lavender} 16%, ${C.paper}))`,
+        borderTop: `2px solid ${C.ink}14`,
+      }}
+    >
+      {/*
+        Two separate crops, one anchored to each edge.
+
+        The source is a single wide plate with both figures and a gap between
+        them, and used whole it puts them side by side in the middle of the band
+        with empty space either side — posed in a frame, not entering one. Cut
+        into two and pinned to opposite edges, each leans in from off-screen and
+        the page's own width becomes the gap.
+      */}
+      <div className="relative flex h-[150px] items-center justify-center md:h-[210px]">
+        <img
+          src={asset("figure-left.webp")}
+          alt=""
+          draggable={false}
+          className="pointer-events-none absolute bottom-0 left-0 h-[118%] w-auto max-w-none select-none md:left-[2vw]"
+          style={{ transform: "translateX(-14%)" }}
+        />
+        {/*
+          The mark sits in the gap the two of them leave.
+
+          Without it the band is a hundred-odd pixels of empty cream between two
+          figures looking at nothing, which reads as a layout that lost its
+          middle. It is the wordmark rather than a new line of copy because the
+          page has already said everything it has to say by this point, and a
+          sign-off should close rather than add.
+
+          Decorative, and the whole band is aria-hidden: the footer directly
+          below announces the same name, and a screen reader does not need it
+          twice.
+        */}
+        <span
+          className="select-none text-[26px] font-extrabold leading-none md:text-[34px]"
+          style={{ color: `${C.ink}1f`, letterSpacing: "-0.02em" }}
+        >
+          Chemo<span style={{ color: `${C.red}2e` }}>Guard</span>
+        </span>
+        <img
+          src={asset("figure-right.webp")}
+          alt=""
+          draggable={false}
+          className="pointer-events-none absolute bottom-0 right-0 h-[118%] w-auto max-w-none select-none md:right-[2vw]"
+          style={{ transform: "translateX(14%)" }}
+        />
+      </div>
+      {/*
+        The figures meet the footer rather than floating above it: a short fade
+        at the base sits them on the dark band below instead of leaving them
+        hovering on a seam.
+      */}
+      <div
+        className="pointer-events-none absolute inset-x-0 bottom-0 h-10"
+        style={{ background: `linear-gradient(180deg, transparent, ${C.ink}22)` }}
+      />
+    </section>
+  );
+}
+
+/**
+ * The drifting band along the footer's floor.
+ *
+ * The one piece of purely ambient motion on a content page, and it is confined
+ * here on purpose: the page's rule is that figures reveal once and then hold,
+ * because motion that replays every time you pass it is the clearest tell of a
+ * generated site. A footer is the exception worth making — the reader has
+ * finished, nothing here is information, and a slow drift signs the page off
+ * rather than competing with it.
+ *
+ * Built as one row duplicated and translated by exactly -50%, so the loop is
+ * seamless with no popping at the wrap. It moves by transform, so it composites
+ * instead of repainting, and `prefers-reduced-motion` stops it dead.
+ *
+ * The elements carry PAPER outlines rather than ink. Ink on the ink-coloured
+ * footer is invisible — the same rule the story's type follows: paper on a dark
+ * ground, ink on cream.
+ */
+const DRIFT = [
+  /*
+    Sizes, gaps, lifts and angles are all deliberately UNEVEN.
+
+    An evenly spaced row at one size reads as a border pattern — the eye locks
+    onto the repeat and it stops looking like objects and starts looking like
+    wallpaper. Clustering them at mixed scales, with a few nearly touching and
+    the occasional wider break, is what makes a drifting crowd read as a crowd.
+
+    `gap` is the space BEFORE each item, in px. `lift` raises it off the floor.
+  */
+  { k: "cell", s: 0.78, tone: C.pink, gap: 0, lift: 0, rot: -6 },
+  { k: "mol", s: 0.54, tone: C.coral, gap: 6, lift: 26, rot: 14 },
+  { k: "enz", s: 0.68, tone: C.green, gap: 14, lift: 4, rot: -11 },
+  { k: "mol", s: 0.86, tone: C.lavender, gap: 4, lift: 18, rot: 7 },
+  { k: "cell", s: 0.46, tone: C.blue, gap: 34, lift: 2, rot: 12 },
+  { k: "enz", s: 0.58, tone: C.green, gap: 8, lift: 30, rot: -16 },
+  { k: "mol", s: 0.72, tone: C.coral, gap: 18, lift: 0, rot: 4 },
+  { k: "cell", s: 0.62, tone: C.pink, gap: 5, lift: 22, rot: -9 },
+  { k: "enz", s: 0.8, tone: C.green, gap: 26, lift: 8, rot: 10 },
+  { k: "mol", s: 0.5, tone: C.lavender, gap: 7, lift: 34, rot: -13 },
+  { k: "cell", s: 0.7, tone: C.blue, gap: 12, lift: 1, rot: 5 },
+  { k: "mol", s: 0.6, tone: C.coral, gap: 30, lift: 20, rot: -7 },
+] as const;
+
+function FooterDrift() {
+  const row = (key: string) => (
+    <div key={key} className="flex shrink-0 items-end">
+      {DRIFT.map((d, i) => (
+        <span
+          key={i}
+          className="block shrink-0"
+          style={{
+            marginLeft: d.gap,
+            transform: `translateY(${-d.lift}px) rotate(${d.rot}deg)`,
+          }}
+        >
+          {d.k === "cell" ? (
+            <Cell s={d.s} tone={d.tone} line={C.paper} />
+          ) : d.k === "mol" ? (
+            <Molecule s={d.s} tone={d.tone} line={C.paper} />
+          ) : (
+            <Enzyme s={d.s} tone={d.tone} line={C.paper} />
+          )}
+        </span>
+      ))}
+    </div>
+  );
+  return (
+    <div
+      aria-hidden="true"
+      className="pointer-events-none relative h-[104px] overflow-hidden md:h-[132px]"
+    >
+      {/*
+        Sitting ON the floor, not through it. At bottom:-14px the row hung below
+        the band and the overflow clipped it, so at the very end of the page —
+        which is exactly where a reader sees this — the elements were sliced in
+        half by the edge of the document.
+      */}
+      <div className="footer-drift absolute bottom-3 left-0 flex items-end">
+        {row("a")}
+        {row("b")}
+      </div>
+    </div>
+  );
+}
+
 function SiteFooter() {
   return (
-    <footer style={{ background: C.ink, color: C.paper }}>
-      <div className="mx-auto max-w-[92rem] px-6 py-14 md:px-10 md:py-16">
-        <div className="flex flex-wrap items-start justify-between gap-10">
-          <div>
-            <div className="flex items-center gap-2.5">
-              <span
-                className="grid h-[34px] w-[34px] shrink-0 place-items-center overflow-hidden rounded-full"
-                style={{ background: "#fff" }}
-              >
-                <img
-                  src={asset("logo-mark.webp")}
-                  alt=""
-                  width={28}
-                  height={34}
-                  className="h-[27px] w-auto"
-                />
-              </span>
-              <span className="text-[20px] font-extrabold leading-none">
-                Chemo<span style={{ color: C.redOnField }}>Guard</span>
-              </span>
-            </div>
-            <p className="mt-4 max-w-[38ch] text-[14px] leading-relaxed" style={{ opacity: 0.72 }}>
-              A pre-treatment test for DPYD variants, so a standard dose of fluoropyrimidine
-              chemotherapy is never the first thing that tells you something is wrong.
-            </p>
-          </div>
-
-          <nav>
-            <span className={L.note} style={{ opacity: 0.6 }}>
-              Pages
+    <footer className="relative overflow-hidden" style={{ background: C.ink, color: C.paper }}>
+      <div className="mx-auto max-w-[92rem] px-6 pb-4 pt-12 md:px-10 md:pt-14">
+        {/*
+          Mark, links, one line. The footer used to carry a paragraph restating
+          the project alongside a vertical list of every page — a lot of reading
+          at the point where the reader has stopped reading. What a judge needs
+          from a footer is where else to go and whose wiki this is.
+        */}
+        <div className="flex flex-wrap items-center justify-between gap-x-10 gap-y-6">
+          <Link to="/new" className="flex items-center gap-2.5">
+            <span
+              className="grid h-[34px] w-[34px] shrink-0 place-items-center overflow-hidden rounded-full"
+              style={{ background: "#fff" }}
+            >
+              <img
+                src={asset("logo-mark.webp")}
+                alt=""
+                width={28}
+                height={34}
+                className="h-[27px] w-auto"
+              />
             </span>
-            <ul className="mt-4 space-y-2">
-              {PAGES.map((p) => (
-                <li key={p.label}>
-                  {p.ready ? (
-                    <Link to={p.to} className="text-[14px] font-semibold hover:underline">
-                      {p.label}
-                    </Link>
-                  ) : (
-                    <span className="text-[14px] font-semibold" style={{ opacity: 0.4 }}>
-                      {p.label}
-                    </span>
-                  )}
-                </li>
-              ))}
-            </ul>
+            <span className="text-[20px] font-extrabold leading-none">
+              Chemo<span style={{ color: C.redOnField }}>Guard</span>
+            </span>
+          </Link>
+
+          {/*
+            Horizontal, and it still shows what is not written yet. A judge
+            reading a dimmed "Safety" learns the shape of the wiki; a judge
+            reading a link that goes nowhere learns it is broken.
+          */}
+          <nav className="flex flex-wrap items-center gap-x-6 gap-y-2 text-[14px] font-semibold">
+            {PAGES.map((p) =>
+              p.ready ? (
+                <Link key={p.label} to={p.to} className="hover:underline">
+                  {p.label}
+                </Link>
+              ) : (
+                <span key={p.label} style={{ opacity: 0.4 }}>
+                  {p.label}
+                </span>
+              ),
+            )}
           </nav>
         </div>
 
         <div
-          className="mt-12 flex flex-wrap items-center justify-between gap-3 pt-6 text-[13px]"
-          style={{ borderTop: `1px solid ${C.paper}22`, opacity: 0.6 }}
+          className="mt-8 flex flex-wrap items-center justify-between gap-3 pt-5 text-[13px]"
+          style={{ borderTop: `1px solid ${C.paper}22`, opacity: 0.55 }}
         >
           <span>ChemoGuard · NIS Kazakhstan · iGEM 2026</span>
           <span>Content on this wiki is the team&rsquo;s own unless attributed.</span>
         </div>
       </div>
+
+      <FooterDrift />
     </footer>
   );
 }

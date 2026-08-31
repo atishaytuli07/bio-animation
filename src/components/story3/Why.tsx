@@ -25,14 +25,22 @@ import {
  *
  * The payoff is the site's own vocabulary closing a loop. The red A the reader
  * pulled out of the helix in stop one comes back, drops a hairline down the
- * frame, and lands on the empty place where the enzyme should have been. Gene
- * → enzyme → drug, drawn as one line, in one image.
+ * frame, and lands on the shortfall where a full complement of enzyme should
+ * have been. Gene → enzyme → drug, drawn as one line, in one image.
  *
  * ACCURACY, and it is load-bearing rather than a disclaimer: DPYD variants
- * REDUCE enzyme activity, they do not abolish it. So one molecule in four is
- * still broken down here, on screen. The animation itself encodes "reduced,
- * not absent" — an earlier draft said the enzyme "is never built", which was
- * both wrong and contradicted by the caption beneath it.
+ * REDUCE enzyme activity, they do not abolish it. Two things encode that here
+ * rather than a caption walking it back. One molecule in four is still broken
+ * down while the pile is building. And the enzyme is drawn as a LEVEL — a
+ * dashed full outline with about two fifths of it filled — which never changes
+ * for the whole section, because nothing the reader does changes how much DPD
+ * this body makes. Scene two says the same thing with five slots and two
+ * filled; the two must agree, and an earlier version of this file did not.
+ *
+ * An earlier draft said the enzyme "is never built", which was wrong. The
+ * version after it filled the shape solid green at the turn, which was wrong in
+ * the opposite direction: it told the reader that lowering the dose restored
+ * the enzyme.
  *
  * PLACEHOLDER SCIENCE: the mechanism is textbook (DPD catabolises
  * fluoropyrimidines; DPYD variants reduce DPD activity), but the wording needs
@@ -138,17 +146,47 @@ export function Why() {
   const build = range(p, 0.38, 0.56);
   const alarm = range(p, 0.44, 0.58);
   const enzymeLabel = band(p, 0.46, 0.52, 0.57, 0.62);
-  const lineB = beat(p, 0.56, 0.62, 0.67, 0.72);
+  /*
+    lineB's exit and lineC's entrance MUST NOT overlap, and getting that right
+    is not as simple as making the windows not touch.
+
+    `beat` eases the entrance but leaves the exit linear — deliberately, so copy
+    arrives fast and leaves gently. The consequence is that the two ramps are
+    not symmetric: an entrance is already at 0.88 a third of the way through,
+    while an exit is still at 0.55 at the same fraction. With the old windows
+    (out 0.67→0.72, in 0.68→0.74) both lines sat above half opacity between
+    p 0.6909 and 0.6975 — two headlines dissolving through each other at the
+    same coordinates, at the turn.
+
+    The audit's collision check found it, but only sometimes: the window is
+    0.0066 of local progress and the check samples 60 scroll positions, so it
+    landed inside about one run in five. It passed twice before it failed.
+
+    These windows leave a gap of 0.031 between lineB dropping below 0.45 and
+    lineC reaching it. Recompute both crossings if either window moves.
+  */
+  const lineB = beat(p, 0.56, 0.62, 0.655, 0.7);
 
   /* the turn — and everything after it undoes what act one built */
-  const lineC = beat(p, 0.68, 0.74, 0.8, 0.85);
+  const lineC = beat(p, 0.7, 0.76, 0.8, 0.85);
   const result = band(p, 0.72, 0.78, 0.97, 0.995);
   /** 9 molecules of standard dose come down to 4. */
   const trim = range(p, 0.76, 0.85);
   /** What had accumulated drains away — the payoff of the whole section. */
   const drain = range(p, 0.79, 0.89);
-  /** The dashed absence fills in solid: enough enzyme for THIS dose. */
-  const heal = range(p, 0.81, 0.9);
+  /**
+   * The dose comes down to meet the enzyme this person actually has.
+   *
+   * This used to be called `heal`, and it filled the enzyme shape in solid —
+   * which told the reader that reducing the dose RESTORED enzyme activity. It
+   * does not. A DPYD variant carrier makes less DPD before the test and exactly
+   * the same amount after it; the only thing that changes is how much drug
+   * arrives. Scene two already draws this correctly — five slots, two filled —
+   * so scene three was contradicting it two screens later.
+   *
+   * Nothing about the enzyme moves on this beat now. What moves is the load.
+   */
+  const matched = range(p, 0.81, 0.9);
   const lineD = beat(p, 0.91, 0.96, 1.2, 1.3);
   /** The in-vessel letter hands over to the report card at the turn. */
   const handover = range(p, 0.74, 0.82);
@@ -218,7 +256,16 @@ export function Why() {
       style={{ height: "860vh", marginTop: "-100vh" }}
       className="relative"
     >
-      <div className="sticky top-0 h-screen overflow-hidden [--vessel:44vh] md:[--vessel:min(56vh,520px)]">
+      {/*
+        --fig3 exists because the figure USED TO BE `hidden md:block`, and that
+        quietly broke the story on phones: this scene's whole premise is that we
+        are inside the body of the man the reader watched accumulate the drug in
+        the previous scene. Without him, a mobile reader gets a tube floating on
+        a colour — a generic biology lesson, which is the one thing this scene
+        was rebuilt to stop being. The composition may simplify on a small
+        screen; the character and the causal link may not disappear.
+      */}
+      <div className="sticky top-0 h-screen overflow-hidden [--fig3:27vh] [--vessel:38vh] md:[--fig3:46vh] md:[--vessel:min(56vh,520px)]">
         {/* The chapter label lives in the story rail now — see StoryProgress. */}
 
         {COPY.map((b, i) => (
@@ -242,14 +289,14 @@ export function Why() {
           believe it was anyone's bloodstream.
         */}
         <div
-          className="absolute inset-x-0 flex items-end justify-center gap-[4vw]"
+          className="absolute inset-x-0 flex items-end justify-center gap-[2vw] md:gap-[4vw]"
           style={{
             bottom: "8vh",
             opacity: q(enter),
             transform: `translateY(${((1 - enter) * 30).toFixed(1)}px)`,
           }}
         >
-          <div className="relative hidden md:block" style={{ height: "46vh" }}>
+          <div className="relative block shrink-0" style={{ height: "var(--fig3)" }}>
             <img
               src={asset("patient-b.webp")}
               alt=""
@@ -326,37 +373,76 @@ export function Why() {
               <VesselShell id="wy" lit={hot} flow={flow} phase={ph} />
 
               {/*
-                The enzyme, in ONE shape that changes state rather than two
-                shapes that swap. Dashed and empty while the dose is standard —
-                the place where it should be. Then it fills solid: the variant
-                has not gone anywhere and DPD is still reduced, but at a dose
-                matched to it the enzyme there is enough. Same outline
-                throughout, so the reader watches it heal instead of watching
-                one drawing replace another.
+                THE ENZYME, AND IT NEVER CHANGES.
+
+                Drawn as a level, not as a presence: the dashed outline is the
+                full complement of DPD a body would normally make, and the solid
+                green is how much this body actually makes. The clip cuts at
+                y=44 of a shape spanning y 12→70, so it fills just under half its
+                height — the same claim scene two makes with five slots and two
+                filled. Neither drawing is a measurement of a real genotype, and
+                neither pretends to be; what matters is that they AGREE, and
+                that both say "reduced" rather than "absent".
+
+                It is deliberately CONSTANT for the whole section. An earlier
+                version had it empty under a standard dose and solid green after
+                the test, which reads as "the dose reduction fixed the enzyme".
+                Nothing fixes the enzyme. The variant is still there afterwards
+                and DPD is still reduced; the drug arriving is what changes. The
+                payoff is carried by the molecules and the draining pile, which
+                is where it belongs — the thesis of the whole scene is that the
+                body did not change, the dose did.
               */}
-              <path
-                d={ENZYME}
+              <defs>
+                {/*
+                  Local coordinates, before the group's scale. The ENZYME path
+                  spans y 12→70, so cutting at y=44 leaves the lower ~45%.
+                */}
+                <clipPath id="wy-made">
+                  <rect x="6" y="44" width="68" height="30" />
+                </clipPath>
+              </defs>
+              <g
                 transform={`translate(${W / 2 - 60} ${EY - 62}) scale(1.5)`}
-                fill={C.green}
-                fillOpacity={q(heal) * 0.9}
-                stroke={C.ink}
-                strokeWidth="2.4"
-                strokeDasharray={heal > 0.5 ? undefined : "6 6"}
-                strokeLinejoin="round"
-                opacity={Math.max(q(gap) * 0.85, q(heal))}
-              />
+                opacity={q(gap) * 0.9}
+              >
+                {/* what a full complement would be */}
+                <path
+                  d={ENZYME}
+                  fill="none"
+                  stroke={C.ink}
+                  strokeWidth="2.4"
+                  strokeDasharray="6 6"
+                  strokeLinejoin="round"
+                  opacity={0.55}
+                />
+                {/* what this body actually makes */}
+                <g clipPath="url(#wy-made)">
+                  <path
+                    d={ENZYME}
+                    fill={C.green}
+                    fillOpacity={0.9}
+                    stroke={C.ink}
+                    strokeWidth="2.4"
+                    strokeLinejoin="round"
+                  />
+                </g>
+                {/* the level itself, so the cut reads as drawn rather than clipped */}
+                <line x1="14" y1="44" x2="52" y2="44" stroke={C.ink} strokeWidth="2.4" />
+              </g>
 
               {/*
                 The causal line: the variant the reader pulled out of the helix
                 in stop one returns, drops a hairline down the frame, and lands
-                on the empty place where the enzyme should have been.
+                on the shortfall between the dashed outline and the green.
 
-                It RETIRES at the turn. Its whole meaning is "this letter is why
-                there is a gap here", and after the dose is matched there is no
-                gap — leaving it pointing at a healthy enzyme says the opposite
-                of what the frame now shows. The letter has not gone away; it
-                has moved into the report card, where it is known information
-                rather than an unexplained thing in the blood.
+                It RETIRES at the turn, and it is worth being exact about why,
+                because the reason changed. It is NOT that the shortfall goes
+                away — it does not, and the enzyme below is deliberately drawn
+                the same before and after. It is that the letter stops being an
+                unexplained thing in the blood: at the turn it moves into the
+                report card, where it is a known result that a dose was chosen
+                from. Same letter, different status.
               */}
               <path
                 d={`M${W / 2} 76 L ${W / 2} ${EY - 68}`}
@@ -389,8 +475,13 @@ export function Why() {
               {flow > 0.01 &&
                 Array.from({ length: Math.max(4, Math.round(IN_FLIGHT - trim * 5)) }, (_, i) => {
                   const s = (((ph * 0.14 + i / IN_FLIGHT) % 1) + 1) % 1;
-                  // once the dose is matched, every molecule finds enzyme
-                  const cleared = heal > 0.5 || i % CLEARED_EVERY === 0;
+                  /*
+                    One in four is cleared under a standard dose — the enzyme is
+                    reduced, not absent. Once the dose is matched, all of them
+                    are: not because there is more enzyme, but because there is
+                    less drug for the same enzyme to get through.
+                  */
+                  const cleared = matched > 0.5 || i % CLEARED_EVERY === 0;
                   const x = W / 2 + Math.sin(s * 8 + i * 1.7) * 96;
 
                   // the one in four that still finds working enzyme
