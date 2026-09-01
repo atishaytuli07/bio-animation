@@ -67,6 +67,20 @@ export const C = {
     same contrast by 40%. One opacity on the wrapper either loses the red or
     turns the ink into a headline.
   */
+  /**
+   * The story header's bar.
+   *
+   * Ink carrying 28% of the field's own hue. Pure `ink` is what the bar was
+   * first built from, and against the lavender it read as a black slab
+   * belonging to some other site — the one thing on the page that was not part
+   * of the illustrated world. This sits in the palette instead, and it costs
+   * nothing: paper measures 11.4:1 on it against 14.9 on pure ink, and the
+   * dimmed page names still clear 5.5:1.
+   *
+   * It is a token rather than a `color-mix` at the call site because the
+   * contrast of everything in the header is derived from this one value.
+   */
+  headerBar: "#3A2C53",
   inkSignoff: "#241C2E8c",
   redSignoff: "#E03A3Ed9",
 };

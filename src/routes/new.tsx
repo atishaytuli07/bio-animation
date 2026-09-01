@@ -750,9 +750,25 @@ function HeroConcept() {
 
           <header
             className="absolute inset-x-0 top-0 z-30"
-            style={{ background: onField ? C.ink : "transparent" }}
+            style={{
+              background: onField ? C.headerBar : "transparent",
+              // A light hairline where the bar meets the scene, mirroring the
+              // dark one the documentation header uses on cream. Without it the
+              // bar's bottom edge is the only hard cut on the page.
+              borderBottom: onField ? `2px solid ${C.paper}1f` : "2px solid transparent",
+            }}
           >
-            <div className="mx-auto flex max-w-[92rem] items-center justify-between px-6 py-5 md:px-10 md:py-7">
+            {/*
+              68px, matching the documentation header exactly.
+
+              It was 96 — 41% taller than the header on every other page, on the
+              one page where a bar is meant to get out of the way. The client's
+              words about the navigation were "stay compact and not take too
+              much vertical space while scrolling". It also touched the chapter
+              label: the bar ended at 96px and `top-24` starts at 96px, so they
+              met with nothing between them. 28px of clearance now.
+            */}
+            <div className="mx-auto flex max-w-[92rem] items-center justify-between px-6 py-3.5 md:px-10">
               <div className="flex items-center gap-2.5">
                 {/*
             The team's own emblem — DNA dissolving into hexagons above a
