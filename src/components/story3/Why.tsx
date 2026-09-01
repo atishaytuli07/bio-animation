@@ -486,9 +486,34 @@ export function Why() {
               <g opacity={q(gap) * 0.95}>
                 {[0, 1, 2, 3, 4].map((i) => {
                   const made = i < 2;
-                  const x = W / 2 - 104 + i * 52;
+                  /*
+                    BIGGER, AND ACTUALLY CENTRED.
+
+                    At scale 0.66 with a 52 pitch the row spanned x 84.6→327.6
+                    against a lumen of 32→328 — centred on 206 where the vessel
+                    centres on 180, so it sat 26 units right and the fifth glyph
+                    touched the wall while the first left a 50-unit margin. The
+                    old numbers were an offset from W/2 that had stopped being
+                    true when the count changed.
+
+                    Derived rather than nudged: a glyph occupies [13s, 66s] from
+                    its translate point, so at s=0.80 it is 42.4 wide; five of
+                    them at a 55 pitch span 262.4, which centres on 180 by
+                    starting the drawn edge at 48.8 — 16.8 units of margin at
+                    both walls. Vertically it centres on EY the same way.
+
+                    Size matters here beyond composition: this row is the thing
+                    the reader has to see NOT changing across the turn, and it
+                    was small enough to be lost behind the drug molecules
+                    drifting over it.
+                  */
+                  const s = 0.8;
+                  const x = 38.4 + i * 55;
                   return (
-                    <g key={i} transform={`translate(${x} ${EY - 26}) scale(0.66)`}>
+                    <g
+                      key={i}
+                      transform={`translate(${x} ${(EY - 41.5 * s).toFixed(1)}) scale(${s})`}
+                    >
                       <path
                         d={ENZYME}
                         fill={made ? C.green : "none"}

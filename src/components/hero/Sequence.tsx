@@ -184,7 +184,15 @@ export function Sequence({
           below the overlap audit's visibility floor: raising it to something
           readable is what surfaced the collision, not what caused it.
         */
-        className="font-sans text-[max(11px,0.4em)] font-bold uppercase mx-3 md:mx-5"
+        /*
+          FIXED, NOT `em`. These used to be 0.4em of the row's own size, which
+          was fine while that size was capped at 51px and absurd the moment it
+          was not — at a 90px base they would set at 38px and compete with the
+          letters they annotate. The letters are the subject and these are
+          chrome; locking the two together meant the subject could never grow
+          without the chrome growing with it.
+        */
+        className="font-sans text-[11px] font-bold uppercase mx-3 md:mx-5 md:text-[13px] lg:text-[16px]"
         style={{
           color: C.paper,
           /*
@@ -338,7 +346,21 @@ export function Sequence({
         */}
         <div
           className="flex items-center font-mono font-bold"
-          style={{ fontSize: "clamp(2rem, 7vw, 3.2rem)", letterSpacing: "0.24em" }}
+          /*
+            THE CEILING IS WHAT MADE THE PAYOFF SMALL.
+
+            7vw resolves to 100px at 1440, so on every desktop the 3.2rem
+            ceiling was binding and the climax of the entire descent rendered
+            at 51px — measured, a 323x49 box, which is 1.2% of the frame. The
+            reader travels a whole act inward to arrive at something the size
+            of a caption.
+
+            5.6rem lifts desktop to 90px without touching phones: at 390px the
+            2rem floor still binds, and 7vw does not reach the new ceiling until
+            about 1280px, so tablets scale smoothly between the two rather than
+            jumping.
+          */
+          style={{ fontSize: "clamp(2rem, 7vw, 5.6rem)", letterSpacing: "0.24em" }}
         >
           {/* the end of exon 14 — named, not spelled out */}
           <Region label="exon 14" distance={3} align="right" />
@@ -386,7 +408,8 @@ export function Sequence({
                 height: "1.6em",
                 letterSpacing: 0,
                 background: lit ? C.red : "transparent",
-                border: `2px solid ${lit ? C.red : `${C.paper}66`}`,
+                // Scales with the box; floored so a phone still gets a real line.
+                border: `max(2px, 0.042em) solid ${lit ? C.red : `${C.paper}66`}`,
                 color: lit ? "#fff" : C.paper,
                 transform: `scale(${(step(0) * (lit ? 1 + flip * 0.06 : 1)).toFixed(3)})`,
                 /*

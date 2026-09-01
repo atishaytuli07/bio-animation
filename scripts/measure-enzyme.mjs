@@ -14,10 +14,34 @@ import { chromium } from "playwright";
 import { PNG } from "pngjs";
 
 const URL = process.argv[2] ?? "http://localhost:8080/new";
-const GREEN = [0x3f, 0xa8, 0x77]; // C.green
 
-const near = (r, g, b, [tr, tg, tb], tol = 46) =>
-  Math.abs(r - tr) < tol && Math.abs(g - tg) < tol && Math.abs(b - tb) < tol;
+/**
+ * Is this pixel the enzyme's green?
+ *
+ * BY HUE, NOT BY DISTANCE TO A HEX. The enzyme is painted at fillOpacity 0.9
+ * over a semi-transparent lumen over the page's ground — and that ground
+ * travels from pink to cream across exactly the stretch this check samples. So
+ * the composited RGB of the same unchanged shape genuinely moves, and a
+ * fixed-radius match around #3FA877 counts a different number of its
+ * antialiased edge pixels at each stop. That alone produced an 11–14% "change"
+ * in a drawing that is provably identical.
+ *
+ * Green dominance survives the backdrop moving under it: C.green has g−r=105
+ * and g−b=49, while paper, pink, coral and ink are all negative on the first.
+ *
+ * AND THE THRESHOLD IS SET AT THE CORE, NOT AT THE EDGE. A loose test (g−r>25)
+ * still moved 10–13%, because two things that are not the enzyme pass it: the
+ * antialiased rim, which composites against whatever is behind it, and the
+ * GROUND ITSELF — the resolution's ground carries 12% C.green at page 0.92, so
+ * the check was counting the room the enzyme stands in. The instrumented proof
+ * that the shape is innocent: across pages 0.70→0.94 its rect is 348.9x504 at
+ * (635,324), its transform, its fill-opacity and its group opacity are byte
+ * identical. Nothing about the drawing changes; only what is behind it does.
+ *
+ * Composited over the lumen the enzyme's core sits at g−r≈93; the ground at its
+ * greenest reaches g−r≈7. 60 is comfortably between them.
+ */
+const isGreen = (r, g, b) => g - r > 60 && g - b > 25;
 
 const browser = await chromium.launch();
 const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
@@ -53,44 +77,66 @@ async function sample(pageProgress) {
       molecule is drifting through it. The enzyme had not changed; the harness
       had been left behind by the redraw the client asked for.
 
-      All five, with padding: x 80→332, y 250→296 of the 360x520 viewBox.
+      All five, with padding. The row is `x = 38.4 + 55i` at `scale(0.8)` and a
+      glyph occupies [13s, 66s] from its translate point, so it spans x
+      48.8→311.2 and y 248.4→295.6 of the 360x520 viewBox. RE-DERIVED, not
+      nudged: these numbers come from the same three constants the component
+      uses, so checking them against the source is a two-line job.
     */
     return {
       clip: {
-        x: Math.max(0, Math.round(r.left + r.width * (80 / 360)) - 4),
-        y: Math.max(0, Math.round(r.top + r.height * (250 / 520)) - 4),
-        width: Math.round(r.width * ((332 - 80) / 360)) + 8,
-        height: Math.round(r.height * ((296 - 250) / 520)) + 8,
+        x: Math.max(0, Math.round(r.left + r.width * (44 / 360)) - 4),
+        y: Math.max(0, Math.round(r.top + r.height * (244 / 520)) - 4),
+        width: Math.round(r.width * ((316 - 44) / 360)) + 8,
+        height: Math.round(r.height * ((300 - 244) / 520)) + 8,
       },
     };
   });
   if (!info) return null;
 
   /*
-    Six frames, and take the MAX.
+    THE OCCLUDERS ARE HIDDEN, AND THAT IS THE WHOLE POINT OF THE CHECK.
 
-    Drug molecules cross the enzyme on a time-based clock, independent of
-    scroll. A single screenshot therefore measures "the enzyme minus whatever
-    happened to be in front of it at that millisecond", and a hexagon parked
-    over the shape reads as the enzyme having shrunk. Taking the largest frame
-    samples the least-occluded moment, which is the enzyme itself.
+    The claim under test is "the enzyme drawing does not change across the
+    turn". Drug molecules and red cells drift over it on a time clock that has
+    nothing to do with scroll, so any screenshot measures the enzyme MINUS
+    whatever happened to be in front of it at that millisecond. That is not the
+    claim, and it is not stable either.
 
-    THREE WAS ENOUGH FOR ONE BIG SHAPE AND IS NOT ENOUGH FOR FIVE SMALL ONES.
-    The window is now three times wider, so more molecules sit inside it at any
-    moment and an unoccluded frame is rarer. Six.
+    Taking the largest of N frames was the previous answer and it does not hold
+    now that the row spans most of the lumen: at eight frames this measured
+    7.6%, 6.7% and 10.2% on three consecutive runs against a 10% threshold, and
+    then 10.1%, 6.9%, 9.5% on three more. A check that fails one run in three
+    is not a check, it is a coin toss — and sampling harder was solving the
+    wrong problem.
+
+    So the drug and the red cells are hidden for the screenshot and restored
+    straight after. What is left in the window is the enzyme and the lumen
+    behind it, which is exactly what the claim is about — one frame,
+    deterministic, instead of eight and a prayer.
+
+    CIRCLES ARE PART OF THE DRUG. Hiding only `polygon, ellipse` left a smooth
+    12–15% dip that looked exactly like the enzyme shrinking through the turn,
+    and it survived every attempt to tune the colour test — because a `Hex` is
+    a polygon PLUS six ink-outlined vertex dots, and the dots were still there.
+    Sampling the core pixel settled it: at page 0.85 it read rgb(39,39,52),
+    which is C.ink, not green. Half-hiding an occluder is worse than not hiding
+    it, because what is left is small enough to look like a property of the
+    thing behind it.
   */
+  const HIDE = `(v) => {
+    const svg = [...document.querySelectorAll("#why svg")]
+      .find(s => s.getAttribute("viewBox") === "0 0 360 520");
+    for (const el of svg.querySelectorAll("polygon, ellipse, circle")) el.style.visibility = v;
+  }`;
+  await page.evaluate(`(${HIDE})("hidden")`);
+  const png = PNG.sync.read(await page.screenshot({ clip: info.clip }));
+  await page.evaluate(`(${HIDE})("")`);
   let green = 0;
-  let total = 0;
-  for (let f = 0; f < 6; f++) {
-    const png = PNG.sync.read(await page.screenshot({ clip: info.clip }));
-    let n = 0;
-    for (let i = 0; i < png.data.length; i += 4) {
-      if (png.data[i + 3] > 200 && near(png.data[i], png.data[i + 1], png.data[i + 2], GREEN)) n++;
-    }
-    green = Math.max(green, n);
-    total = png.width * png.height;
-    if (f < 5) await page.waitForTimeout(380);
+  for (let i = 0; i < png.data.length; i += 4) {
+    if (png.data[i + 3] > 200 && isGreen(png.data[i], png.data[i + 1], png.data[i + 2])) green++;
   }
+  const total = png.width * png.height;
   return { green, total };
 }
 

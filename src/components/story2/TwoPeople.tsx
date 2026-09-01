@@ -322,7 +322,15 @@ export function TwoPeople() {
             className="pointer-events-none absolute inset-x-0 top-1/2 z-20 flex -translate-y-1/2 flex-col items-center px-6"
             style={{ opacity: q(bridge.o), transform: `translateY(${bridge.y.toFixed(1)}px)` }}
           >
-            <svg viewBox="0 0 460 130" className="w-[min(88vw,560px)]" aria-hidden="true">
+            {/*
+              560px was 6.8% of a 1440x900 frame, and the headline beneath it
+              measured 10.9% — the words took more of the screen than the
+              picture at the exact moment the picture is supposed to be making
+              the argument. The brief's own diagnosis of what the client keeps
+              rejecting is "emptiness, not text", and the fix it names is to
+              fill the frame rather than strip the copy.
+            */}
+            <svg viewBox="0 0 460 130" className="w-[min(92vw,860px)]" aria-hidden="true">
               {/* the letter, carried straight over from the sequence */}
               <g transform="translate(6 44)">
                 <rect width="42" height="46" rx="9" fill={C.red} stroke={C.ink} strokeWidth="3" />
