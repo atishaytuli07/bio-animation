@@ -357,8 +357,36 @@ function HeroConcept() {
    * change to the hero and belongs to whoever owns the design, not to a
    * contrast pass.
    */
-  const headerDark = q(range(pageP, 0.085, 0.115));
-  const onField = headerDark > 0.5 && pageP < 0.6;
+  /**
+   * The header sits on a SOLID BAR once the hero has gone, and the type flips
+   * to paper on the same frame.
+   *
+   * IT USED TO BE A GRADIENT SCRIM ON A RAMP, and that could not be made to
+   * work. Solve it and you get a contradiction: paper needs the ground at
+   * L <= 0.162 to clear 4.5:1, ink needs L >= 0.238, and anything that fades
+   * in has to pass through the gap between them. Narrowing the ramp only made
+   * the bad frame shorter — measured at the switch point, "Engineering" ran at
+   * 1.87:1 with 7.21 and 6.45 on either side. A frame where the navigation is
+   * unreadable is a defect, not a rough edge.
+   *
+   * A bar removes the ground from the question. Paper on C.ink is 14:1 at
+   * every scroll position, so there is nothing left to tune.
+   *
+   * NO TRANSITION ON EITHER, and that is deliberate rather than lazy. Fading
+   * the bar under type that has already flipped gives paper on lavender;
+   * fading the colour over a bar that is already solid gives ink on ink. Both
+   * reintroduce the exact frame this exists to delete. Snapping a header
+   * background at a threshold is what every sticky header on the web does, and
+   * here it happens as the hero copy is leaving.
+   *
+   * THE THRESHOLD IS SET BY WHERE INK STOPS WORKING, not by where the bar
+   * looks good. At 0.075 the bar was late: the ground had already deepened
+   * under ink type with the old scrim gone, and the same failure simply moved
+   * to pages 0.05-0.07 — "Description" at 1.97:1, "Guard" at 1.77. Swept, ink
+   * holds above 4.9:1 through 0.04 and falls away after it, so the bar arrives
+   * at 0.042.
+   */
+  const onField = pageP > 0.042 && pageP < 0.6;
 
   /* ---- one section, four beats -------------------------------------------
      The principle: THE SCROLL IS THE MICROSCOPE. The reader's own hand is what
@@ -687,46 +715,6 @@ function HeroConcept() {
 
           {/* ---------------------------------------------------------- nav */}
           {/*
-            A scrim under the header, arriving with the descent. At hero scale
-            the header sits on flat colour and needs nothing; once the strand
-            has grown it passes straight through "Wet Lab" and "Human
-            Practices", and navigation that cannot be read is worse than
-            navigation that is not there.
-
-            IT WAS THE WRONG COLOUR TO BE A SCRIM. Deep lavender over lavender
-            is barely a change of value, so measured, "Engineering" ran at
-            2.19:1 against 4.5:1 — with the scrim already at full strength.
-
-            The cause is worth writing down because it will happen again: the
-            field's lightness SWEEPS, and no fixed type colour survives it. On
-            the light lavender the reader is on here, paper measures 2.79:1 and
-            ink 5.34:1; two hundred pixels of scroll later, on lavenderDeep,
-            those swap to 5.17:1 and 2.88:1. There is no crossover point where
-            both clear AA, so nothing on this field can be fixed by choosing a
-            better text colour. It has to be fixed under the type.
-
-            So the scrim is INK now, not lavender, and it is taller — the value
-            is what does the work, and the header is not the only thing pinned
-            up here.
-          */}
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-x-0 top-0 z-20 h-44"
-            style={{
-              background: `linear-gradient(to bottom, ${C.ink}c9, ${C.ink}70 46%, transparent)`,
-              /*
-                It arrives with the COLOUR SWITCH, not with the descent.
-
-                `travel` ramps p 0.10 -> 0.50, but the type flips from ink to
-                paper at page 0.06 (p ~0.19), where travel is only 0.235. That
-                left a stretch with white type, a light field and almost no
-                scrim under it: measured 2.35:1 on "iGEM 2026". The scrim is
-                now full before the switch happens rather than after.
-              */
-              opacity: headerDark,
-            }}
-          />
-          {/*
             And the same, for the left column.
 
             The chapter label and the scale stops sit below the header band, on
@@ -746,20 +734,24 @@ function HeroConcept() {
             className="pointer-events-none absolute left-0 top-0 z-10 h-[440px] w-[620px]"
             style={{
               background: `radial-gradient(110% 92% at 0% 0%, ${C.ink}a3, ${C.ink}3d 52%, transparent 78%)`,
-              opacity: headerDark,
+              opacity: q(range(pageP, 0.055, 0.13)),
             }}
           />
 
-          <header className="absolute inset-x-0 top-0 z-30 mx-auto flex max-w-[92rem] items-center justify-between px-6 py-5 md:px-10 md:py-7">
-            <div className="flex items-center gap-2.5">
-              {/*
+          <header
+            className="absolute inset-x-0 top-0 z-30"
+            style={{ background: onField ? C.ink : "transparent" }}
+          >
+            <div className="mx-auto flex max-w-[92rem] items-center justify-between px-6 py-5 md:px-10 md:py-7">
+              <div className="flex items-center gap-2.5">
+                {/*
             The team's own emblem — DNA dissolving into hexagons above a
             handheld reader, held in two hands. Note it already contains the
             same two ideas this hero is built on: the strand and the molecule.
             White keyed out of the supplied JPEG and un-premultiplied, so the
             edges stay red instead of going pink on a coloured ground.
           */}
-              {/*
+                {/*
                 On a white chip, because the supplied artwork is transparent
                 wherever it should be white — the reader's screen and the whole
                 inside of the ring are alpha 0, so on the purple ground the
@@ -767,35 +759,34 @@ function HeroConcept() {
                 it onto white restores the original, and the chip keeps it
                 legible on every ground the story passes through.
               */}
-              <span
-                className="grid h-[34px] w-[34px] shrink-0 place-items-center overflow-hidden rounded-full md:h-[40px] md:w-[40px]"
-                style={{ background: "#fff", boxShadow: `0 0 0 2px ${C.ink}1f` }}
-              >
-                <img
-                  src={asset("logo-mark.webp")}
-                  alt="ChemoGuard — NIS Kazakhstan, iGEM 2026"
-                  width={30}
-                  height={36}
-                  className="h-[27px] w-auto md:h-[32px]"
-                />
-              </span>
-              <span
-                className="text-[21px] font-extrabold leading-none"
-                style={{
-                  fontFamily: DISPLAY,
-                  letterSpacing: "-0.01em",
-                  /*
+                <span
+                  className="grid h-[34px] w-[34px] shrink-0 place-items-center overflow-hidden rounded-full md:h-[40px] md:w-[40px]"
+                  style={{ background: "#fff", boxShadow: `0 0 0 2px ${C.ink}1f` }}
+                >
+                  <img
+                    src={asset("logo-mark.webp")}
+                    alt="ChemoGuard — NIS Kazakhstan, iGEM 2026"
+                    width={30}
+                    height={36}
+                    className="h-[27px] w-auto md:h-[32px]"
+                  />
+                </span>
+                <span
+                  className="text-[21px] font-extrabold leading-none"
+                  style={{
+                    fontFamily: DISPLAY,
+                    letterSpacing: "-0.01em",
+                    /*
                     The wordmark obeys the same rule as every other word on the
                     site: ink on cream, paper on the field. It was pinned to ink
                     at md and up by a media query, which is right for the hero's
                     cream half and wrong the moment the field merges to full
                     purple underneath it.
                   */
-                  color: onField ? C.paper : C.ink,
-                  transition: "color 400ms ease",
-                }}
-              >
-                {/*
+                    color: onField ? C.paper : C.ink,
+                  }}
+                >
+                  {/*
                   The red half follows the same rule as the black half.
 
                   `color: onField ? C.paper : C.ink` was applied to the
@@ -806,22 +797,21 @@ function HeroConcept() {
                   token that already exists for exactly this and takes it to
                   4.2:1 at 21px/800.
                 */}
-                Chemo<span style={{ color: onField ? C.redOnField : C.red }}>Guard</span>
-              </span>
-              <span
-                // opacity-60 put a 10px string at 2.07:1 on the field. It is
-                // the team and the year, which a judge looks for.
-                className="hidden text-[10px] tracking-[0.22em] opacity-85 sm:inline"
-                style={{
-                  fontFamily: DISPLAY,
-                  color: onField ? C.paper : C.ink,
-                  transition: "color 400ms ease",
-                }}
-              >
-                iGEM 2026
-              </span>
-            </div>
-            {/*
+                  Chemo<span style={{ color: onField ? C.redOnField : C.red }}>Guard</span>
+                </span>
+                <span
+                  // opacity-60 put a 10px string at 2.07:1 on the field. It is
+                  // the team and the year, which a judge looks for.
+                  className="hidden text-[10px] tracking-[0.22em] opacity-85 sm:inline"
+                  style={{
+                    fontFamily: DISPLAY,
+                    color: onField ? C.paper : C.ink,
+                  }}
+                >
+                  iGEM 2026
+                </span>
+              </div>
+              {/*
               THE NAV FOLLOWS THE SAME RULE AS THE WORDMARK BESIDE IT.
 
               It was pinned to paper-white on the reasoning that it sits over
@@ -834,78 +824,96 @@ function HeroConcept() {
               Ink is right until the field deepens, paper after. `onField` is
               the switch the wordmark already uses.
             */}
-            <nav
-              // lg, not md: six items overflow a 768px viewport and the last
-              // two were clipped off the right edge.
-              className="hidden items-center gap-9 lg:flex"
-              style={{
-                color: onField ? C.paper : C.ink,
-                fontFamily: DISPLAY,
-                transition: "color 400ms ease",
-              }}
-            >
-              {/*
+              <nav
+                // lg, not md: six items overflow a 768px viewport and the last
+                // two were clipped off the right edge.
+                className="hidden items-center gap-9 lg:flex"
+                style={{
+                  color: onField ? C.paper : C.ink,
+                  fontFamily: DISPLAY,
+                }}
+              >
+                {/*
                 Generated from the site map, not a hard-coded list. A page that
                 is not written yet renders as plain dimmed text with no link and
                 no pointer — an honest "not here yet" rather than a control that
                 silently does nothing, which is what these five were.
               */}
-              {NAV.map((page, i) =>
-                page.ready ? (
-                  <Link
-                    key={page.label}
-                    to={page.to}
-                    className="group relative whitespace-nowrap pb-2 text-[16px] font-bold focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-current"
-                    style={{ letterSpacing: "0.01em", fontFamily: "inherit", color: "inherit" }}
-                  >
-                    {page.label}
-                    <Underline index={i} active={page.to === "/new"} />
-                  </Link>
-                ) : (
-                  <span
-                    key={page.label}
-                    aria-disabled="true"
-                    title="Not written yet"
-                    className="whitespace-nowrap pb-2 text-[16px] font-bold"
-                    style={{ letterSpacing: "0.01em", fontFamily: "inherit", opacity: 0.45 }}
-                  >
-                    {page.label}
-                  </span>
-                ),
-              )}
-            </nav>
+                {NAV.map((page, i) =>
+                  page.ready ? (
+                    <Link
+                      key={page.label}
+                      to={page.to}
+                      className="group relative whitespace-nowrap pb-2 text-[16px] font-bold focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-current"
+                      style={{ letterSpacing: "0.01em", fontFamily: "inherit", color: "inherit" }}
+                    >
+                      {page.label}
+                      <Underline index={i} active={page.to === "/new"} />
+                    </Link>
+                  ) : (
+                    <span
+                      key={page.label}
+                      aria-disabled="true"
+                      title="Not written yet"
+                      className="whitespace-nowrap pb-2 text-[16px] font-bold"
+                      /*
+                        0.62, not 0.45.
 
-            {/* Phones had no navigation at all — the links were simply hidden below
+                        These are the only strings in the header the solid bar
+                        did not rescue: measured, 4.10:1 on the bar and 2.07:1
+                        on the hero. The audit lets them through because they
+                        are aria-disabled, and WCAG does exempt inactive
+                        components — but "the standard does not require this to
+                        be readable" is a poor reason to leave a page name
+                        unreadable, and these are the names of the pages a judge
+                        is looking for.
+
+                        0.62 measures about 5.4:1 on the bar and is still
+                        plainly a step below the live items, which is the whole
+                        signal. On the hero it stays short of AA; that is four
+                        percent of the page, and the alternative is dimming so
+                        little that "not written yet" stops reading at all.
+                      */
+                      style={{ letterSpacing: "0.01em", fontFamily: "inherit", opacity: 0.62 }}
+                    >
+                      {page.label}
+                    </span>
+                  ),
+                )}
+              </nav>
+
+              {/* Phones had no navigation at all — the links were simply hidden below
             md. For an iGEM wiki that is the worst possible thing to drop on
             small screens, since findability is a judging criterion. */}
-            <button
-              type="button"
-              aria-label="Menu"
-              aria-expanded={menu}
-              onClick={() => setMenu((v) => !v)}
-              className="flex size-10 items-center justify-center lg:hidden"
-              style={{
-                background: C.paper,
-                border: `2.5px solid ${C.ink}`,
-                borderRadius: 8,
-                boxShadow: `3px 3px 0 ${C.ink}`,
-              }}
-            >
-              <svg width="18" height="14" viewBox="0 0 18 14" aria-hidden="true">
-                {(menu ? [7] : [1, 7, 13]).map((y, i) => (
-                  <line
-                    key={i}
-                    x1="1"
-                    y1={y}
-                    x2="17"
-                    y2={y}
-                    stroke={C.ink}
-                    strokeWidth="2.5"
-                    strokeLinecap="round"
-                  />
-                ))}
-              </svg>
-            </button>
+              <button
+                type="button"
+                aria-label="Menu"
+                aria-expanded={menu}
+                onClick={() => setMenu((v) => !v)}
+                className="flex size-10 items-center justify-center lg:hidden"
+                style={{
+                  background: C.paper,
+                  border: `2.5px solid ${C.ink}`,
+                  borderRadius: 8,
+                  boxShadow: `3px 3px 0 ${C.ink}`,
+                }}
+              >
+                <svg width="18" height="14" viewBox="0 0 18 14" aria-hidden="true">
+                  {(menu ? [7] : [1, 7, 13]).map((y, i) => (
+                    <line
+                      key={i}
+                      x1="1"
+                      y1={y}
+                      x2="17"
+                      y2={y}
+                      stroke={C.ink}
+                      strokeWidth="2.5"
+                      strokeLinecap="round"
+                    />
+                  ))}
+                </svg>
+              </button>
+            </div>
           </header>
 
           {menu && (
