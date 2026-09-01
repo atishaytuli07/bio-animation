@@ -1,4 +1,4 @@
-import { C } from "./palette";
+import { C, ENZYME_PATH } from "./palette";
 
 /**
  * Shared props.
@@ -100,11 +100,23 @@ export function Molecule({ s = 1, tone = C.coral, line = C.ink }: Props) {
 
 /** The enzyme that clears the drug — a notched shape, so it reads as a lock. */
 export function Enzyme({ s = 1, tone = C.green, line = C.ink }: Props) {
-  const d =
-    "M18 30 Q18 14 34 14 L66 14 Q82 14 82 30 L82 42 Q64 42 64 54 Q64 66 82 66 L82 78 Q82 94 66 94 L34 94 Q18 94 18 78 Z";
+  /*
+    The same silhouette the scenes draw, not a third copy of it.
+
+    This was its own rounded rectangle with a notch — the shape the client read
+    as a container — at yet another scale. The ambient elements and the footer
+    drift are where a reader meets the enzyme most often, so a mark that does
+    not match the one the story teaches is the version most people end up with.
+
+    1.21 fits the canonical path's 53x59 box into the 64x80 this element was
+    drawn at, and the offset re-centres it; the stroke is divided by the same
+    factor so its painted weight is unchanged.
+  */
   return (
     <svg viewBox="0 0 100 100" style={{ width: 100 * s, height: 100 * s }} aria-hidden="true">
-      <path d={d} fill={tone} stroke={line} strokeWidth="4" strokeLinejoin="round" />
+      <g transform="translate(2.2 3.8) scale(1.21)">
+        <path d={ENZYME_PATH} fill={tone} stroke={line} strokeWidth="3.3" strokeLinejoin="round" />
+      </g>
       {/* hatching across the body — a drawn surface, not a filled shape */}
       {[26, 38, 50, 62, 74].map((y, i) => (
         <line

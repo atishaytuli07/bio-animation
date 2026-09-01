@@ -1,10 +1,11 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useRouterState } from "@tanstack/react-router";
 import { useEffect, useState, type ReactNode } from "react";
 
 import { Cell, Enzyme, Molecule } from "@/components/hero/elements";
-import { asset, C, L, T, R } from "@/components/hero/palette";
+import { asset, C, DISPLAY, L, T, R } from "@/components/hero/palette";
 import { PageHero, type Art, type Plate } from "@/components/story/PageHero";
 import { NAV, PAGES } from "@/components/story/site-map";
+import { Underline } from "@/components/story/Underline";
 
 /**
  * The frame every content page sits in.
@@ -44,6 +45,8 @@ export function PageShell({
 }) {
   const [menu, setMenu] = useState(false);
   const [active, setActive] = useState(sections[0]?.id ?? "");
+  /** Which page we are on, for the nav's underline. */
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
 
   /*
     Which section the reader is in. An IntersectionObserver rather than a
@@ -89,21 +92,36 @@ export function PageShell({
                 className="h-[27px] w-auto md:h-[30px]"
               />
             </span>
-            <span className="text-[19px] font-extrabold leading-none md:text-[21px]">
+            {/* The same face and tracking the story page sets it in. It was
+                the body font here, so the logo changed typeface on navigation. */}
+            <span
+              className="text-[19px] font-extrabold leading-none md:text-[21px]"
+              style={{ fontFamily: DISPLAY, letterSpacing: "-0.01em" }}
+            >
               Chemo<span style={{ color: C.red }}>Guard</span>
             </span>
           </Link>
 
-          <nav className="hidden items-center gap-7 lg:flex">
-            {NAV.map((page) =>
+          {/*
+            THE "YOU ARE HERE" MARK, which these pages did not have.
+
+            The story route drew the hand-drawn underline under its own active
+            item; the documentation pages — the only ones a reader actually
+            navigates between — drew nothing, so six identical bold words gave
+            no clue which one you were reading. The component is shared now
+            rather than copied, so the two headers cannot drift.
+          */}
+          <nav className="hidden items-center gap-7 lg:flex" style={{ fontFamily: DISPLAY }}>
+            {NAV.map((page, i) =>
               page.ready ? (
                 <Link
                   key={page.label}
                   to={page.to}
-                  className="whitespace-nowrap text-[15px] font-bold"
+                  className="group relative whitespace-nowrap pb-2 text-[15px] font-bold"
                   style={{ color: C.ink }}
                 >
                   {page.label}
+                  <Underline index={i} active={page.to === pathname} />
                 </Link>
               ) : (
                 <span
@@ -165,10 +183,20 @@ export function PageShell({
                   key={page.label}
                   to={page.to}
                   onClick={() => setMenu(false)}
-                  className="block w-full px-5 py-3 text-left text-[15px] font-bold"
+                  className="flex w-full items-center justify-between px-5 py-3 text-left text-[15px] font-bold"
                   style={{ color: C.ink, borderTop: i ? `1.5px solid ${C.ink}22` : undefined }}
                 >
                   {page.label}
+                  {/* The squiggle needs a baseline to sit under and a phone
+                      menu is a stack of rows, so the current page is marked
+                      with the same coral as a dot instead. */}
+                  {page.to === pathname && (
+                    <span
+                      aria-hidden="true"
+                      className="block size-2 shrink-0 rounded-full"
+                      style={{ background: C.coral }}
+                    />
+                  )}
                 </Link>
               ) : (
                 <span
@@ -329,9 +357,19 @@ function ClosingBand() {
     <section
       aria-hidden="true"
       className="relative overflow-hidden"
+      /*
+        NO RULE ACROSS THE TOP.
+
+        The band used to open with a 2px hairline, and on a wide screen that is
+        a hard line drawn across the full width of the page for no reason — the
+        reader's eye lands on the rule before it lands on the sign-off. It was
+        never carrying information: the gradient below starts at exactly
+        `C.paper`, the same colour the content area ends on, so the two meet
+        seamlessly and the band arrives as the page warming rather than as a new
+        box stacked on the old one.
+      */
       style={{
         background: `linear-gradient(180deg, ${C.paper}, color-mix(in oklab, ${C.lavender} 16%, ${C.paper}))`,
-        borderTop: `2px solid ${C.ink}14`,
       }}
     >
       {/*
@@ -352,24 +390,58 @@ function ClosingBand() {
           style={{ transform: "translateX(-14%)" }}
         />
         {/*
-          The mark sits in the gap the two of them leave.
+          The sign-off sits in the gap the two of them leave.
 
-          Without it the band is a hundred-odd pixels of empty cream between two
+          Without it the band is a wide stretch of empty cream between two
           figures looking at nothing, which reads as a layout that lost its
-          middle. It is the wordmark rather than a new line of copy because the
-          page has already said everything it has to say by this point, and a
-          sign-off should close rather than add.
+          middle. MEASURED, that gap is 1047px at 1440 and 1489px at 1900 — 73%
+          and 78% of the viewport — so whatever goes here has to be big enough
+          to hold it.
 
-          Decorative, and the whole band is aria-hidden: the footer directly
-          below announces the same name, and a screen reader does not need it
-          twice.
+          IT USED TO BE INVISIBLE. The wordmark was set in ink at 12% alpha,
+          which paints rgb(216,207,208) on the band's rgb(243,234,231): a
+          contrast of 1.29:1, a smudge rather than a word, and a 212px smudge
+          adrift in 1489px of nothing at that. The strength here is chosen
+          against the threshold instead of by eye — the wordmark measures 3.6:1
+          and the red 3.1:1, both clearing the 3:1 AA floor for large text, and
+          the team line 6.0:1, clearing the 4.5:1 floor for small text. It is
+          still quieter than body copy, which is what keeps it a sign-off, but
+          it is a sign-off you can actually read.
+
+          The team line is the thing a competition page should not have to be
+          asked for twice: NIS Kazakhstan is who made this, and the last thing a
+          reader sees before the footer should say so.
+
+          Decorative, and the whole band stays aria-hidden: the footer directly
+          below announces the same name and the same team, and a screen reader
+          does not need either of them twice.
         */}
-        <span
-          className="select-none text-[26px] font-extrabold leading-none md:text-[34px]"
-          style={{ color: `${C.ink}1f`, letterSpacing: "-0.02em" }}
-        >
-          Chemo<span style={{ color: `${C.red}2e` }}>Guard</span>
-        </span>
+        <div className="relative z-10 flex select-none flex-col items-center gap-2 px-6 text-center">
+          <span
+            className="font-extrabold leading-none"
+            style={{
+              /*
+                The floor is set by the GAP, not by legibility.
+
+                At 1.9rem the wordmark measured 186px wide on a 390px phone and
+                left 13px between the "C" and the boy's arm — passing a
+                clearance test and still reading as cramped. The figures are at
+                their widest exactly where this line sits, so the phone end of
+                the clamp is what has to give; 4.2vw doesn't reach the ceiling
+                until about 740px, so nothing above a small tablet moves.
+              */
+              fontFamily: DISPLAY,
+              fontSize: "clamp(1.55rem, 4.2vw, 3.1rem)",
+              letterSpacing: "-0.03em",
+              color: C.inkSignoff,
+            }}
+          >
+            Chemo<span style={{ color: C.redSignoff }}>Guard</span>
+          </span>
+          <span className={L.note} style={{ color: C.inkBody }}>
+            NIS Kazakhstan · iGEM 2026
+          </span>
+        </div>
         <img
           src={asset("figure-right.webp")}
           alt=""
@@ -379,14 +451,16 @@ function ClosingBand() {
         />
       </div>
       {/*
-        The figures meet the footer rather than floating above it: a short fade
-        at the base sits them on the dark band below instead of leaving them
-        hovering on a seam.
+        NO FADE INTO THE FOOTER.
+
+        There was a soft ink wash along the base, meant to sit the figures on
+        the dark band rather than leave them hovering on a seam. It does not do
+        that: a gradient that ends at a quarter-strength ink still meets a
+        full-strength ink footer, so the seam is still there and now there is a
+        grey smear above it as well. Cream against ink is the cleanest edge this
+        page can make, and the figures crop against it as if they were standing
+        behind the footer, which is the thing the wash was trying to fake.
       */}
-      <div
-        className="pointer-events-none absolute inset-x-0 bottom-0 h-10"
-        style={{ background: `linear-gradient(180deg, transparent, ${C.ink}22)` }}
-      />
     </section>
   );
 }
@@ -487,6 +561,15 @@ function SiteFooter() {
           from a footer is where else to go and whose wiki this is.
         */}
         <div className="flex flex-wrap items-center justify-between gap-x-10 gap-y-6">
+          {/*
+            The mark, and directly under it who made this.
+
+            The team used to appear only in the small grey line at the very
+            bottom, wedged between the project name and the year — the least
+            read position on the page. On a competition wiki the team IS the
+            byline, so it sits with the mark instead, where an identity block
+            belongs.
+          */}
           <Link to="/new" className="flex items-center gap-2.5">
             <span
               className="grid h-[34px] w-[34px] shrink-0 place-items-center overflow-hidden rounded-full"
@@ -500,8 +583,35 @@ function SiteFooter() {
                 className="h-[27px] w-auto"
               />
             </span>
-            <span className="text-[20px] font-extrabold leading-none">
-              Chemo<span style={{ color: C.redOnField }}>Guard</span>
+            <span className="flex flex-col gap-1.5">
+              {/*
+                THE BRAND RED, the same one the header wears — not the on-field
+                tint.
+
+                `redOnField` exists because mid red goes muddy on the deep
+                purple of the story's field, and the footer inherited it by
+                association: both grounds are dark, so it looked like the same
+                problem. It is not. Measured on this ground, #E03A3E gives
+                3.79:1 against C.ink, which clears the 3:1 AA floor this
+                20px/800 wordmark is held to, so the pale tint was buying
+                nothing and costing the mark its colour. The wordmark now reads
+                the same in the header and in the footer, which is the whole
+                point of a wordmark.
+              */}
+              <span
+                className="text-[20px] font-extrabold leading-none"
+                style={{ fontFamily: DISPLAY, letterSpacing: "-0.01em" }}
+              >
+                Chemo<span style={{ color: C.red }}>Guard</span>
+              </span>
+              {/*
+                0.7 against the legal line's 0.55 below — a real step, not the
+                0.05 difference that reads as two people picking a number. This
+                is who made the wiki; that is a licence note.
+              */}
+              <span className={L.note} style={{ opacity: 0.7 }}>
+                NIS Kazakhstan · iGEM 2026
+              </span>
             </span>
           </Link>
 
@@ -510,7 +620,10 @@ function SiteFooter() {
             reading a dimmed "Safety" learns the shape of the wiki; a judge
             reading a link that goes nowhere learns it is broken.
           */}
-          <nav className="flex flex-wrap items-center gap-x-6 gap-y-2 text-[14px] font-semibold">
+          <nav
+            className="flex flex-wrap items-center gap-x-6 gap-y-2 text-[14px] font-semibold"
+            style={{ fontFamily: DISPLAY }}
+          >
             {PAGES.map((p) =>
               p.ready ? (
                 <Link key={p.label} to={p.to} className="hover:underline">
@@ -525,13 +638,19 @@ function SiteFooter() {
           </nav>
         </div>
 
-        <div
-          className="mt-8 flex flex-wrap items-center justify-between gap-3 pt-5 text-[13px]"
-          style={{ borderTop: `1px solid ${C.paper}22`, opacity: 0.55 }}
-        >
-          <span>ChemoGuard · NIS Kazakhstan · iGEM 2026</span>
-          <span>Content on this wiki is the team&rsquo;s own unless attributed.</span>
-        </div>
+        {/*
+          NO RULE HERE EITHER, and one line where there were two.
+
+          The divider was separating a row from a row that restated it: the left
+          half read "ChemoGuard · NIS Kazakhstan · iGEM 2026" directly beneath a
+          ChemoGuard wordmark, so the rule's job was to hold apart a duplicate.
+          Delete the duplicate and the rule has nothing left to do — the identity
+          is in the block above and this is the one thing that block does not
+          say. Space separates it, which is what space is for.
+        */}
+        <p className="mt-10 text-[13px]" style={{ opacity: 0.55 }}>
+          Content on this wiki is the team&rsquo;s own unless attributed.
+        </p>
       </div>
 
       <FooterDrift />

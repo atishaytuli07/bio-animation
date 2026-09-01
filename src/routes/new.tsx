@@ -7,11 +7,12 @@ import { TwoPeople } from "@/components/story2/TwoPeople";
 import { Why } from "@/components/story3/Why";
 import { NAV, PAGES } from "@/components/story/site-map";
 import { Ground } from "@/components/story/Ground";
+import { Underline } from "@/components/story/Underline";
 import { World } from "@/components/story/World";
 import { usePageProgress } from "@/hooks/use-page-progress";
 import { band, easeOut, range, useSmoothProgress } from "@/hooks/use-scroll-progress";
 import { Cell, Enzyme, Molecule } from "@/components/hero/elements";
-import { asset, C, L, T } from "@/components/hero/palette";
+import { asset, C, DISPLAY, L, T } from "@/components/hero/palette";
 
 /**
  * /new — the hero concept, built to the Production Brief.
@@ -56,59 +57,6 @@ export const Route = createFileRoute("/new")({
   }),
   component: HeroConcept,
 });
-
-/**
- * Display stack.
- *
- * INTERIM. The single biggest remaining gap versus the reference wikis is that
- * they all have a real display face with personality — Wuxi's marker, KCIS's
- * custom lettering, GlycoGarden's rounded geometric — and this is a stack of
- * whatever happens to be installed. It prefers geometric-rounded faces so the
- * page leans warm rather than neutral, but it will render differently on every
- * machine, which is not acceptable for a design-critical page.
- *
- * The fix is one self-hosted font file. iGEM bans external CDNs (Google Fonts
- * included), so it has to be self-hosted regardless — this is required work,
- * not a nice-to-have.
- */
-const DISPLAY =
-  '"Avenir Next", Avenir, "Century Gothic", "URW Gothic", Futura, "Trebuchet MS", ui-rounded, system-ui, sans-serif';
-
-/**
- * A hand-drawn underline, the signature detail of Wuxi's navigation.
- *
- * The point is that it is NOT a straight rule. Each one is a slightly
- * different squiggle — the control points are derived from the item's index so
- * no two match — which is what makes it read as drawn by a person rather than
- * generated. It also overshoots the word at both ends, the way a marker
- * stroke does.
- */
-function Underline({ index, active = false }: { index: number; active?: boolean }) {
-  const wob = ((index * 37) % 7) - 3; // −3…3, deterministic per item
-  const lift = ((index * 23) % 5) - 2;
-  return (
-    <svg
-      viewBox="0 0 100 10"
-      preserveAspectRatio="none"
-      aria-hidden="true"
-      className="pointer-events-none absolute inset-x-[-8%] bottom-0 h-[9px] w-[116%] origin-left transition-[opacity,transform] duration-300"
-      style={{
-        opacity: active ? 1 : 0,
-        transform: active ? "scaleX(1)" : "scaleX(0.55)",
-      }}
-      data-underline=""
-    >
-      <path
-        d={`M2 ${6 + lift * 0.3} C 24 ${3 + wob}, 48 ${8 - wob * 0.6}, 72 ${5 + wob * 0.4} S 92 ${7 - lift * 0.4}, 98 ${5 + lift * 0.2}`}
-        fill="none"
-        stroke={C.coral}
-        strokeWidth={3.4}
-        strokeLinecap="round"
-        vectorEffect="non-scaling-stroke"
-      />
-    </svg>
-  );
-}
 
 /**
  * Quantise a scroll-driven value to 20 steps.
@@ -204,20 +152,99 @@ const CHAPTERS = [
   { at: 0.84, n: "05", name: "Before the first dose" },
 ] as const;
 
+/**
+ * The marker riding the progress rail: one base pair, seen end-on.
+ *
+ * A bar that fills tells you how far through you are and nothing else. This is
+ * the same object the whole story is about, small enough to be furniture — two
+ * bases joined by a rung — and it TURNS AS YOU SCROLL, on exactly the maths the
+ * strand itself uses: the two nodes sit at ±cos(a) of the axis and swap depth
+ * through sin(a), so one comes forward as the other goes behind. Four turns
+ * across the whole page.
+ *
+ * It is scroll-driven, not looping. A marker that spins on a timer would be
+ * ambient motion in the one place the reader looks to answer "how much is
+ * left", and this page's rule is that ambient loops are what make a site read
+ * as generated. This one is still whenever the reader is.
+ *
+ * Paper fills with ink outlines, because the rail is fixed across a page whose
+ * ground travels cream → purple → pink → cream. A filled dot in any palette
+ * colour disappears on one of those; an outlined one never does. It is also why
+ * the knob carries no colour of its own — red in particular means the variant
+ * everywhere else on this site, and a progress marker is not that.
+ */
+function RailKnob({ p }: { p: number }) {
+  const a = p * Math.PI * 8;
+  const cos = Math.cos(a);
+  const near = (Math.sin(a) + 1) / 2;
+  const x1 = 9 + cos * 5.4;
+  const x2 = 9 - cos * 5.4;
+  return (
+    <div
+      aria-hidden="true"
+      className="absolute top-0 -translate-x-1/2"
+      /*
+        `max()` keeps the knob a knob at the very top of the page. At p=0 a
+        centred marker at left:0 is half outside the window and reads as a
+        rendering fault rather than a starting position.
+      */
+      style={{ left: `max(10px, ${(p * 100).toFixed(2)}%)` }}
+    >
+      <svg width="18" height="18" viewBox="0 0 18 18">
+        <line
+          x1={x1}
+          y1="9"
+          x2={x2}
+          y2="9"
+          stroke={C.ink}
+          strokeWidth="2"
+          strokeLinecap="round"
+          opacity="0.55"
+        />
+        <circle
+          cx={x2}
+          cy="9"
+          r={3 - near * 0.9}
+          fill={C.paper}
+          stroke={C.ink}
+          strokeWidth="1.6"
+          opacity="0.72"
+        />
+        <circle
+          cx={x1}
+          cy="9"
+          r={2.1 + near * 0.9}
+          fill={C.paper}
+          stroke={C.ink}
+          strokeWidth="1.8"
+        />
+      </svg>
+    </div>
+  );
+}
+
 function StoryProgress() {
   const p = usePageProgress(200);
   const chapter = [...CHAPTERS].reverse().find((c) => p >= c.at) ?? CHAPTERS[0];
 
   return (
     <div className="pointer-events-none fixed inset-x-0 top-0 z-40">
-      <div className="h-[3px] w-full" style={{ background: `${C.ink}12` }}>
-        <div
-          className="h-full origin-left"
-          style={{
-            width: `${(p * 100).toFixed(1)}%`,
-            background: `linear-gradient(90deg, ${C.lavender}, ${C.coral}, ${C.red})`,
-          }}
-        />
+      {/*
+        The bar hangs 7px off the top rather than flush to it, which is what
+        gives the marker below somewhere to live: centred on a rule at y=0, a
+        16px knob loses its top half to the edge of the window.
+      */}
+      <div className="relative pt-[7px]">
+        <div className="h-[3px] w-full" style={{ background: `${C.ink}12` }}>
+          <div
+            className="h-full origin-left"
+            style={{
+              width: `${(p * 100).toFixed(1)}%`,
+              background: `linear-gradient(90deg, ${C.lavender}, ${C.coral}, ${C.red})`,
+            }}
+          />
+        </div>
+        <RailKnob p={p} />
       </div>
       {/*
         The name rides just under the bar, and only once the reader has left the
@@ -303,7 +330,35 @@ function HeroConcept() {
   const pageP = usePageProgress();
   const handoff = range(pageP, 0.196, 0.231);
   /** True while the ground is the deep field rather than cream. */
-  const onField = pageP > 0.06 && pageP < 0.6;
+  /**
+   * The header's backing, and the colour of every word in it.
+   *
+   * ONE VALUE DRIVES BOTH, because they are not independent and treating them
+   * as such produced a worse page than either fault alone. A dark scrim raises
+   * white type and sinks ink type; a colour switch does the reverse. Timed
+   * separately, the scrim reached full strength while the wordmark was still
+   * ink and the header measured 1.45:1 — worse than before either was touched.
+   *
+   * So: the scrim ramps, and the type flips to paper at the point in that ramp
+   * where paper overtakes ink. The ground is doing the same thing underneath —
+   * Ground's own "top of the room" gradient rises on this schedule — so the
+   * header darkens WITH the room rather than as a bar laid on top of it.
+   *
+   * THE HANDOVER CANNOT BE MADE PERFECT, only short. Solve it and you get a
+   * contradiction: paper needs the ground at L <= 0.162 to clear 4.5:1, ink
+   * needs L >= 0.238, and at the crossing the two are equal by definition. No
+   * ground supports both. So the ramp is deliberately NARROW — three percent of
+   * the page rather than seven — and the flip sits at its midpoint, where both
+   * colours measure about 4:1. That is a brief dip of roughly a third of a
+   * screen instead of a long one, and it is the floor of the whole header.
+   *
+   * The permanent fix is a solid bar behind the header rather than a gradient,
+   * which removes the ground from the question entirely. That is a visible
+   * change to the hero and belongs to whoever owns the design, not to a
+   * contrast pass.
+   */
+  const headerDark = q(range(pageP, 0.085, 0.115));
+  const onField = headerDark > 0.5 && pageP < 0.6;
 
   /* ---- one section, four beats -------------------------------------------
      The principle: THE SCROLL IS THE MICROSCOPE. The reader's own hand is what
@@ -341,8 +396,41 @@ function HeroConcept() {
   const heroOut = 1 - range(p, 0.05, 0.17);
   const zoom = range(p, 0.1, 0.54);
   const focus = range(p, 0.36, 0.58);
-  const flatten = range(p, 0.52, 0.64);
-  const assemble = range(p, 0.56, 0.7);
+  /**
+   * Reading the pairs, one per scroll.
+   *
+   * The window is MEASURED, not reasoned from the section height.
+   *
+   * The first attempt ran 0.16 → 0.50 on the argument that 0.34 of a 420vh
+   * section is 143vh, about 32vh a pair. Traced against the real page it was
+   * 57vh for the whole walk — four labels in half a screen. `p` is the sticky
+   * stage's own progress and it reaches 1 well before the section's height has
+   * scrolled past, so section fractions do not convert to viewport heights the
+   * way the arithmetic assumed.
+   *
+   * The ends are what the strand allows. It cannot start before the hero copy
+   * is leaving, and it must finish before `flatten` begins at 0.55 — reading a
+   * pair off a helix that is folding shut is worse than not reading it. 0.09 →
+   * 0.52 is nearly all of the life the strand has, and traces at about 19vh a
+   * pair.
+   */
+  const read = range(p, 0.09, 0.52);
+  /*
+    THE FOLD AND THE ASSEMBLY NOW OVERLAP.
+
+    Measured, the descent had a hole in it: painted content fell from 12.8% of
+    the frame to 3.4% and back to 9.7% across three sampled positions, and the
+    3.4% frame is a ghost helix, one orphan letter and nothing else. The cause
+    was arithmetic, not art — `flatten` began at 0.52 and `assemble` at 0.56,
+    so for four percent of the section the strand was folding away while the
+    sequence had not started, and neither owned the frame.
+
+    The letters now start arriving BEFORE the strand starts leaving, which is
+    what a handover is. The fold also runs a little longer so the strand is
+    still visibly present while the first letters land.
+  */
+  const flatten = range(p, 0.55, 0.68);
+  const assemble = range(p, 0.5, 0.68);
   const flip = range(p, 0.7, 0.76);
   /*
     THE ENDING, BUDGETED IN SCROLL RATHER THAN IN NUMBERS THAT LOOKED RIGHT.
@@ -604,13 +692,61 @@ function HeroConcept() {
             has grown it passes straight through "Wet Lab" and "Human
             Practices", and navigation that cannot be read is worse than
             navigation that is not there.
+
+            IT WAS THE WRONG COLOUR TO BE A SCRIM. Deep lavender over lavender
+            is barely a change of value, so measured, "Engineering" ran at
+            2.19:1 against 4.5:1 — with the scrim already at full strength.
+
+            The cause is worth writing down because it will happen again: the
+            field's lightness SWEEPS, and no fixed type colour survives it. On
+            the light lavender the reader is on here, paper measures 2.79:1 and
+            ink 5.34:1; two hundred pixels of scroll later, on lavenderDeep,
+            those swap to 5.17:1 and 2.88:1. There is no crossover point where
+            both clear AA, so nothing on this field can be fixed by choosing a
+            better text colour. It has to be fixed under the type.
+
+            So the scrim is INK now, not lavender, and it is taller — the value
+            is what does the work, and the header is not the only thing pinned
+            up here.
           */}
           <div
             aria-hidden="true"
-            className="pointer-events-none absolute inset-x-0 top-0 z-20 h-32"
+            className="pointer-events-none absolute inset-x-0 top-0 z-20 h-44"
             style={{
-              background: `linear-gradient(to bottom, ${C.lavenderDeep}b3, transparent)`,
-              opacity: q(travel),
+              background: `linear-gradient(to bottom, ${C.ink}c9, ${C.ink}70 46%, transparent)`,
+              /*
+                It arrives with the COLOUR SWITCH, not with the descent.
+
+                `travel` ramps p 0.10 -> 0.50, but the type flips from ink to
+                paper at page 0.06 (p ~0.19), where travel is only 0.235. That
+                left a stretch with white type, a light field and almost no
+                scrim under it: measured 2.35:1 on "iGEM 2026". The scrim is
+                now full before the switch happens rather than after.
+              */
+              opacity: headerDark,
+            }}
+          />
+          {/*
+            And the same, for the left column.
+
+            The chapter label and the scale stops sit below the header band, on
+            the emptiest part of the frame, and they were the worst readings on
+            the page: "01 · The gene" measured 5.01:1 at the top of the story
+            and 1.98:1 by the time the field had darkened under it — the same
+            colour, a different ground.
+
+            A corner wash rather than a full-width band, because the right half
+            of the frame belongs to the strand and does not need dimming. It
+            also gives the empty left column some weight, which it did not have
+            — measured, the right half of this scene carries up to 11.8× the
+            painted content of the left.
+          */}
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute left-0 top-0 z-10 h-[440px] w-[620px]"
+            style={{
+              background: `radial-gradient(110% 92% at 0% 0%, ${C.ink}a3, ${C.ink}3d 52%, transparent 78%)`,
+              opacity: headerDark,
             }}
           />
 
@@ -659,10 +795,23 @@ function HeroConcept() {
                   transition: "color 400ms ease",
                 }}
               >
-                Chemo<span style={{ color: C.red }}>Guard</span>
+                {/*
+                  The red half follows the same rule as the black half.
+
+                  `color: onField ? C.paper : C.ink` was applied to the
+                  wordmark and the red "Guard" was left on the brand red, which
+                  is built for cream. Measured against the field it ran between
+                  1.43:1 and 1.66:1 across the whole descent — the brand name,
+                  and the least legible string on the page. `redOnField` is the
+                  token that already exists for exactly this and takes it to
+                  4.2:1 at 21px/800.
+                */}
+                Chemo<span style={{ color: onField ? C.redOnField : C.red }}>Guard</span>
               </span>
               <span
-                className="hidden text-[10px] tracking-[0.22em] opacity-60 sm:inline"
+                // opacity-60 put a 10px string at 2.07:1 on the field. It is
+                // the team and the year, which a judge looks for.
+                className="hidden text-[10px] tracking-[0.22em] opacity-85 sm:inline"
                 style={{
                   fontFamily: DISPLAY,
                   color: onField ? C.paper : C.ink,
@@ -672,13 +821,28 @@ function HeroConcept() {
                 iGEM 2026
               </span>
             </div>
-            {/* These links sit over the deep field, so they are paper-white, not
-            ink — dark type on the purple was unreadable. */}
+            {/*
+              THE NAV FOLLOWS THE SAME RULE AS THE WORDMARK BESIDE IT.
+
+              It was pinned to paper-white on the reasoning that it sits over
+              the deep field — true from the descent onward, and false on the
+              opening screen, where the field is still the LIGHT lavender the
+              client asked for. Measured there, white nav ran at 2.85:1 while
+              the wordmark two inches to its left was correctly ink. Same
+              header, same ground, two different rules.
+
+              Ink is right until the field deepens, paper after. `onField` is
+              the switch the wordmark already uses.
+            */}
             <nav
               // lg, not md: six items overflow a 768px viewport and the last
               // two were clipped off the right edge.
               className="hidden items-center gap-9 lg:flex"
-              style={{ color: C.paper, fontFamily: DISPLAY }}
+              style={{
+                color: onField ? C.paper : C.ink,
+                fontFamily: DISPLAY,
+                transition: "color 400ms ease",
+              }}
             >
               {/*
                 Generated from the site map, not a hard-coded list. A page that
@@ -895,6 +1059,7 @@ function HeroConcept() {
                   zoom={zoom}
                   focus={focus}
                   flatten={flatten}
+                  read={read}
                 />
                 <div
                   className="pointer-events-none absolute inset-x-0 -bottom-1 flex justify-center"
@@ -908,19 +1073,34 @@ function HeroConcept() {
                 >
                   <span
                     className={`flex items-center gap-2 px-3 py-1.5 ${L.note}`}
-                    style={{ color: C.paper, opacity: 0.75 }}
+                    /*
+                      Ink, and the same reason as the nav beside it: this only
+                      ever exists on the HERO, where the field is still the
+                      light lavender. Paper on that tops out at 2.79:1 and it
+                      measured 1.96:1 — the one instruction on the opening
+                      screen, and the least readable string on it.
+                    */
+                    style={{ color: C.ink, opacity: 0.96 }}
                   >
                     <svg width="26" height="10" viewBox="0 0 26 10" aria-hidden="true">
                       <path
                         d="M2 5h22M2 5l4-3.5M2 5l4 3.5M24 5l-4-3.5M24 5l-4 3.5"
-                        stroke={C.paper}
+                        stroke={C.ink}
                         strokeWidth="1.6"
                         fill="none"
                         strokeLinecap="round"
                       />
                     </svg>
-                    <span className="md:hidden">Drag the strand</span>
-                    <span className="hidden md:inline">Drag the strand · hover a pair</span>
+                    {/*
+                      IT NO LONGER SAYS "hover a pair".
+
+                      The pairs name themselves as you scroll now, so promising
+                      a hover was promising the reader work they do not have to
+                      do — and offering it to a phone, which has no hover at
+                      all. What is left is the one thing hover cannot replace:
+                      the strand is an object you can take hold of.
+                    */}
+                    <span>Drag to spin the strand</span>
                   </span>
                 </div>
               </div>

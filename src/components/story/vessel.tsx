@@ -1,4 +1,4 @@
-import { C } from "@/components/hero/palette";
+import { C, ENZYME_PATH } from "@/components/hero/palette";
 
 /**
  * The blood vessel, shared.
@@ -28,9 +28,15 @@ const LUMEN =
 const WALL_L = "M32 0 C 12 130, 52 260, 32 390 C 18 460, 38 500, 32 520";
 const WALL_R = "M328 0 C 348 130, 308 260, 328 390 C 342 460, 322 500, 328 520";
 
-/** The enzyme's outline, at the origin; positioned by its parent. */
-export const ENZYME =
-  "M14 24 Q14 12 26 12 L54 12 Q66 12 66 24 L66 34 Q52 34 52 42 Q52 50 66 50 L66 58 Q66 70 54 70 L26 70 Q14 70 14 58 Z";
+/**
+ * The enzyme's outline, at the origin; positioned by its parent.
+ *
+ * The shape itself now lives in palette.ts as ENZYME_PATH, because it is drawn
+ * in three places and used to be drawn three different ways. See the comment
+ * there. Re-exported under the local name so the scenes that already import it
+ * from here do not have to care where it moved to.
+ */
+export const ENZYME = ENZYME_PATH;
 
 /** Red cells drifting past, so the tube reads as a blood vessel. */
 export const RBC = Array.from({ length: 11 }, (_, i) => ({
@@ -141,10 +147,24 @@ export function VesselShell({
       {flow > 0.01 &&
         RBC.map((c, i) => {
           const s = (((phase * 0.09 + c.phase) % 1) + 1) % 1;
-          const cx = 60 + c.x * 240;
+          /*
+            A LANE THAT IS NOT STRAIGHT.
+
+            The cells used to fall down exact vertical lines, which is what made
+            the lumen read as a container rather than as a vessel — the client's
+            note. Each one now drifts sideways on its own slow sine, offset by
+            its index, and rotates a little as it travels. It is a few pixels of
+            movement and it is the difference between falling and flowing.
+          */
+          const sway = Math.sin(phase * 0.42 + i * 1.7) * 13;
+          const cx = 60 + c.x * 240 + sway;
           const cy = TOP + s * (BOT - TOP);
           return (
-            <g key={`r${i}`} opacity={flow * 0.5} transform={`rotate(${c.rot} ${cx} ${cy})`}>
+            <g
+              key={`r${i}`}
+              opacity={flow * 0.5}
+              transform={`rotate(${(c.rot + Math.sin(phase * 0.3 + i) * 9).toFixed(1)} ${cx} ${cy})`}
+            >
               <ellipse cx={cx} cy={cy} rx={c.r} ry={c.r * 0.62} fill={C.pink} opacity="0.85" />
               <ellipse
                 cx={cx}

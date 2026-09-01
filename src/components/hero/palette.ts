@@ -51,6 +51,24 @@ export const C = {
   */
   inkBody: "#241C2Ec4",
   inkNote: "#241C2Ea0",
+  /*
+    The closing sign-off, and only that.
+
+    A page's last word is set quieter than its content — it closes rather than
+    adds — but "quieter" was being read as "nearly invisible": the wordmark ran
+    at 12% alpha and painted 1.29:1 against the band, which is a smudge. These
+    two are picked against the threshold instead. Both clear the 3:1 AA floor
+    for large text (3.7:1 and 3.1:1 measured), which is the floor rather than
+    the target: they are as quiet as a thing is allowed to be while still being
+    a word.
+
+    THE TWO HALVES CANNOT SHARE ONE ALPHA. Red tops out at 3.79:1 on cream even
+    at full strength, so it needs 85% to clear the floor, while ink reaches the
+    same contrast by 40%. One opacity on the wrapper either loses the red or
+    turns the ink into a headline.
+  */
+  inkSignoff: "#241C2E8c",
+  redSignoff: "#E03A3Ed9",
 };
 
 /**
@@ -182,6 +200,27 @@ export const L = {
 export const BASES = ["#5FD3A0", "#FF9EB5", "#C9A6FF", "#7CC0FF"];
 
 /**
+ * The same four bases, for type set directly on the deep field.
+ *
+ * The rung colours are strokes laid over a paper-white backbone, which is what
+ * carries them. The sequence reuses them as 51px LETTERS on bare lavenderDeep,
+ * where there is no backbone underneath and three of the four fall below the
+ * 3:1 AA floor for large text — measured 2.82:1 for G, 2.93:1 for T and 2.94:1
+ * for C, against a 3.07:1 for A that only just clears.
+ *
+ * Each is mixed 35% toward paper, which puts all four at 3.5–3.65:1 while
+ * keeping the hue plainly the same colour the reader met on the strand. Same
+ * decision as `redOnField` and `greenOnField`: one meaning, two grounds, and
+ * neither component allowed to invent its own tint.
+ */
+export const BASES_ON_FIELD: Record<string, string> = {
+  A: "#96DEB9",
+  T: "#FEBCC7",
+  G: "#DBC1F7",
+  C: "#A8D2F7",
+};
+
+/**
  * Letters matched to BASES by index. Hovering a rung reveals them, so the
  * interaction teaches the notation the whole site is built on rather than
  * merely reacting to the pointer.
@@ -192,6 +231,53 @@ export const BASES = ["#5FD3A0", "#FF9EB5", "#C9A6FF", "#7CC0FF"];
  */
 export const PAIR_LETTERS = ["A·T", "T·A", "G·C", "C·G"];
 export const VARIANT_LETTERS = "G→A";
+
+/**
+ * The display stack, for brand chrome: the wordmark, the navigation, buttons
+ * and chapter labels.
+ *
+ * IT LIVED IN THE STORY ROUTE, which meant it was applied on exactly one page.
+ * Measured, the wordmark rendered in Avenir Next at 21px/800/-0.21px on /new
+ * and in Instrument Sans at -0.24px on /description and /engineering — the same
+ * two words, two typefaces, one click apart. A logo that changes face when you
+ * navigate is the loudest possible statement that a site was assembled from
+ * parts.
+ *
+ * INTERIM, and the caveat has not changed: this is a stack of whatever happens
+ * to be installed, so it renders differently on every machine. The fix is one
+ * self-hosted file — iGEM bans external CDNs, so it has to be self-hosted
+ * regardless. Sharing the stack means that decision now lands in one place
+ * instead of one page. See TYPEFACE-DECISION.md.
+ */
+export const DISPLAY =
+  '"Avenir Next", Avenir, "Century Gothic", "URW Gothic", Futura, "Trebuchet MS", ui-rounded, system-ui, sans-serif';
+
+/**
+ * DPD, drawn once for the whole site.
+ *
+ * THERE WERE THREE OF THESE. The client's note was that the enzyme "reads
+ * slightly like a container/bowl rather than a protein/enzyme", and the redraw
+ * that answered it reached exactly one of the three places the enzyme is
+ * drawn: the bloodstream scene. The two-patient scene kept its own inline
+ * rounded rectangle with a notch — the literal shape she was describing — and
+ * the ambient/footer element kept a third copy of it at another scale. So the
+ * reader met "this shape is DPD" in scene two and a different object in scene
+ * three, which is worse than either shape on its own.
+ *
+ * Worth naming the process failure too: the check written to prove the fix
+ * only looked inside the bloodstream scene, so it passed while two thirds of
+ * the defect stood. A check scoped to the place you just edited cannot tell
+ * you the edit was incomplete.
+ *
+ * Globular with a single cleft on the right for a molecule to meet. Every
+ * curve is smooth and there is exactly ONE concavity, because this shape has
+ * to survive being drawn dashed as well as filled — several lobes look more
+ * protein-like and break a dash into disconnected arcs.
+ *
+ * Bounding box x 13→66, y 12→71.
+ */
+export const ENZYME_PATH =
+  "M40 12 C 54 12, 65 21, 64 33 C 63 39, 55 39, 52 44 C 49 49, 55 55, 63 57 C 66 66, 53 71, 40 70 C 27 69, 15 65, 14 53 C 13 44, 18 40, 17 32 C 16 21, 27 12, 40 12 Z";
 
 /* --- strand geometry, in the SVG's own coordinate space ------------------ */
 export const PAIRS = 26;

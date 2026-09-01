@@ -1,4 +1,4 @@
-import { asset, C, L, T } from "@/components/hero/palette";
+import { asset, C, ENZYME_PATH, L, T } from "@/components/hero/palette";
 import { usePageProgress } from "@/hooks/use-page-progress";
 import {
   band,
@@ -353,14 +353,26 @@ export function TwoPeople() {
                 const on = range(slots, i * 0.12, i * 0.12 + 0.3);
                 const made = i < 2;
                 return (
-                  <g key={i} transform={`translate(${124 + i * 68} 40)`}>
+                  /*
+                    THE SAME OBJECT THE BLOODSTREAM SCENE DRAWS. This used to be
+                    an inline rounded rectangle with a notch cut out of it — a
+                    second, older enzyme, which meant the reader was taught one
+                    silhouette here and shown another two scenes later. See
+                    ENZYME_PATH in palette.ts.
+
+                    0.64 puts the canonical path's 53-unit width back on the
+                    34 units this diagram was laid out around, so nothing else
+                    in the composition moves; the stroke is divided by the same
+                    factor to keep its painted weight.
+                  */
+                  <g key={i} transform={`translate(${124 + i * 68 - 0.7} 39) scale(0.64)`}>
                     <path
-                      d="M8 14 Q8 6 16 6 L34 6 Q42 6 42 14 L42 21 Q33 21 33 26 Q33 31 42 31 L42 38 Q42 46 34 46 L16 46 Q8 46 8 38 Z"
+                      d={ENZYME_PATH}
                       fill={made ? C.green : "none"}
                       fillOpacity={made ? on : 0}
                       stroke={C.ink}
-                      strokeWidth="2.6"
-                      strokeDasharray={made ? undefined : "5 5"}
+                      strokeWidth="4"
+                      strokeDasharray={made ? undefined : "8 8"}
                       strokeLinejoin="round"
                       opacity={made ? 1 : 0.35}
                     />

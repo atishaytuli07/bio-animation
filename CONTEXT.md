@@ -373,7 +373,7 @@ gesture survives, the fine detail is at the edge of legibility.
 | `lineA` | 0.03–0.09, out 0.19–0.25 | "Look closer." |
 | `flow` | 0.10–0.16, out 0.97–0.995 | the drug arrives |
 | `drugLabel` | 0.13–0.19, out 0.28–0.33 | **5-FU named before anything accumulates** |
-| `gap` | 0.24 → 0.32 | the enzyme fades in, drawn as a level: dashed full outline, filled just under half |
+| `gap` | 0.24 → 0.32 | the enzyme fades in — **five places, two of them made** |
 | `link` | 0.30 → 0.40 | the red A drops a hairline onto it |
 | `variantLabel` | 0.32–0.38, out 0.44–0.49 | "DPYD variant / c.1905+1G>A" |
 | `build` / `alarm` | 0.38 → 0.56 / 0.58 | the pile grows and goes red |
@@ -394,12 +394,29 @@ in, the dose is not the reader's to give.
 activity, they do not abolish it, so the animation itself encodes "reduced, not
 absent" rather than relying on a caption to walk it back.
 
-**The enzyme is drawn as a level, and it never changes.** A dashed outline is
-the full complement of DPD a body would normally make; solid green fills just
-under half its height (the clip cuts at y=44 of a shape spanning y 12→70). That
-is the same claim scene two makes with five slots and two filled. Neither
-drawing is a measurement of a real genotype and neither pretends to be — what
-matters is that the two scenes AGREE, and that both say "reduced", not "absent".
+**The enzyme is drawn as a COUNT, and it never changes.** Five places in a row:
+two filled solid green, three dashed and empty. That is the identical claim
+scene two makes, in the identical grammar, so the two scenes cannot disagree.
+Neither drawing is a measurement of a real genotype and neither pretends to be —
+what matters is that both say "reduced", not "absent".
+
+**It used to be a LEVEL — one shape with a clip cutting it at y=44 — and the
+client read it as a bowl.** Her note: it "reads slightly like a container/bowl
+rather than a protein/enzyme". Two redraws of the silhouette were tried before
+the actual cause was identified, and it is worth writing down because it is not
+obvious: **a shape filled to a flat top edge is how you draw liquid in a
+container**, whatever outline surrounds it. No outline survives that treatment.
+Counting discrete units removes the reading entirely, and it was already the
+grammar scene two used.
+
+**One shape, one constant, three call sites.** `ENZYME_PATH` in `palette.ts`.
+Scene two had its own inline rounded-rectangle-with-a-notch and the ambient
+`Enzyme` element had a third copy of it, so for a while the reader was taught
+one silhouette in scene two and shown a different object in scene three. The
+check that was supposed to prove the redraw had landed was scoped to scene
+three — the place that had just been edited — so it passed while two thirds of
+the defect stood. `verify-client-review.mjs` now sweeps eight scroll positions
+and fails on any stray.
 
 It used to be empty under a standard dose and solid green after the test, which
 told the reader that **lowering the dose restored the enzyme**. It does not. A
@@ -408,11 +425,23 @@ thing that changes is how much drug arrives. The payoff is carried by the
 molecules and the draining pile, which is the thesis of the whole scene: *the
 body did not change, the dose did.*
 
-Measured, not asserted: green pixels inside the enzyme's box across page 0.70 →
-0.97 run **2232–2239, a spread of 0.3%**. The harness is
-`scripts/measure-enzyme.mjs`; it samples three frames per stop because drug
-molecules cross the shape on a time clock and a single screenshot reads an
-occluded frame as the enzyme having shrunk.
+Measured, not asserted: green pixels across page 0.70 → 0.94 run **1501–1583, a
+spread of 5.2%**. The harness is `scripts/measure-enzyme.mjs`; it samples six
+frames per stop and takes the largest, because drug molecules cross the glyphs
+on a time clock and a single screenshot reads an occluded frame as the enzyme
+having shrunk.
+
+**A HARNESS HAS TO FOLLOW THE DRAWING IT MEASURES.** Those numbers used to read
+2232–2239 at a spread of 0.3%, and after the enzyme was redrawn as five glyphs
+they fell to ~790 at a spread of 38% — a convincing-looking regression that was
+entirely the check's own fault. Its window was hardcoded to x 141→219, correct
+for one shape on the vessel's axis and wrong for five in a row: it missed the
+first filled glyph and cut the second in half, so most of what it measured was
+whichever molecule happened to be drifting through the strip. Three frames were
+also no longer enough for a window three times wider. **When a drawing changes,
+re-derive the coordinates of every check that looks at it** — a stale window
+fails loudly, which is lucky; a stale window that still overlaps something
+passes quietly, which is not.
 
 ## Continuity — how the site stopped reading as slides
 

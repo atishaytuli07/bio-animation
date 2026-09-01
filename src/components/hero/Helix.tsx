@@ -33,6 +33,35 @@ import {
  */
 /** Radians of strand rotation per pixel of pointer travel. */
 const DRAG_SENS = 0.012;
+
+/**
+ * The pairs the descent turns to and names, in order.
+ *
+ * HOVER WAS THE ONLY WAY TO SEE THESE, which meant most readers never did: it
+ * needs a pointer, it needs the reader to guess that a thin rung is a target,
+ * and it is unavailable on every phone. The notation the entire colour system
+ * is built on was hidden behind a gesture. Now the scroll walks them.
+ *
+ * THEY ARE ADJACENT, AND THEY SIT NEXT TO THE VARIANT. Spread stops (2, 5, 8,
+ * 11) read better on paper and are unusable in motion: the camera scales about
+ * the variant, so by the time the reader reaches the third stop a rung near the
+ * top of the strand has been pushed off the frame entirely — at k=2.3, rung 2
+ * lands at y=-362 in a 760-tall viewBox. Neighbours of the variant stay in
+ * shot at every zoom the descent reaches.
+ *
+ * Indices 11-14 are also the four DISTINCT pairs — 11%4 through 14%4 covers
+ * C·G, A·T, T·A and G·C — so the reader meets the whole notation, once each,
+ * with nothing repeated.
+ *
+ * The fifth stop is the variant, and it is deliberately NOT named. The strand
+ * turns to present it and the label stays away, because the mutation is the
+ * sequence's reveal three beats later; naming it here would spend the payoff
+ * early and then spend it again. The reader learns the grammar on four pairs
+ * and arrives at a fifth that does not get a caption.
+ */
+const AIM = [11, 12, 13, 14, VARIANT];
+/** Stops that show a label. The last (the variant) is silent. */
+const NAMED = AIM.length - 1;
 /** Resting lean, in degrees. A perfectly upright strand reads as a diagram;
  *  a tilted one reads as an object sitting in space. */
 const BASE_TILT = 9;
@@ -48,12 +77,21 @@ export function Helix({
   zoom = 0,
   focus = 0,
   flatten = 0,
+  read = 0,
 }: {
   onFirstDrag: () => void;
   /** 0 = the hero's whole strand · 1 = arrived at the variant. */
   zoom?: number;
   /** 0 = every base equal · 1 = only the variant matters. */
   focus?: number;
+  /**
+   * The reader's progress through the pairs, 0 → 1.
+   *
+   * Drives both halves of the same gesture: the strand TURNS to bring each
+   * pair to the front, and the pair names itself when it gets there. Scroll is
+   * the crank. See AIM above for which pairs and why.
+   */
+  read?: number;
   /**
    * 0 = a helix · 1 = collapsed to nothing, handing the frame to the readable
    * sequence. The two backbones converge on the axis and the rungs shorten to
@@ -88,10 +126,11 @@ export function Helix({
   const overRef = useRef(false);
   // The rAF closure is created once, so the scroll-driven values reach it
   // through refs rather than by tearing down and rebuilding the loop.
-  const nav = useRef({ zoom: 0, focus: 0, flatten: 0 });
+  const nav = useRef({ zoom: 0, focus: 0, flatten: 0, read: 0 });
   nav.current.zoom = zoom;
   nav.current.focus = focus;
   nav.current.flatten = flatten;
+  nav.current.read = read;
   /** Cached bounding box; invalidated on resize rather than read per event. */
   const rect = useRef<DOMRect | null>(null);
   const svg = useRef<SVGSVGElement>(null);
@@ -108,6 +147,28 @@ export function Helix({
       const dt = Math.min(0.05, (now - last) / 1000);
       last = now;
 
+      const z = nav.current.zoom;
+      const foc = nav.current.focus;
+      const flat = nav.current.flatten;
+      const rd = nav.current.read;
+
+      /*
+        WHERE THE READER IS AMONG THE PAIRS.
+
+        `rd` is split into equal stops. Within a stop, `local` runs 0 → 1, and
+        the label's opacity is a tent over it — up at the start, down at the
+        end — so each pair announces itself and then hands over rather than one
+        caption cutting to another mid-word. The ×5 makes the fade about a
+        tenth of a stop at each end: quick enough not to feel like waiting,
+        slow enough not to blink.
+      */
+      const pos = Math.min(0.9999, Math.max(0, rd)) * AIM.length;
+      const si = Math.min(AIM.length - 1, Math.floor(pos));
+      const local = pos - si;
+      const aim = AIM[si]!;
+      const naming =
+        rd > 0.001 && si < NAMED ? Math.max(0, Math.min(1, Math.min(local, 1 - local) * 5)) : 0;
+
       if (!reduced) {
         if (drag.current.active) {
           // Direct manipulation: the strand turns by exactly what the hand
@@ -120,14 +181,27 @@ export function Helix({
           // Remember the last real movement so releasing throws it.
           drag.current.vel = step * 0.6 + drag.current.vel * 0.4;
         } else {
-          phase += dt * 0.42 + drag.current.vel;
+          /*
+            THE IDLE DRIFT STANDS DOWN ONCE THE SCROLL TAKES OVER.
+
+            A constant 0.42 rad/s was the whole of the strand's motion, and it
+            kept running underneath the descent — so the reader's scroll and a
+            metronome were turning the same object at once, and every attempt
+            to bring a specific pair to the front had to out-pull a spin that
+            never stopped. That is why the arrival used to look like it drifted
+            into place rather than being aimed.
+
+            Below, the drift fades out as `read` or `zoom` engages and the
+            scroll becomes the crank. A tenth is left running so a strand the
+            reader has stopped scrolling still breathes instead of freezing
+            mid-turn.
+          */
+          const driven = Math.min(1, Math.max(z, rd) * 1.4);
+          phase += dt * 0.42 * (1 - driven * 0.9) + drag.current.vel;
           drag.current.vel *= 0.94;
         }
       }
 
-      const z = nav.current.zoom;
-      const foc = nav.current.focus;
-      const flat = nav.current.flatten;
       // The helix closes: radius shrinks to nothing and the whole group goes
       // with it, so the sequence inherits a frame that has been vacated
       // rather than one that was cross-faded over.
@@ -143,17 +217,29 @@ export function Helix({
       }
 
       /*
-        Travelling in. As the reader scrolls we ease the strand's rotation to
-        the angle that presents the variant to the front, then scale about the
-        variant itself — so the journey ends with the one wrong base filling
-        the frame rather than wherever the spin happened to leave it.
+        Travelling in. The strand's rotation is eased to the angle that
+        presents the pair being read to the front, and the camera scales about
+        the variant — so the journey ends with the one wrong base filling the
+        frame rather than wherever the spin happened to leave it.
+
+        THE AIM IS NOW THE READING CURSOR, not always the variant. It used to
+        lock onto the variant the moment the descent began, which meant the
+        strand reached its final angle within a few percent of scroll and then
+        held it for the rest of the descent — a still image with a caption
+        moving over it. Following the cursor makes every stop a quarter-turn
+        the reader drives: rung 11 comes round, names itself, and the next
+        scroll turns the strand to 12. The last stop is the variant, so the
+        old behaviour is the end of the new one rather than a special case.
+
+        Drag always wins. A hand on the strand must not be fighting an easing.
       */
-      if (z > 0.001) {
-        const vt = VARIANT / (PAIRS - 1);
+      const present = rd > 0.001 ? aim : z > 0.001 ? VARIANT : -1;
+      if (present >= 0 && !drag.current.active) {
+        const vt = present / (PAIRS - 1);
         const want = -vt * TURNS * Math.PI * 2; // puts cos(angle) at 1
         const d = want - phase;
         // shortest way round, so it never unwinds the long way
-        phase += Math.atan2(Math.sin(d), Math.cos(d)) * Math.min(0.12, z * 0.12);
+        phase += Math.atan2(Math.sin(d), Math.cos(d)) * Math.min(0.12, 0.045 + z * 0.09);
       }
 
       tx += (pointer.current.x * 5 - tx) * 0.06;
@@ -186,7 +272,13 @@ export function Helix({
         const xa = HX + cos * radius;
         const xb = HX - cos * radius;
         const near = (Math.sin(a) + 1) / 2;
-        const lifted = h === i;
+        const lifted = h === i || (naming > 0.15 && i === aim);
+        /*
+          `focus` fades every rung but the variant. The pair currently being
+          read is exempt: without this, the last two stops are named while
+          being dimmed by 58%, so the strand argues with its own caption.
+        */
+        const held = i === VARIANT || (naming > 0.05 && i === aim);
 
         da += `${i ? "L" : "M"}${xa.toFixed(1)},${y.toFixed(1)}`;
         db += `${i ? "L" : "M"}${xb.toFixed(1)},${y.toFixed(1)}`;
@@ -205,7 +297,7 @@ export function Helix({
           const base = 0.18 + Math.abs(cos) * 0.82;
           // Focus fades every rung but the variant, so arriving at the gene
           // means the rest of the genome quietly gets out of the way.
-          const dimmed = i === VARIANT ? base : base * (1 - foc * 0.58);
+          const dimmed = held ? base : base * (1 - foc * 0.58);
           g.setAttribute("opacity", lifted ? "1" : dimmed.toFixed(3));
         }
 
@@ -224,7 +316,7 @@ export function Helix({
           ca.setAttribute("r", (lifted ? 13 : 6.5 + near * 5).toFixed(1));
           // Depth by value as well as size: a base at the back of the turn is
           // dimmer, which is what stops the strand reading as a flat zigzag.
-          const oa = (0.55 + near * 0.45) * (i === VARIANT ? 1 : 1 - foc * 0.58);
+          const oa = (0.55 + near * 0.45) * (held ? 1 : 1 - foc * 0.58);
           ca.setAttribute("opacity", lifted ? "1" : oa.toFixed(2));
         }
         const cb = nodesB.current[i];
@@ -232,20 +324,40 @@ export function Helix({
           cb.setAttribute("cx", xb.toFixed(1));
           cb.setAttribute("cy", y.toFixed(1));
           cb.setAttribute("r", (lifted ? 13 : 11.5 - near * 5).toFixed(1));
-          const ob = (1 - near * 0.45) * (i === VARIANT ? 1 : 1 - foc * 0.58);
+          const ob = (1 - near * 0.45) * (held ? 1 : 1 - foc * 0.58);
           cb.setAttribute("opacity", lifted ? "1" : ob.toFixed(2));
-        }
-
-        if (lifted && label.current && labelText.current) {
-          label.current.setAttribute("transform", `translate(${HX - 46}, ${(y - 56).toFixed(1)})`);
-          label.current.setAttribute("opacity", "1");
-          labelText.current.textContent =
-            i === VARIANT ? VARIANT_LETTERS : PAIR_LETTERS[i % PAIR_LETTERS.length]!;
-          labelText.current.setAttribute("fill", i === VARIANT ? C.red : C.ink);
         }
       }
 
-      if (h === null) label.current?.setAttribute("opacity", "0");
+      /*
+        The label, named once rather than inside the rung loop.
+
+        IT COUNTER-SCALES. The label lives inside the tilt group so it stays
+        locked to its rung, which also means it inherits the camera's zoom —
+        harmless when the only way to see it was to hover the un-zoomed hero,
+        and not harmless now that the scroll shows it at k up to 2.9. A caption
+        that grows to three times its size as you scroll is not a caption. The
+        1/k on its own transform holds it at a constant size on screen while
+        the strand behind it keeps growing.
+
+        A hovered rung outranks the reading cursor: a hand on the object beats
+        a schedule.
+      */
+      const showIdx = h !== null ? h : naming > 0.02 ? aim : null;
+      if (showIdx === null || !label.current || !labelText.current) {
+        label.current?.setAttribute("opacity", "0");
+      } else {
+        const inv = 1 / k;
+        const ly = HTOP + (showIdx / (PAIRS - 1)) * (HBOT - HTOP);
+        label.current.setAttribute(
+          "transform",
+          `translate(${(HX - 46 * inv).toFixed(1)} ${(ly - 58 * inv).toFixed(1)}) scale(${inv.toFixed(3)})`,
+        );
+        label.current.setAttribute("opacity", (h !== null ? 1 : naming).toFixed(3));
+        labelText.current.textContent =
+          showIdx === VARIANT ? VARIANT_LETTERS : PAIR_LETTERS[showIdx % PAIR_LETTERS.length]!;
+        labelText.current.setAttribute("fill", showIdx === VARIANT ? C.red : C.ink);
+      }
 
       // The leader line follows the variant around its orbit instead of
       // pointing at a fixed spot the base has already left. Anchored end stays

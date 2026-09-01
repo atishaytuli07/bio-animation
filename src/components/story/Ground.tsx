@@ -54,7 +54,29 @@ const BASE = [
     validated result" everywhere in this palette, so the resolution is carried
     by a colour that already means something rather than one picked for calm.
   */
-  [0.86, `color-mix(in oklab, ${C.pink} 10%, ${C.paper})`],
+  /*
+    The resolution keeps a TINT, and it is LAVENDER-PINK, not green.
+
+    Green was used here because it means "a validated result" elsewhere in this
+    palette. Measured, it did not work: the last stretch landed at
+    rgb(230,231,216), a neutral greenish beige, and the client's note was that
+    the turn stopped feeling like part of the same world. Mixing green over a
+    lavender base made it WORSE, not better — the colour spread fell from 15 to
+    6, because green and lavender are near-opposites and cancel to grey.
+
+    So the resolution is carried by the palette's own pink and lavender, which
+    is what she asked for. The green meaning is still on screen where it belongs
+    — in the enzyme itself.
+
+    AND IT HAD TO BE MOSTLY PINK, not lavender, which is not obvious. Lavender
+    is a purple: positive `a` and NEGATIVE `b` in oklab. Warm paper has positive
+    `b`. Mixing them cancels the blue against the warmth, so raising the
+    lavender from 19% to 34% moved the rendered colour from a spread of 5 to a
+    spread of 2 — flatter, not richer. Pink carries positive `a` AND positive
+    `b`, so it reinforces the paper instead of fighting it. A little lavender is
+    still in the mix to keep the hue from going candy.
+  */
+  [0.86, `color-mix(in oklab, ${C.pink} 20%, ${C.paper})`],
   /*
     Green for the resolution — it already means "a validated result" in this
     palette — and then all the way back to paper for the last screen.
@@ -64,7 +86,13 @@ const BASE = [
     than just stopping it. It is C.paper itself, not a hex sampled from a
     screenshot, so the two ends are the same value and can never drift apart.
   */
-  [0.92, `color-mix(in oklab, ${C.green} 13%, ${C.paper})`],
+  [0.92, `color-mix(in oklab, ${C.green} 12%, color-mix(in oklab, ${C.lavender} 13%, ${C.paper}))`],
+  /*
+    The page still ENDS on the exact colour it opened with — that symmetry is
+    what closes the journey — but it arrives there from a tinted resolution
+    rather than draining to neutral several screens early.
+  */
+  [0.985, `color-mix(in oklab, ${C.pink} 9%, ${C.paper})`],
   [1.0, C.paper],
 ] as const;
 

@@ -34,3 +34,6 @@ dist-ssr
 # Source artwork originals — processed derivatives ship from public/
 assets-src/
 dist-static/
+
+# Frame dumps written by scripts/measure-descent.mjs
+end-*.png

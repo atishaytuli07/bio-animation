@@ -38,30 +38,50 @@ async function sample(pageProgress) {
     if (!svg) return null;
     const r = svg.getBoundingClientRect();
     if (r.width < 2 || r.bottom < 0 || r.top > window.innerHeight) return null;
+    /*
+      THE WINDOW FOLLOWS THE DRAWING, and it did not.
+
+      This was x 141→219, which was correct when the enzyme was ONE shape
+      centred on the vessel's axis. It is now five glyphs in a row and the two
+      filled ones sit LEFT of centre: `x = W/2 - 104 + i*52` at `scale(0.66)`,
+      so glyph i spans x = 84.6 + 52i to 119.6 + 52i. The old window missed the
+      first filled glyph entirely and cut the second in half.
+
+      The result looked exactly like a regression — the count fell from the
+      ~2235 in CONTEXT.md to ~790 and swung 38% across the turn — because a
+      narrow strip across one glyph's edge is mostly measuring whichever drug
+      molecule is drifting through it. The enzyme had not changed; the harness
+      had been left behind by the redraw the client asked for.
+
+      All five, with padding: x 80→332, y 250→296 of the 360x520 viewBox.
+    */
     return {
-      // enzyme occupies x 141→219 of 360 and y 228→315 of 520 in vessel units
       clip: {
-        x: Math.max(0, Math.round(r.left + r.width * (141 / 360)) - 6),
-        y: Math.max(0, Math.round(r.top + r.height * (228 / 520)) - 6),
-        width: Math.round(r.width * ((219 - 141) / 360)) + 12,
-        height: Math.round(r.height * ((315 - 228) / 520)) + 12,
+        x: Math.max(0, Math.round(r.left + r.width * (80 / 360)) - 4),
+        y: Math.max(0, Math.round(r.top + r.height * (250 / 520)) - 4),
+        width: Math.round(r.width * ((332 - 80) / 360)) + 8,
+        height: Math.round(r.height * ((296 - 250) / 520)) + 8,
       },
     };
   });
   if (!info) return null;
 
   /*
-    Three frames, and take the MAX.
+    Six frames, and take the MAX.
 
     Drug molecules cross the enzyme on a time-based clock, independent of
     scroll. A single screenshot therefore measures "the enzyme minus whatever
     happened to be in front of it at that millisecond", and a hexagon parked
-    over the shape reads as the enzyme having shrunk. Taking the largest of
-    three frames samples the least-occluded moment, which is the enzyme itself.
+    over the shape reads as the enzyme having shrunk. Taking the largest frame
+    samples the least-occluded moment, which is the enzyme itself.
+
+    THREE WAS ENOUGH FOR ONE BIG SHAPE AND IS NOT ENOUGH FOR FIVE SMALL ONES.
+    The window is now three times wider, so more molecules sit inside it at any
+    moment and an unoccluded frame is rarer. Six.
   */
   let green = 0;
   let total = 0;
-  for (let f = 0; f < 3; f++) {
+  for (let f = 0; f < 6; f++) {
     const png = PNG.sync.read(await page.screenshot({ clip: info.clip }));
     let n = 0;
     for (let i = 0; i < png.data.length; i += 4) {
@@ -69,7 +89,7 @@ async function sample(pageProgress) {
     }
     green = Math.max(green, n);
     total = png.width * png.height;
-    if (f < 2) await page.waitForTimeout(420);
+    if (f < 5) await page.waitForTimeout(380);
   }
   return { green, total };
 }

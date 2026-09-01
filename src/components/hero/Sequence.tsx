@@ -1,4 +1,4 @@
-import { C } from "./palette";
+import { BASES_ON_FIELD, C } from "./palette";
 
 /**
  * The arrival: the strand resolved into DNA you can actually read.
@@ -44,13 +44,15 @@ const ALT_BASE = "A";
 /** Intron position +2. Canonical donor is GT, so this letter follows. */
 const DONOR_SECOND = "T";
 
-/** Base → colour, the same mapping the hero's rungs use. */
-const TONE: Record<string, string> = {
-  A: "#5FD3A0",
-  T: "#FF9EB5",
-  G: "#C9A6FF",
-  C: "#7CC0FF",
-};
+/**
+ * Base → colour, the same mapping the hero's rungs use, in its on-field tint.
+ *
+ * The four hexes used to be copied here by hand from BASES. They were the rung
+ * colours exactly, which is right for a stroke on a white backbone and wrong
+ * for a 51px letter on bare purple — see BASES_ON_FIELD for the measurements.
+ * Imported now, so the two can never drift apart again.
+ */
+const TONE = BASES_ON_FIELD;
 
 const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
 /** Fast at first, settling at the end — a camera decelerating, not a linear tween. */
@@ -174,12 +176,40 @@ export function Sequence({
       <span
         /* 0.4em, floored at 11px: these are the smallest strings in the scene
            and at 0.32em of the old mobile size they rendered under 8px. */
-        className="font-sans text-[max(11px,0.4em)] font-bold uppercase px-1.5 md:px-2"
+        /*
+          THE GAP IS PART OF THE LABEL. At px-1.5 the right-hand label's box
+          began at exactly the T's right edge — 809.4 against 809.4, measured —
+          so an 11px caption abutted a 51px glyph with nothing between them. It
+          went unreported for as long as the label was dimmed to 0.62, which is
+          below the overlap audit's visibility floor: raising it to something
+          readable is what surfaced the collision, not what caused it.
+        */
+        className="font-sans text-[max(11px,0.4em)] font-bold uppercase mx-3 md:mx-5"
         style={{
           color: C.paper,
-          opacity: t * 0.62,
+          /*
+            0.9, not 0.62. These name the exon/intron boundary — the mechanism
+            the whole frame exists to show — and at 0.62 paper on lavenderDeep
+            they measured 2.53:1 against the 4.5:1 an 11px string is held to.
+            The dimming was making the only verifiable labels in the scene the
+            hardest thing in it to read.
+          */
+          opacity: t * 0.9,
           letterSpacing: "0.18em",
-          transform: `translateX(${((1 - t) * (align === "right" ? 14 : -14)).toFixed(1)}px)`,
+          /*
+            THEY ARRIVE FROM OUTSIDE, not from on top of the letters.
+
+            The offsets used to be +14 for the left label and -14 for the right
+            one, which pointed both of them INWARD: each began its entrance
+            overlapping the glyph it labels and slid off it. Measured at page
+            0.125, "intron 14" sat 3.2px inside the T.
+
+            Reversed, the pair opens outward as the sequence assembles — which
+            is also the better gesture, since the letters are what the eye
+            should land on first and the labels should get out of their way
+            rather than peel off them.
+          */
+          transform: `translateX(${((1 - t) * (align === "right" ? -14 : 14)).toFixed(1)}px)`,
           display: "inline-block",
           whiteSpace: "nowrap",
         }}
