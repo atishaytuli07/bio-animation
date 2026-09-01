@@ -484,6 +484,25 @@ A colour means the same thing on every screen.
 | `redOnField` / `greenOnField` | `#FFC9C4` / `#9BE8C4` | on-field tints of red and green |
 | `inkBody` / `inkNote` | `ink` at `c4` / `a0` | body copy / a note under a title |
 
+**Red means the variant INSIDE AN ILLUSTRATION. In chrome it is the brand.**
+
+The rule read "red is only ever the variant (plus the brand mark)", and the
+site was quietly breaking it in both directions — which is worse than either a
+strict rule or a loose one, because nobody could tell which was intended. The
+split that actually holds:
+
+- **Inside a picture** — a rung, a base, a molecule, a diagram edge — red means
+  the variant and nothing else. The Engineering cycle's return arrow was drawn
+  in `redDeep`, which quietly taught a reader arriving from the story that that
+  edge was somehow the variant. It is ink at 4px now; weight and the word
+  "again" carry the emphasis, which is what a drawn diagram uses anyway.
+- **In chrome** — the wordmark, a button, the progress rail, an active nav item
+  or section-index entry — red is the brand accent. Chrome and illustration
+  never share a visual context, so the two readings cannot collide.
+
+`redDeep` stays what the palette already says it is: button surfaces, deep
+enough to clear AA where `red` does not.
+
 **Type follows the ground, not the scene: paper on the field, ink on cream.**
 That rule is why the site reads in one voice. Measured on painted pixels:
 5.46, 4.44, 3.57, 5.60, 13.50 — all above the 3:1 floor for large text.

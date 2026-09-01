@@ -731,10 +731,20 @@ function HeroConcept() {
           */}
           <div
             aria-hidden="true"
-            className="pointer-events-none absolute left-0 top-0 z-10 h-[440px] w-[620px]"
+            className="pointer-events-none absolute left-0 top-0 z-10 h-[540px] w-[700px]"
             style={{
-              background: `radial-gradient(110% 92% at 0% 0%, ${C.ink}a3, ${C.ink}3d 52%, transparent 78%)`,
-              opacity: q(range(pageP, 0.055, 0.13)),
+              background: `radial-gradient(120% 104% at 0% 0%, ${C.ink}c9, ${C.ink}70 56%, transparent 84%)`,
+              /*
+                It arrives WITH THE BAR, not on its own slower ramp.
+
+                The header scrim used to reach down far enough to help these
+                too. With that gone and this still ramping to 0.13, the left
+                column had a gap: measured at page 0.09, "01 · The gene" ran at
+                2.47:1, "Your genome" at 2.04 and its note at 1.65, recovering
+                to 4.90 only by 0.12. Two things that cover the same type must
+                arrive together or the later one is just a delay.
+              */
+              opacity: q(range(pageP, 0.042, 0.08)),
             }}
           />
 
@@ -1059,8 +1069,35 @@ function HeroConcept() {
               </div>
             </div>
 
-            {/* the strand */}
-            <div className="order-1 flex justify-center md:order-2">
+            {/*
+              The strand, and it TRAVELS TO THE CENTRE as the hero dissolves.
+
+              Measured, its column sat at x 825→1345 — centre 1085 against a
+              frame centre of 720 — at every scroll position from 0.00 to 0.18.
+              The cream half of the hero merges away over `merge`, but the grid
+              that put the strand in the right-hand column does not, so for the
+              whole descent the reader was looking at a molecule pinned 365px
+              right of centre with an empty left half and its right side cut by
+              the frame. Both of those looked like separate problems and were
+              one: a two-column layout outliving the second column.
+
+              The shift is −25% of the container, because in an equal two-column
+              grid the right column's centre sits a quarter of the container
+              past the middle — derived, and it holds at every width: −360 at
+              1440, −368 at 1920, −256 at 1024, against measured needs of −365,
+              −368 and −256.
+
+              md only. On a phone the layout is already one centred column and
+              this would push the strand off the left edge.
+            */}
+            <div
+              className="order-1 flex justify-center md:order-2 md:[transform:translateX(var(--strand-shift))]"
+              style={
+                {
+                  "--strand-shift": `calc(min(92rem, 100vw) * ${(-0.25 * q(merge)).toFixed(4)})`,
+                } as React.CSSProperties
+              }
+            >
               <div className="relative h-[34vh] w-full max-w-[520px] md:h-[82vh]">
                 <Helix
                   onFirstDrag={() => setDragged(true)}
@@ -1164,7 +1201,14 @@ function HeroConcept() {
                     <span className="block h-px w-8" style={{ background: `${C.paper}99` }} />
                     {stop.label}
                   </span>
-                  <span className={`pl-11 normal-case opacity-70 ${L.sub}`}>{stop.note}</span>
+                  {/*
+                    opacity-90, not 70. This is the only place a scale stop
+                    says anything — "about three billion letters", "1p21.3" —
+                    and at 0.7 on the field it never reached the 4.5:1 an 11px
+                    string is held to no matter how strong the wash behind it
+                    got. The title above it is the label; this is the content.
+                  */}
+                  <span className={`pl-11 normal-case opacity-95 ${L.sub}`}>{stop.note}</span>
                 </span>
               </div>
             );

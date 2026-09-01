@@ -295,17 +295,6 @@ export function CycleFigure() {
           >
             <path d="M0 0 L10 5 L0 10 z" fill={C.ink} />
           </marker>
-          <marker
-            id="cyc-head-red"
-            viewBox="0 0 10 10"
-            refX="8"
-            refY="5"
-            markerWidth="5.5"
-            markerHeight="5.5"
-            orient="auto-start-reverse"
-          >
-            <path d="M0 0 L10 5 L0 10 z" fill={C.redDeep} />
-          </marker>
         </defs>
 
         {/* Design → Build, along the top */}
@@ -346,13 +335,27 @@ export function CycleFigure() {
           carries a label — everything above it is a process, and this is what
           makes it a cycle.
         */}
+        {/*
+          INK, NOT RED, AND HEAVIER INSTEAD.
+
+          The palette's first rule is that a colour means the same thing on
+          every screen, and red means the variant. Inside chrome — a button, a
+          rail, an active nav item — red reads as the brand accent and cannot
+          be confused with a base pair. Inside an ILLUSTRATION it can, and this
+          is an illustration. A red arrow here quietly teaches a reader who has
+          just come from the story that this edge is somehow the variant.
+
+          The emphasis does not need colour: this edge is 4px against the
+          others' 2.5 and it is the only one that carries a word. Weight and a
+          label are what a drawn diagram uses.
+        */}
         <path
           d="M140 256 L 140 138"
           fill="none"
-          stroke={C.redDeep}
-          strokeWidth="3.5"
+          stroke={C.ink}
+          strokeWidth="4"
           strokeLinecap="round"
-          markerEnd="url(#cyc-head-red)"
+          markerEnd="url(#cyc-head)"
           pathLength={1}
           style={draw(3)}
         />
@@ -365,7 +368,7 @@ export function CycleFigure() {
             fontWeight: 700,
             letterSpacing: "0.14em",
             textTransform: "uppercase",
-            fill: C.redDeep,
+            fill: C.ink,
             opacity: seen ? 1 : 0,
             transition: `opacity 420ms ${ease} 1100ms`,
           }}

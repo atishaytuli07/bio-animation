@@ -141,7 +141,7 @@ export function World() {
                     density *
                     heroClear(m.x) *
                     headerClear(-10 + y * 120) *
-                    (0.1 + m.depth * 0.3) *
+                    (0.18 + m.depth * 0.34) *
                     20,
                 ) / 20,
             }}
@@ -172,9 +172,17 @@ export function World() {
               transform: `translate(-50%,-50%) translateY(${top.toFixed(2)}vh) rotate(${(i * 47) % 360}deg)`,
               opacity:
                 Math.round(
-                  edge * density * heroClear(o.x) * headerClear(top) * (0.4 + o.depth * 0.5) * 20,
+                  edge * density * heroClear(o.x) * headerClear(top) * (0.62 + o.depth * 0.38) * 20,
                 ) / 20,
-              filter: o.depth > 0.7 ? undefined : `blur(${((1 - o.depth) * 1.5).toFixed(2)}px)`,
+              /*
+                Depth by blur, but far less of it. At 1.5px the far objects
+                stopped reading as cells and molecules and read as smudges on
+                the field — which is the opposite of the client's note about
+                the footer elements ("bigger, closer, full opacity"). The same
+                thing is true here: they are the illustrated world, not noise.
+                0.8px is still enough to sit them behind the subject.
+              */
+              filter: o.depth > 0.7 ? undefined : `blur(${((1 - o.depth) * 0.8).toFixed(2)}px)`,
             }}
           >
             {o.k === "cell" ? (
