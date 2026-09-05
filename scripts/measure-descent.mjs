@@ -26,7 +26,18 @@ const STOPS = [0.06, 0.09, 0.12, 0.145, 0.158, 0.168, 0.178, 0.186, 0.196, 0.212
 
 for (const pp of STOPS) {
   await page.evaluate((v) => {
-    const max = document.documentElement.scrollHeight - window.innerHeight;
+    /*
+      A fraction of the STORY, not of the document.
+
+      Every window in this file was calibrated when the page ended at the last
+      scene. It does not any more — a closing section follows it — so dividing
+      by `scrollHeight` would silently point each of these numbers at a
+      different moment than the one it was written for. The page marks where
+      the story ends; `usePageProgress` divides by the same marker, so the
+      harness and the page agree by construction rather than by coincidence.
+    */
+    const e = document.getElementById("story-end");
+    const max = (e ? e.offsetTop : document.documentElement.scrollHeight) - window.innerHeight;
     window.scrollTo(0, max * v);
   }, pp);
   await page.waitForTimeout(1400); // let the spring settle
@@ -75,7 +86,9 @@ for (const pp of STOPS) {
     };
   });
 
-  await page.screenshot({ path: `${OUT}/end-${String(Math.round(pp * 1000)).padStart(4, "0")}.png` });
+  await page.screenshot({
+    path: `${OUT}/end-${String(Math.round(pp * 1000)).padStart(4, "0")}.png`,
+  });
   console.log(
     `page ${pp.toFixed(3)}  helix=${m.helix}  strand=${m.strandOpacity} (${m.rungs} rungs)  field=${m.field}  stripes=${m.stripes}  caption=${m.caption}  closing=${m.closing}`,
   );

@@ -352,7 +352,7 @@ export function Awaiting({ what, children }: { what: string; children?: ReactNod
  * The plate is a single wide cutout that already contains both figures with a
  * gap, so this costs one 98 kB image rather than two.
  */
-function ClosingBand() {
+export function ClosingBand() {
   return (
     <section
       aria-hidden="true"
@@ -550,7 +550,7 @@ function FooterDrift() {
   );
 }
 
-function SiteFooter() {
+export function SiteFooter() {
   return (
     <footer className="relative overflow-hidden" style={{ background: C.ink, color: C.paper }}>
       <div className="mx-auto max-w-[92rem] px-6 pb-4 pt-12 md:px-10 md:pt-14">

@@ -113,7 +113,11 @@ for (const width of [1900, 1440, 768, 390]) {
   };
 
   console.log(`\n══ ${width}px ═══════════════════════════════════════`);
-  say(geo.bandRule === "0px", "no rule across the top of the closing band", `border-top: ${geo.bandRule}`);
+  say(
+    geo.bandRule === "0px",
+    "no rule across the top of the closing band",
+    `border-top: ${geo.bandRule}`,
+  );
   say(geo.rules === 0, "no separator rules inside the footer", `${geo.rules} bordered element(s)`);
 
   for (const [name, b] of [
@@ -129,13 +133,26 @@ for (const width of [1900, 1440, 768, 390]) {
   }
 
   const m = read(geo.mark, true);
-  say(m.ratio >= 3, "band wordmark clears 3:1 (AA, large text)", `${m.ratio.toFixed(2)}:1  rgb(${m.ink})`);
-  say(read(geo.bandTeam, true).ratio >= 4.5, "band team line clears 4.5:1 (AA, small text)",
-    `${read(geo.bandTeam, true).ratio.toFixed(2)}:1`);
-  say(read(geo.footTeam, false).ratio >= 4.5, "footer team line clears 4.5:1",
-    `${read(geo.footTeam, false).ratio.toFixed(2)}:1`);
-  say(read(geo.attrib, false).ratio >= 4.5, "footer attribution clears 4.5:1",
-    `${read(geo.attrib, false).ratio.toFixed(2)}:1`);
+  say(
+    m.ratio >= 3,
+    "band wordmark clears 3:1 (AA, large text)",
+    `${m.ratio.toFixed(2)}:1  rgb(${m.ink})`,
+  );
+  say(
+    read(geo.bandTeam, true).ratio >= 4.5,
+    "band team line clears 4.5:1 (AA, small text)",
+    `${read(geo.bandTeam, true).ratio.toFixed(2)}:1`,
+  );
+  say(
+    read(geo.footTeam, false).ratio >= 4.5,
+    "footer team line clears 4.5:1",
+    `${read(geo.footTeam, false).ratio.toFixed(2)}:1`,
+  );
+  say(
+    read(geo.attrib, false).ratio >= 4.5,
+    "footer attribution clears 4.5:1",
+    `${read(geo.attrib, false).ratio.toFixed(2)}:1`,
+  );
 
   /*
     The footer's "Guard" is the brand red, not the pale on-field tint, and it

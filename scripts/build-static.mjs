@@ -50,7 +50,8 @@ const ROUTES = (() => {
   const routes = [...src.matchAll(/to:\s*"([^"]+)"\s*,\s*ready:\s*(true|false)/g)]
     .filter(([, , ready]) => ready === "true")
     .map(([, to]) => to);
-  if (!routes.length) throw new Error("no ready routes found in site-map.ts — has its shape changed?");
+  if (!routes.length)
+    throw new Error("no ready routes found in site-map.ts — has its shape changed?");
   return routes;
 })();
 /** Where "/" should land. iGEM's homepage is the story. */
@@ -67,13 +68,7 @@ const HOME = "/new";
  * the shell has already mangled.
  */
 const baseArg = process.argv.find((a) => a.startsWith("--base="));
-const slug = baseArg
-  ? baseArg
-      .slice(7)
-      .split("/")
-      .filter(Boolean)
-      .pop()
-  : null;
+const slug = baseArg ? baseArg.slice(7).split("/").filter(Boolean).pop() : null;
 const BASE = slug ? `/${slug}/` : "/";
 
 const log = (m) => process.stdout.write(`[static] ${m}\n`);
@@ -92,7 +87,12 @@ function freePort() {
 
 function run(cmd, args, env) {
   return new Promise((res, rej) => {
-    const p = spawn(cmd, args, { cwd: ROOT, stdio: "inherit", shell: true, env: { ...process.env, ...env } });
+    const p = spawn(cmd, args, {
+      cwd: ROOT,
+      stdio: "inherit",
+      shell: true,
+      env: { ...process.env, ...env },
+    });
     p.on("exit", (c) => (c === 0 ? res() : rej(new Error(`${cmd} exited ${c}`))));
   });
 }
@@ -116,10 +116,7 @@ function run(cmd, args, env) {
 function rebase(html) {
   if (BASE === "/") return html;
   const already = BASE.slice(1, -1).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  const re = new RegExp(
-    `(<(?:link|meta)\\b[^>]*?\\b(?:href|content)=")/(?!/|${already}/)`,
-    "g",
-  );
+  const re = new RegExp(`(<(?:link|meta)\\b[^>]*?\\b(?:href|content)=")/(?!/|${already}/)`, "g");
   return html.replace(re, `$1${BASE}`);
 }
 
@@ -163,11 +160,14 @@ async function main() {
       const res = await fetch(origin + route);
       if (!res.ok) throw new Error(`${route} returned ${res.status}`);
       const html = rebase(await res.text());
-      if (!html.includes("<!DOCTYPE html")) throw new Error(`${route} did not return an HTML document`);
+      if (!html.includes("<!DOCTYPE html"))
+        throw new Error(`${route} did not return an HTML document`);
       const dir = join(OUT, route.replace(/^\//, ""));
       await mkdir(dir, { recursive: true });
       await writeFile(join(dir, "index.html"), html, "utf8");
-      log(`  ${route} → ${route.replace(/^\//, "")}/index.html  (${(html.length / 1024).toFixed(0)} kB)`);
+      log(
+        `  ${route} → ${route.replace(/^\//, "")}/index.html  (${(html.length / 1024).toFixed(0)} kB)`,
+      );
     }
 
     /*

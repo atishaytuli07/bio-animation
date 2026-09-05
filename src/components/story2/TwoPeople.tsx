@@ -1,5 +1,8 @@
+import { useEffect, useState } from "react";
+
 import { asset, C, ENZYME_PATH, L, T } from "@/components/hero/palette";
 import { usePageProgress } from "@/hooks/use-page-progress";
+import { recordStory } from "@/lib/story-state";
 import {
   band,
   beat,
@@ -39,6 +42,29 @@ import {
 
 const q = (v: number) => Math.round(v * 20) / 20;
 
+/**
+ * The two ceilings the reader is asked to satisfy at once, and cannot.
+ *
+ * The slider gives ONE dose to BOTH people, which is what standard dosing
+ * does — the dose comes from body surface area, not from how fast a particular
+ * body clears the drug. She has normal DPD and needs the full dose for it to
+ * be a treatment. He has reduced DPD and accumulates above a much lower one.
+ *
+ * THE TWO BANDS DO NOT OVERLAP, and that is the whole point. Anything that
+ * treats her is too much for him; anything safe for him is not a treatment for
+ * her. The reader is meant to hunt for a setting that satisfies both, fail,
+ * and conclude that the dose has to be per person — three beats before the
+ * story says so out loud.
+ *
+ * These are positions on a slider, not milligrams. No dose figure appears
+ * anywhere on this wiki, deliberately: real numbers belong to guidance the
+ * team has to cite. The claim the geometry makes — carriers need less, normal
+ * metabolisers need the full dose — is the project's own premise, already
+ * stated in words elsewhere on the page.
+ */
+const HER_MIN = 0.7;
+const HIS_MAX = 0.5;
+
 /** IV stand, bag, drip chamber and line — all SVG, so the dose can move. */
 /**
  * The drug in the bag is ALWAYS coral, on both stands, all the way through.
@@ -46,6 +72,26 @@ const q = (v: number) => Math.round(v * 20) / 20;
  * body's response differs — so tinting one bag would quietly tell the wrong
  * story.
  */
+/**
+ * The tube, as one cubic, used twice.
+ *
+ * The path that draws the line and the sampler that runs the dose along it
+ * used to carry the same four control points as separate literals, so moving
+ * the end of the tube meant editing two places and hoping they agreed. One
+ * set of numbers now.
+ *
+ * THE END IS ON THE FOREARM, MEASURED. At (-30, 226) the cannula landed at
+ * x 81.3% of patient A's plate and x 17.8% of patient B's — and at that height
+ * A's near arm spans 87–97% and B's spans 5–16%. Both cannulas sat in the gap
+ * BETWEEN the arm and the torso, at hip height, which is why the client saw
+ * them as plugged into a pocket. Nine units toward the stand and nine units
+ * up puts A's at ~90% and B's at ~9%, inside the arm on both plates, mid
+ * forearm rather than level with the hip.
+ */
+const TUBE = { p0: [74, 162], p1: [74, 214], p2: [22, 250], p3: [-16, 217] } as const;
+/** The cannula, sitting on the tube's end. */
+const CANNULA = { x: -29, y: 212, w: 14, h: 6 } as const;
+
 function IV({ dose, flow, flip }: { dose: number; flow: number; flip: boolean }) {
   const t = useTime(flow > 0.01);
   const fluid = 1 - dose * 0.85;
@@ -103,17 +149,17 @@ function IV({ dose, flow, flip }: { dose: number; flow: number; flip: boolean })
       )}
       {/* line to the arm */}
       <path
-        d="M74 162 C 74 214, 22 250, -30 226"
+        d={`M${TUBE.p0[0]} ${TUBE.p0[1]} C ${TUBE.p1[0]} ${TUBE.p1[1]}, ${TUBE.p2[0]} ${TUBE.p2[1]}, ${TUBE.p3[0]} ${TUBE.p3[1]}`}
         fill="none"
         stroke={`${C.ink}55`}
         strokeWidth="3"
         strokeLinecap="round"
       />
       <rect
-        x="-38"
-        y="221"
-        width="14"
-        height="6"
+        x={CANNULA.x}
+        y={CANNULA.y}
+        width={CANNULA.w}
+        height={CANNULA.h}
         rx="3"
         fill={C.paper}
         stroke={C.ink}
@@ -131,8 +177,8 @@ function IV({ dose, flow, flip }: { dose: number; flow: number; flip: boolean })
               b2 = 3 * k * u * u,
               b3 = u * u * u;
             return [
-              b0 * 74 + b1 * 74 + b2 * 22 + b3 * -30,
-              b0 * 162 + b1 * 214 + b2 * 250 + b3 * 226,
+              b0 * TUBE.p0[0] + b1 * TUBE.p1[0] + b2 * TUBE.p2[0] + b3 * TUBE.p3[0],
+              b0 * TUBE.p0[1] + b1 * TUBE.p1[1] + b2 * TUBE.p2[1] + b3 * TUBE.p3[1],
             ];
           };
           const [x, y] = P(s);
@@ -288,8 +334,48 @@ export function TwoPeople() {
   const alarm = range(pp, 0.6, 0.82);
   const outcome = beat(pp, 0.8, 0.9, 1.2, 1.3);
 
-  const fillA = uptake * (1 - clearA);
-  const fillB = uptake + 0.36 * buildB;
+  /*
+    THE READER'S DOSE. It starts at 1 — the standard dose — so a reader who
+    never touches the slider sees exactly the scene that was here before it
+    existed, and every harness that only scrolls measures the same thing.
+  */
+  const [chosen, setChosen] = useState(1);
+  const [moved, setMoved] = useState(false);
+
+  /*
+    THE STORY TAKES THE DOSE BACK.
+
+    The slider is a sidebar inside the hold, not a fork in the story. If the
+    reader left it on "reduced", he would never accumulate — and then the
+    closing line, "doesn't mean the same outcome", would land over a picture in
+    which the outcome IS the same. So as the control fades out the dose eases
+    back to standard, and the divergence plays as written.
+
+    That is not a cheat; it is the point. Without a test, the standard dose is
+    what gets given. The reader has just discovered there is no dose that suits
+    both of them — and then watches the one that is used anyway.
+  */
+  const resume = range(pp, 0.72, 0.8);
+  const level = chosen + (1 - chosen) * resume;
+
+  /** How far past his ceiling this dose is: 0 at or below it, 1 at standard. */
+  const over = Math.max(0, Math.min(1, (level - HIS_MAX) / (1 - HIS_MAX)));
+  /** Enough of a dose to still be a treatment for her. */
+  const treated = level >= HER_MIN;
+
+  const fillA = uptake * level * (1 - clearA);
+  /*
+    He holds what she holds, PLUS what his reduced DPD cannot clear — and the
+    slider governs only that second term. At or below his ceiling it is zero
+    and he behaves like her; at the standard dose it is the load the scene was
+    always showing.
+  */
+  const fillB = (uptake + 0.36 * buildB * over) * level;
+  const alarmB = alarm * over;
+
+  useEffect(() => {
+    recordStory({ sliderMoved: moved ? true : undefined });
+  }, [moved]);
 
   return (
     <section
@@ -300,7 +386,20 @@ export function TwoPeople() {
       data-active={String(active)}
     >
       <div
-        className="sticky top-0 h-screen overflow-hidden [--fig2:36vh] md:[--fig2:min(52vh,600px)]"
+        /*
+          `--feet` is where the figures stand. It was a bare 16vh at every
+          width, and on a phone the dose slider — which has to sit below them —
+          is taller than that gap: measured, the card ran 37px up into the
+          figures at 390 and 14px at 768.
+
+          THREE STEPS, NOT TWO. 768 is exactly Tailwind's `md`, so a two-step
+          rule handed the tablet the desktop value and the overlap there did
+          not move. Phones get 22vh, tablets 19vh, and desktop 17vh — one vh
+          above the approved 16, which is 8px on a 768-tall laptop and buys the
+          card 16px of clearance there instead of 8. Nobody will see the shift;
+          everybody would see the shoes touching the card.
+        */
+        className="sticky top-0 h-screen overflow-hidden [--fig2:36vh] [--feet:22vh] md:[--fig2:min(52vh,600px)] md:[--feet:19vh] lg:[--feet:17vh]"
         style={{ opacity: 1 - q(handoff), visibility: handoff > 0.99 ? "hidden" : "visible" }}
       >
         {/*
@@ -404,7 +503,7 @@ export function TwoPeople() {
         <div
           className="absolute inset-x-0 flex items-end justify-center gap-[5vw] md:gap-[12vw]"
           style={{
-            bottom: "16vh",
+            bottom: "var(--feet)",
             opacity: q(enter),
             /*
               The camera is still moving when this scene starts, and it settles
@@ -438,21 +537,112 @@ export function TwoPeople() {
               forearm the way it does in a ward.
             */}
             <div className="h-[118%]">
-              <IV dose={dose} flow={flow} flip={false} />
+              <IV dose={dose * level} flow={flow} flip={false} />
             </div>
           </div>
           <div className="flex items-end gap-2 md:gap-4" style={{ height: "var(--fig2)" }}>
             <div className="h-[118%]">
-              <IV dose={dose} flow={flow} flip />
+              <IV dose={dose * level} flow={flow} flip />
             </div>
             <Patient
               src={asset("patient-b.webp")}
               fill={fillB}
-              alarm={alarm}
+              alarm={alarmB}
               flip={false}
               animate={active}
               seed={1.9}
             />
+          </div>
+        </div>
+
+        {/*
+          THE SLIDER: one dose, two people.
+
+          It arrives only after the two have visibly diverged. Before that, the
+          long identical uptake IS the beat — a control there would let the
+          reader break the one thing that beat exists to show. It leaves at
+          0.72 → 0.78, BEFORE the closing line arrives at 0.80, and the dose
+          eases back to standard over the same window (see `resume` above).
+
+          The two readouts are the mechanism. She needs the dose kept up to be
+          treated; he needs it brought down to be safe; they never both go
+          green. A reader who drags it end to end has run the project's whole
+          argument with their thumb.
+        */}
+        <div
+          /*
+            THE CARD HAS TO FIT UNDER THE FIGURES AT EVERY HEIGHT, and stacked
+            it did not: 144px tall against a 13vh gap it ran 27px into them at
+            1440x900 and 48px at 1024x768 — measured only after phone and
+            tablet had been checked and passed, which is its own lesson. From
+            md the two readouts sit beside the slider, the card drops to about
+            95px, and it sits 2vh off the floor instead of 3.
+          */
+          className="absolute inset-x-0 bottom-[3vh] z-30 flex justify-center px-6 md:bottom-[2vh]"
+          style={{
+            opacity: q(easeOut(band(pp, 0.56, 0.62, 0.72, 0.78))),
+            pointerEvents: q(easeOut(band(pp, 0.56, 0.62, 0.72, 0.78))) > 0.3 ? "auto" : "none",
+          }}
+        >
+          <div
+            className="w-full max-w-[420px] rounded-xl px-4 py-3 md:max-w-[640px] md:px-5 md:py-2.5"
+            style={{
+              background: C.paper,
+              border: `2.5px solid ${C.ink}`,
+              boxShadow: `4px 4px 0 ${C.ink}`,
+            }}
+          >
+            <div className="flex items-baseline justify-between gap-3">
+              <span className={L.note} style={{ color: C.ink }}>
+                One dose, both patients
+              </span>
+              <span className={L.note} style={{ color: C.inkNote }}>
+                {level >= 0.95 ? "standard" : level <= HIS_MAX ? "reduced" : "lowered"}
+              </span>
+            </div>
+
+            <div className="md:flex md:items-center md:gap-4">
+              <input
+                type="range"
+                min={0.25}
+                max={1}
+                step={0.01}
+                value={chosen}
+                aria-label="Dose given to both patients"
+                onChange={(e) => {
+                  setChosen(Number(e.currentTarget.value));
+                  setMoved(true);
+                }}
+                className="mt-3 w-full md:mt-0 md:flex-1"
+                style={{ accentColor: C.redDeep, touchAction: "none" }}
+              />
+
+              <div className="mt-2.5 grid grid-cols-2 gap-2 md:mt-0 md:w-[270px] md:shrink-0">
+                {[
+                  { who: "Her", ok: treated, yes: "treated", no: "under-treated" },
+                  { who: "Him", ok: over <= 0.02, yes: "clears it", no: "accumulating" },
+                ].map((r) => (
+                  <div
+                    key={r.who}
+                    className="rounded-[8px] px-2.5 py-1.5"
+                    style={{
+                      background: r.ok ? `${C.green}1f` : `${C.red}14`,
+                      border: `2px solid ${r.ok ? C.green : C.red}66`,
+                    }}
+                  >
+                    <span className={L.note} style={{ color: C.inkNote }}>
+                      {r.who}
+                    </span>
+                    <span
+                      className="mt-0.5 block text-[13px] font-black leading-none"
+                      style={{ color: r.ok ? C.green : C.redDeep }}
+                    >
+                      {r.ok ? r.yes : r.no}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
 

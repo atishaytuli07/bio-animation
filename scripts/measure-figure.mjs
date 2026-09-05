@@ -19,7 +19,18 @@ for (const [name, width, height] of [
 
   // Scene 3 act one: page progress ~0.65 (the vessel + figure + tags frame).
   await page.evaluate(() => {
-    const max = document.documentElement.scrollHeight - window.innerHeight;
+    /*
+      A fraction of the STORY, not of the document.
+
+      Every window in this file was calibrated when the page ended at the last
+      scene. It does not any more — a closing section follows it — so dividing
+      by `scrollHeight` would silently point each of these numbers at a
+      different moment than the one it was written for. The page marks where
+      the story ends; `usePageProgress` divides by the same marker, so the
+      harness and the page agree by construction rather than by coincidence.
+    */
+    const e = document.getElementById("story-end");
+    const max = (e ? e.offsetTop : document.documentElement.scrollHeight) - window.innerHeight;
     window.scrollTo(0, max * 0.65);
   });
   await page.waitForTimeout(900);
@@ -64,9 +75,18 @@ for (const [name, width, height] of [
   }
   if (v) console.log(`  vessel   ${v.w}×${v.h}px   x ${v.left}→${v.right}`);
   if (f && v) {
-    console.log(`  gap      ${(v.left - f.right).toFixed(1)}px`);
+    /*
+      ORDER-INDEPENDENT. This was `v.left - f.right`, which is the gap only
+      while the figure is on the left. The scene was mirrored — vessel left,
+      man right — and the harness went on printing a negative gap and a
+      negative "used" width while exiting zero, which is the worst of both:
+      wrong numbers and a green light. The gap is whichever side is empty.
+    */
+    const gap = Math.max(v.left - f.right, f.left - v.right);
+    const used = Math.max(v.right, f.right) - Math.min(v.left, f.left);
+    console.log(`  gap      ${gap.toFixed(1)}px`);
     console.log(
-      `  used     ${(v.right - f.left).toFixed(1)}px of ${m.vw}px  (${(((v.right - f.left) / m.vw) * 100).toFixed(0)}%)`,
+      `  used     ${used.toFixed(1)}px of ${m.vw}px  (${((used / m.vw) * 100).toFixed(0)}%)`,
     );
     console.log(`  figure is ${((f.w / m.vw) * 100).toFixed(1)}% of viewport width`);
   }

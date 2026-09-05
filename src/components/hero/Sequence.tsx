@@ -360,7 +360,19 @@ export function Sequence({
             about 1280px, so tablets scale smoothly between the two rather than
             jumping.
           */
-          style={{ fontSize: "clamp(2rem, 7vw, 5.6rem)", letterSpacing: "0.24em" }}
+          /*
+            THE G COUNTS. It hangs above the row as `absolute bottom-full`, so
+            it is outside the box the flex centring measures — the row and the
+            caption were centred and the G floated above them, uncounted, which
+            is why the assembly always sat high. This margin is the G's own
+            height (0.72em glyph + 0.7em line + the gap), so what gets centred
+            is the whole gesture from the struck letter down to the caption.
+          */
+          style={{
+            fontSize: "clamp(2rem, 7vw, 5.6rem)",
+            letterSpacing: "0.24em",
+            marginTop: "1.5em",
+          }}
         >
           {/* the end of exon 14 — named, not spelled out */}
           <Region label="exon 14" distance={3} align="right" />

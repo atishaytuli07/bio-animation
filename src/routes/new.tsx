@@ -7,6 +7,8 @@ import { TwoPeople } from "@/components/story2/TwoPeople";
 import { Why } from "@/components/story3/Why";
 import { NAV, PAGES } from "@/components/story/site-map";
 import { Ground } from "@/components/story/Ground";
+import { Landing } from "@/components/story/Landing";
+import { ClosingBand, SiteFooter } from "@/components/story/PageShell";
 import { Underline } from "@/components/story/Underline";
 import { World } from "@/components/story/World";
 import { usePageProgress } from "@/hooks/use-page-progress";
@@ -142,10 +144,21 @@ const SCALE_STOPS = [
   closer." was the client's own complaint about redundancy, and renaming the
   per-scene label into the rail had simply relocated it.
 */
+/*
+  THRESHOLDS 02 AND 03 ARE MEASURED AGAINST THE PICTURE, not the section.
+
+  They were 0.203 and 0.276 — the section handoffs — and both ran ahead of
+  what was on screen. Traced at 0.01 steps: the enzyme bridge is not visible
+  until 0.25 and holds at full until 0.30, and the two patients do not appear
+  until 0.32. So "02 · The enzyme" was announced while scene one's closing
+  statement was still up, and "03 · Two people" was announced over the enzyme
+  diagram. A chapter name that arrives before its chapter is a caption for the
+  wrong picture.
+*/
 const CHAPTERS = [
   { at: 0.0, n: "01", name: "The gene" },
-  { at: 0.203, n: "02", name: "The enzyme" },
-  { at: 0.276, n: "03", name: "Two people" },
+  { at: 0.245, n: "02", name: "The enzyme" },
+  { at: 0.315, n: "03", name: "Two people" },
   { at: 0.509, n: "04", name: "Inside the body" },
   // Not a new section — the same scene, after it turns. The rail names the
   // argument even though the picture never restarts.
@@ -235,7 +248,14 @@ function StoryProgress() {
         16px knob loses its top half to the edge of the window.
       */}
       <div className="relative pt-[7px]">
-        <div className="h-[3px] w-full" style={{ background: `${C.ink}12` }}>
+        {/*
+          NO TRACK. The bar used to draw its full width in 7% ink and fill the
+          travelled part over it, so at 10% the reader saw a ten-percent bar and
+          a ninety-percent dim line beside it — the unfinished part of the story
+          drawn across the top of every frame. The fill and the marker say where
+          you are; the remainder does not need painting.
+        */}
+        <div className="h-[3px] w-full">
           <div
             className="h-full origin-left"
             style={{
@@ -257,7 +277,20 @@ function StoryProgress() {
         the logo — the bar is fixed to the very top of the viewport and the
         header is right underneath it.
       */}
-      <div className={L.label} style={{ opacity: q(easeOut(range(p, 0.062, 0.11))) }}>
+      {/*
+        A BAND, NOT A RANGE — the third time this exact fault has appeared here.
+
+        `range` reaches 1 and stays, so the chapter name never left. That was
+        invisible while the page ended at the last scene: progress hit 1 on the
+        final frame and there was nothing after it to sit on. With a closing
+        section below the story, "05 · Before the first dose" stayed pinned over
+        a landing that is not chapter five and not part of the story at all.
+
+        The rule from CONTEXT.md, earned twice in Why.tsx before this: if an
+        element needs to LEAVE, a range cannot do it. It goes out over the last
+        two percent, after the closing statement has had its hold.
+      */}
+      <div className={L.label} style={{ opacity: q(easeOut(band(p, 0.062, 0.11, 0.975, 0.998))) }}>
         <span
           className={L.labelType}
           style={{
@@ -1273,8 +1306,19 @@ function HeroConcept() {
             DNA you can read. The mutation then happens in front of the reader
             instead of being described to them.
           */}
+          {/*
+            CENTRED BELOW THE HEADER, not in the whole stage.
+
+            `inset-0` with items-center put the block's midpoint at half the
+            viewport, as though the 70px bar were not there. On a short window
+            — a laptop at browser zoom is 1370x640 — the struck-through G above
+            the A ran up under the header: measured 26px clipped at 1280x600,
+            6px at 1371x640, with 176–326px of empty ground below the caption
+            at every size. The pad is the header's height, so the centring box
+            starts where the reader can actually see.
+          */}
           <div
-            className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center px-4"
+            className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center px-4 pt-[70px]"
             style={{
               opacity: 1 - q(seqOut),
               visibility: assemble < 0.02 || seqOut > 0.99 ? "hidden" : "visible",
@@ -1316,28 +1360,27 @@ function HeroConcept() {
       <Why />
 
       {/*
-        The footer exists mainly to carry the Attributions link. iGEM requires
-        that page, and a required page nothing links to is a page judges do not
-        find — the AI declaration in particular has to be reachable from the
-        story, not only by typing the URL.
+        THE STORY ENDS HERE, and the page does not.
+
+        Everything above is measured in page fractions — sixteen ground
+        keyframes, five chapter thresholds, two handoffs, the header's switch.
+        This marker is what `usePageProgress` divides by, so anything appended
+        below is furniture rather than a change to all of those at once. Without
+        it, adding the closing section would have compressed every one of them
+        by the share of the page it occupies.
       */}
-      <footer
-        className="relative z-10 px-6 py-10 md:px-10 md:py-12"
-        style={{ background: C.paper, borderTop: `2px solid ${C.ink}18` }}
-      >
-        <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-4">
-          <span className="text-[13px] font-semibold" style={{ color: C.inkNote }}>
-            ChemoGuard · iGEM 2026
-          </span>
-          <Link
-            to="/attributions"
-            className="text-[13px] font-bold underline-offset-4 hover:underline"
-            style={{ color: C.redDeep }}
-          >
-            Attributions
-          </Link>
-        </div>
-      </footer>
+      <div id="story-end" aria-hidden="true" />
+
+      {/*
+        The page's ending, as opposed to the story's.
+
+        What used to be here was a 118px strip carrying a copyright line and a
+        single link to Attributions — after sixteen screens of argument. The
+        documentation pages all closed better than the homepage did.
+      */}
+      <Landing />
+      <ClosingBand />
+      <SiteFooter />
 
       <style>
         {`

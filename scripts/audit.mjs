@@ -22,6 +22,7 @@
  * and compare its darkest and lightest pixels instead.
  */
 import { chromium } from "playwright";
+import { readFileSync } from "node:fs";
 import { PNG } from "pngjs";
 
 const arg = (k, d) => {
@@ -31,7 +32,42 @@ const arg = (k, d) => {
 const BASE = arg("url", "http://localhost:8080");
 const only = process.argv[2] && !process.argv[2].startsWith("--") ? process.argv[2] : null;
 
-const PAGES = ["/new", "/description", "/engineering", "/attributions"];
+/**
+ * Every route, and it has to stay that way.
+ *
+ * This was a hand-written list of four while the site map already knew about
+ * seven, so three routes could have shipped without a single sweep, contrast
+ * reading or dead-control check run against them. A page that no harness looks
+ * at is a page nobody has checked.
+ *
+ * Read from the site map rather than repeated here, so adding a route to the
+ * wiki adds it to the audit in the same edit. That is the same rule the nav,
+ * the footer and the static exporter already follow — and the two times it was
+ * broken before, it was broken by a second list drifting from the first.
+ */
+const PAGES = (() => {
+  /*
+    AND IT IS READ, NOT IMPORTED, AND IT THROWS RATHER THAN FALLING BACK.
+
+    The first attempt at this was a dynamic `import()` of the .ts module with a
+    `.catch(() => null)` and the old array behind a `??`. Node cannot parse
+    TypeScript, so the import threw on every run, the catch swallowed it, and
+    the audit quietly went on auditing exactly the four pages it always had —
+    while printing nothing to say so. A fallback that hides its own failure is
+    worse than no fallback: the check reported "all passed" for a set of pages
+    it had never loaded.
+
+    So it parses the source text, and if it finds nothing it stops. An audit
+    that cannot determine what to audit has no business exiting zero.
+  */
+  const src = readFileSync(new URL("../src/components/story/site-map.ts", import.meta.url), "utf8");
+  const routes = [...src.matchAll(/to:\s*"([^"]+)"[^}]*ready:\s*true/g)].map((m) => m[1]);
+  if (!routes.length) {
+    console.error("audit: could not read any ready routes from site-map.ts");
+    process.exit(2);
+  }
+  return routes;
+})();
 const WIDTHS = [
   [390, 844, "iphone"],
   [768, 1024, "tablet"],
@@ -107,7 +143,13 @@ async function contrast(browser) {
   for (const p of PAGES) {
     await pg.goto(BASE + p, { waitUntil: "networkidle" });
     await pg.waitForTimeout(1600);
-    const H = await pg.evaluate(() => document.documentElement.scrollHeight - innerHeight);
+    // A fraction of the STORY. See the note in measure-labels.mjs — the page
+    // no longer ends at the last scene, so `scrollHeight` would move every
+    // sampled position relative to what it was calibrated against.
+    const H = await pg.evaluate(() => {
+      const e = document.getElementById("story-end");
+      return (e ? e.offsetTop : document.documentElement.scrollHeight) - innerHeight;
+    });
     const stops = p === "/new" ? [0.05, 0.24, 0.36, 0.56, 0.86] : [0];
     for (const f of stops) {
       await pg.evaluate((y) => window.scrollTo({ top: y, behavior: "instant" }), Math.round(H * f));
@@ -170,7 +212,13 @@ async function controls(browser) {
   for (const p of PAGES) {
     await pg.goto(BASE + p, { waitUntil: "networkidle" });
     await pg.waitForTimeout(1600);
-    const H = await pg.evaluate(() => document.documentElement.scrollHeight - innerHeight);
+    // A fraction of the STORY. See the note in measure-labels.mjs — the page
+    // no longer ends at the last scene, so `scrollHeight` would move every
+    // sampled position relative to what it was calibrated against.
+    const H = await pg.evaluate(() => {
+      const e = document.getElementById("story-end");
+      return (e ? e.offsetTop : document.documentElement.scrollHeight) - innerHeight;
+    });
     const dead = new Set();
     for (let i = 0; i <= 20; i++) {
       await pg.evaluate(
@@ -224,7 +272,13 @@ async function collisions(browser) {
   const pg = await browser.newPage({ viewport: { width: 1440, height: 900 } });
   await pg.goto(BASE + "/new", { waitUntil: "networkidle" });
   await pg.waitForTimeout(2400);
-  const H = await pg.evaluate(() => document.documentElement.scrollHeight - innerHeight);
+  // A fraction of the STORY. See the note in measure-labels.mjs — the page
+  // no longer ends at the last scene, so `scrollHeight` would move every
+  // sampled position relative to what it was calibrated against.
+  const H = await pg.evaluate(() => {
+    const e = document.getElementById("story-end");
+    return (e ? e.offsetTop : document.documentElement.scrollHeight) - innerHeight;
+  });
   const hits = new Set();
   for (let i = 0; i <= 60; i++) {
     await pg.evaluate(
@@ -282,7 +336,13 @@ async function system(browser) {
   for (const p of PAGES) {
     await pg.goto(BASE + p, { waitUntil: "networkidle" });
     await pg.waitForTimeout(1600);
-    const H = await pg.evaluate(() => document.documentElement.scrollHeight - innerHeight);
+    // A fraction of the STORY. See the note in measure-labels.mjs — the page
+    // no longer ends at the last scene, so `scrollHeight` would move every
+    // sampled position relative to what it was calibrated against.
+    const H = await pg.evaluate(() => {
+      const e = document.getElementById("story-end");
+      return (e ? e.offsetTop : document.documentElement.scrollHeight) - innerHeight;
+    });
     for (let i = 0; i <= 30; i++) {
       await pg.evaluate(
         (y) => window.scrollTo({ top: y, behavior: "instant" }),

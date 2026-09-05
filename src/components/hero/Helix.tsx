@@ -595,22 +595,19 @@ export function Helix({
           transform in a keyframe overrides an SVG transform attribute, which
           teleports the label to the top of the frame.
         */}
+          {/*
+            NO RING. There was a dashed circle here around the variant, and it
+            was the FOURTH marker on the same rung: the rung is red, it carries
+            a glow filter, and a leader line runs to a labelled callout. The
+            ring added nothing the other three were not already saying.
+
+            It was also the one device the client had rejected — in the body
+            scene, where a dashed circle read as a zoom target on a hip. On a
+            diagram it would not have read that way, but keeping the thing she
+            asked to have removed, in a different place, on the first screen
+            she sees, is not worth an element that was redundant anyway.
+          */}
           <g ref={calloutRef}>
-            <circle
-              cx={HX}
-              cy={variantY}
-              r={64}
-              fill="none"
-              stroke={C.paper}
-              strokeWidth={2.5}
-              strokeDasharray="7 7"
-              opacity={0.75}
-              style={{
-                transformBox: "fill-box",
-                transformOrigin: "center",
-                animation: "popIn 620ms cubic-bezier(0.22,1,0.36,1) 1100ms both",
-              }}
-            />
             {/* A curved leader, not a straight rule. Wuxi's "Renal artery" and
             "Renal vein" both hook toward what they name — a straight line is
             a diagram, a curved one looks drawn. */}

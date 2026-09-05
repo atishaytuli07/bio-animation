@@ -1,8 +1,9 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { asset, C, L, T } from "@/components/hero/palette";
 import { usePageProgress } from "@/hooks/use-page-progress";
 import { BOT, ENZYME, EY, H, Hex, TOP, VesselShell, W } from "@/components/story/vessel";
+import { recordStory } from "@/lib/story-state";
 import {
   band,
   beat,
@@ -123,6 +124,13 @@ export function Why() {
   const [ref, p] = useSmoothProgress<HTMLElement>(0.1);
   const pageP = usePageProgress();
   const [hot, setHot] = useState(false);
+  /**
+   * THE SECOND PRESS. The reader gives the dose twice in this scene: once with
+   * nothing to go on, and once with the result in hand. `hot` is the first;
+   * this is the second. Same gesture, different information — which is the
+   * whole argument, felt rather than read.
+   */
+  const [hot2, setHot2] = useState(false);
 
   /* ---- ONE SCENE, TWO ACTS --------------------------------------------------
      This used to be two sections that crossfaded into each other, and the
@@ -175,7 +183,22 @@ export function Why() {
   /** 9 molecules of standard dose come down to 4. */
   const trim = range(p, 0.76, 0.85);
   /** What had accumulated drains away — the payoff of the whole section. */
-  const drain = range(p, 0.79, 0.89);
+  /*
+    THE DRAIN WAITS FOR THE READER, then goes anyway.
+
+    It ran 0.79 → 0.89, and the second control fades in over 0.78 → 0.84 — so
+    by the moment the button was legible the vessel was already half empty on
+    its own, and by 0.89 it was done. Measured, holding it at that point moved
+    the count by one molecule inside its own noise. A control that cannot
+    change what happens is a prop.
+
+    Moving it to 0.84 → 0.94 opens p 0.79 → 0.84 — about 43vh of scroll — where
+    the control is fully up and NOTHING else is clearing the vessel. Press and
+    it empties under your thumb; scroll past and the drain does it for you a
+    moment later, so a reader who never touches it still gets the resolution
+    and every harness that only scrolls still measures the same ending.
+  */
+  const drain = range(p, 0.84, 0.94);
   /**
    * The dose comes down to meet the enzyme this person actually has.
    *
@@ -244,14 +267,37 @@ export function Why() {
   const lastT = useRef(t);
   const speed = useRef(1);
   const extra = useRef(0);
+  /**
+   * How much of the clearing the reader's own press has done.
+   *
+   * The drain is scroll-driven and COMPLETE on its own — a reader who never
+   * touches the control still gets the resolution, and every harness that
+   * scrolls without pressing still holds. What the press does is bring the
+   * clearing forward under the reader's thumb, so the vessel visibly empties
+   * because they gave the matched dose rather than because they kept
+   * scrolling. It can only ever add to the drain, never take it past the
+   * same 78%: "reduced, not absent" is a science rule, not a UI one.
+   */
+  const cleared = useRef(0);
   if (t !== lastT.current) {
     const dt = t - lastT.current;
+    /*
+      ONLY THE FIRST PRESS SPEEDS THE INFUSION. Letting the second inherit the
+      2.4x boost was backwards, and measured: holding the matched dose took the
+      held count from 8 down to 4 in 1.2s, then the faster inflow refilled it
+      to 8 while the thumb was still down. The reader's clearing press was
+      visibly undoing itself. A matched dose is LESS arriving, not more.
+    */
     speed.current += ((hot ? 2.4 : 1) - speed.current) * 0.15;
     phase.current += dt * speed.current;
     // Holding keeps the infusion running, so the load climbs faster. Ridden on
     // the same clock as everything else — this used to be its own setInterval,
     // which only happened to work because useTime re-renders every frame.
     if (hot) extra.current = Math.min(0.4, extra.current + dt * 0.22);
+    // Only once the result is actually on screen. The control is faded out
+    // before that, but a faded control is still a control: an invisible button
+    // that accepted the pointer drained the vessel before the test existed.
+    if (hot2 && result > 0.5) cleared.current = Math.min(1, cleared.current + dt * 0.55);
     lastT.current = t;
   }
   const ph = phase.current;
@@ -284,7 +330,29 @@ export function Why() {
     the drain takes 78% and leaves the rest, and the tone returns to coral
     rather than red — lower concentration, not absence.
   */
-  const heldN = Math.min(22, Math.round((build + extra.current) * 18 * (1 - drain * 0.78)));
+  const draining = Math.min(1, drain + cleared.current);
+  /*
+    HE CARRIES THE LOAD, and sheds it when the reader does.
+
+    In scene two he sags and tints as the drug builds; here he stood beside
+    the vessel as a still picture, so the second press emptied a tube and not
+    a person. These are the same quantities the vessel is drawn from — `build`
+    and `alarm` on the way up, `draining` on the way down — so the man and the
+    column can never disagree, and a press that clears one visibly clears the
+    other. Under the reader's thumb he straightens up.
+  */
+  const load = alarm * (1 - draining);
+  /*
+    A LEVEL, NOT A RECOLOUR. `build` reaches 1, so an uncapped level filled him
+    to the crown and he stopped reading as the man from the scene before — he
+    read as a different, darker character. Scene two's own fill tops out near
+    0.70 of the figure; 0.62 here keeps him recognisably himself with the load
+    plainly rising up him.
+  */
+  const carried = 0.62 * build * (1 - draining * 0.78);
+  const bodyTint =
+    load > 0.01 ? `color-mix(in oklab, ${C.red} ${(load * 100).toFixed(0)}%, ${C.coral})` : C.coral;
+  const heldN = Math.min(22, Math.round((build + extra.current) * 18 * (1 - draining * 0.78)));
   const held = Array.from({ length: heldN }, (_, i) => {
     const lane = ((i * 67) % 100) / 100;
     const drift = (((ph * 0.045 + ((i * 37) % 100) / 100) % 1) + 1) % 1;
@@ -294,6 +362,23 @@ export function Why() {
       y: TOP + 24 + drift * (BOT - TOP - 48),
     };
   });
+
+  /*
+    Remember what the reader did, for the closing section. Peak is taken before
+    the turn so the second press cannot lower it; the final count is whatever
+    is left once the drain has resolved. The store ignores identical values, so
+    writing on every change is cheap.
+  */
+  const peak = useRef(0);
+  if (drain < 0.01 && heldN > peak.current) peak.current = heldN;
+  useEffect(() => {
+    recordStory({
+      standardGiven: extra.current > 0.05 ? true : undefined,
+      matchedGiven: cleared.current > 0.05 ? true : undefined,
+      peakHeld: peak.current,
+      finalHeld: draining > 0.95 ? heldN : undefined,
+    });
+  }, [heldN, draining]);
 
   const COPY = [
     { on: lineA, text: <>Look closer.</> },
@@ -359,20 +444,97 @@ export function Why() {
           believe it was anyone's bloodstream.
         */}
         <div
-          className="absolute inset-x-0 flex items-end justify-center gap-[2vw] md:gap-[4vw]"
+          /*
+            MIRRORED: the vessel on the left, the man on the right.
+
+            Two faults had one cause. The cannula was on his RIGHT arm here
+            and on his LEFT in the scene before — his stand was on his left,
+            so the drip had to reach that arm — and the pair sat with all its
+            weight on the left of the frame, the result card beside it, and
+            nothing at all in the right third. Flipping the row puts the
+            cannula back on the arm the reader just watched it go into, brings
+            the tube in from the side his stand was on, sends the guides a
+            short way left to the vessel instead of across his body, and hands
+            the right third to the man and the card.
+          */
+          className="absolute inset-x-0 flex flex-row-reverse items-end justify-center gap-[2vw] md:gap-[4vw]"
           style={{
             bottom: "8vh",
             opacity: q(enter),
             transform: `translateY(${((1 - enter) * 30).toFixed(1)}px)`,
           }}
         >
-          <div className="relative block shrink-0" style={{ height: "var(--fig3)" }}>
+          <div
+            className="relative block shrink-0"
+            style={{
+              height: "var(--fig3)",
+              // The same settle-and-tilt scene two uses, on the whole block so
+              // the cannula and guides move with the wrist they are drawn on.
+              transform: `translateY(${(load * 7).toFixed(2)}px) rotate(${(load * 1.1).toFixed(2)}deg)`,
+              transformOrigin: "50% 100%",
+              transition: "transform 180ms ease-out",
+            }}
+          >
+            {/*
+              THE DRIP LINE, BEHIND HIM.
+
+              It used to be drawn over the figure, sweeping in from far off the
+              top-left corner and across his chest to the wrist — and beside it
+              a second, purple stroke ran down the forearm to suggest the vein
+              underneath. The client's reading was exact: two lines, one of them
+              going nowhere. The purple one is gone; a stroke laid over a raster
+              figure does not read as anatomy, it reads as a stroke.
+
+              The tube now hangs from above, just left of him, and passes BEHIND
+              the body — this svg sits before the <img> in the DOM — so it is
+              visible where it descends, disappears behind the torso, and the
+              cannula on the wrist (drawn in front) is where it arrives. That is
+              how an IV line looks on a person: it does not cross their chest in
+              front of them.
+
+              DOM ORDER IS NOT ENOUGH. This svg is absolutely positioned and the
+              <img> is static, and a positioned box paints above every static
+              sibling whatever the source order says — so on the first pass the
+              tube was still drawn across his shirt. The three layers carry
+              explicit z-indexes: tube 0, figure 1, cannula and guides 2.
+            */}
+            <svg
+              viewBox="0 0 415 1415"
+              className="pointer-events-none absolute inset-0 z-0 h-full w-full overflow-visible"
+              aria-hidden="true"
+            >
+              <path
+                d="M-70 -160 C -70 300, 10 480, 41 638"
+                fill="none"
+                stroke={`${C.ink}66`}
+                strokeWidth="9"
+                strokeLinecap="round"
+              />
+            </svg>
             <img
               src={asset("patient-b.webp")}
               alt=""
               draggable={false}
-              className="h-full w-auto select-none"
+              className="relative z-[1] h-full w-auto select-none"
             />
+            {carried > 0.004 && (
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-0 z-[1]"
+                style={{
+                  maskImage: `url(${asset("patient-b.webp")})`,
+                  WebkitMaskImage: `url(${asset("patient-b.webp")})`,
+                  maskSize: "100% 100%",
+                  WebkitMaskSize: "100% 100%",
+                  maskRepeat: "no-repeat",
+                  WebkitMaskRepeat: "no-repeat",
+                  background: `linear-gradient(to top, ${bodyTint} 0%, ${bodyTint} ${(carried * 100).toFixed(1)}%, transparent ${Math.min(100, carried * 100 + 18).toFixed(1)}%)`,
+                  opacity: q(0.3 + load * 0.24),
+                  mixBlendMode: "multiply",
+                  transition: "opacity 180ms ease-out",
+                }}
+              />
+            )}
             {/*
               THE ENTRY POINT — AND THERE IS NO LENS.
 
@@ -392,6 +554,10 @@ export function Why() {
               grammar as any anatomical inset — the "this, enlarged" is carried
               by the guides rather than by a ring drawn over a hip.
 
+              THE LEFT ARM NOW — the one the drip went into in the scene before.
+              From the plate's alpha channel, in viewBox units, it spans x 12→70
+              at 42–46% down; the cannula sits at x 18→64, y 628→648.
+
               Anatomy of this plate, from its alpha channel, in viewBox units:
                 38% down   torso and near arm merged   97–398
                 42% down   arm separates               341–399
@@ -401,26 +567,11 @@ export function Why() {
             */}
             <svg
               viewBox="0 0 415 1415"
-              className="pointer-events-none absolute inset-0 h-full w-full overflow-visible"
+              className="pointer-events-none absolute inset-0 z-[2] h-full w-full overflow-visible"
               aria-hidden="true"
             >
-              <path
-                d="M-150 30 C -150 260, 300 380, 366 626"
-                fill="none"
-                stroke={`${C.ink}66`}
-                strokeWidth="9"
-                strokeLinecap="round"
-              />
-              <path
-                d="M356 430 C 388 520, 390 660, 366 790"
-                fill="none"
-                stroke={C.lavenderDeep}
-                strokeWidth="13"
-                strokeLinecap="round"
-                opacity="0.5"
-              />
               <rect
-                x="350"
+                x="18"
                 y="628"
                 width="46"
                 height="20"
@@ -437,7 +588,7 @@ export function Why() {
                 they are a camera move, not an object in the scene.
               */}
               <path
-                d="M398 632 L 900 300"
+                d="M18 632 L -484 300"
                 fill="none"
                 stroke={C.ink}
                 strokeWidth="7"
@@ -446,7 +597,7 @@ export function Why() {
                 opacity="0.34"
               />
               <path
-                d="M398 646 L 900 1120"
+                d="M18 646 L -484 1120"
                 fill="none"
                 stroke={C.ink}
                 strokeWidth="7"
@@ -459,7 +610,7 @@ export function Why() {
 
           <div className="relative w-fit shrink-0" style={{ height: "var(--vessel)" }}>
             <svg viewBox={`0 0 ${W} ${H}`} className="h-full w-auto select-none" aria-hidden="true">
-              <VesselShell id="wy" lit={hot} flow={flow} phase={ph} />
+              <VesselShell id="wy" lit={hot || hot2} flow={flow} phase={ph} />
 
               {/*
                 THE ENZYME — FIVE PLACES, TWO FILLED. AND IT NEVER CHANGES.
@@ -692,7 +843,7 @@ export function Why() {
             248px clears the headline's deepest wrap. On md and up the card
             moves out of the centre column entirely, so this does not apply.
           */
-          className="pointer-events-none absolute inset-x-0 top-[max(248px,33vh)] z-20 flex justify-center px-6 md:inset-x-auto md:left-[3vw] md:top-[184px] md:block md:px-0 lg:left-[6vw]"
+          className="pointer-events-none absolute inset-x-0 top-[max(248px,33vh)] z-20 flex justify-center px-6 md:inset-x-auto md:right-[3vw] md:top-[184px] md:block md:px-0 lg:right-[6vw]"
           style={{ opacity: q(easeOut(result)) }}
         >
           <div
@@ -772,7 +923,11 @@ export function Why() {
           className="absolute inset-x-0 bottom-[3vh] z-20 flex justify-center px-6"
           // the hold belongs to act one; once the test arrives it is not the
           // reader's dose to give any more
-          style={{ opacity: q(easeOut(flow)) * (1 - q(range(p, 0.64, 0.7))) }}
+          style={{
+            opacity: q(easeOut(flow)) * (1 - q(range(p, 0.64, 0.7))),
+            // A control at opacity 0 still takes the pointer. Off means off.
+            pointerEvents: q(easeOut(flow)) * (1 - q(range(p, 0.64, 0.7))) > 0.3 ? "auto" : "none",
+          }}
         >
           <span className="relative inline-flex">
             <button
@@ -792,6 +947,21 @@ export function Why() {
               onPointerUp={() => setHot(false)}
               onPointerCancel={() => setHot(false)}
               onPointerLeave={() => setHot(false)}
+              /*
+                Keyboard: hold Space or Enter. Without this the control could
+                be focused and not operated, which is worse than not being
+                focusable at all.
+              */
+              onKeyDown={(e) => {
+                if ((e.key === " " || e.key === "Enter") && !e.repeat) {
+                  e.preventDefault();
+                  setHot(true);
+                }
+              }}
+              onKeyUp={(e) => {
+                if (e.key === " " || e.key === "Enter") setHot(false);
+              }}
+              onBlur={() => setHot(false)}
             >
               {/*
                 A hairline along the base, not a wash across the face. Filling
@@ -810,6 +980,72 @@ export function Why() {
                 }}
               />
               <span className="relative">{hot ? "Dosing…" : "Hold — give the standard dose"}</span>
+            </button>
+          </span>
+        </div>
+
+        {/*
+          THE SECOND CONTROL, and the reason the first one exists.
+
+          The first press was made with nothing to go on — the man looked fine,
+          the reader gave the standard dose, and it accumulated. That press was
+          the mistake, and it was not the reader's fault; it is exactly the
+          position a clinician is in without a test. Now the result is on
+          screen, and the same gesture is offered again. Holding it clears the
+          vessel under the reader's thumb.
+
+          It arrives with the result card — the card is full at 0.78 and this
+          is legible by 0.79 — and it leaves with the scene. It never shares the
+          frame with the first control: that one is gone by 0.70.
+        */}
+        <div
+          className="absolute inset-x-0 bottom-[3vh] z-20 flex justify-center px-6"
+          style={{
+            opacity: q(easeOut(range(p, 0.73, 0.79))),
+            pointerEvents: q(easeOut(range(p, 0.73, 0.79))) > 0.3 ? "auto" : "none",
+          }}
+        >
+          <span className="relative inline-flex">
+            <button
+              type="button"
+              className="relative select-none overflow-hidden rounded-full px-5 py-2.5 text-[12px] font-bold tracking-[0.06em] transition-transform active:translate-y-px md:text-[13px]"
+              style={{
+                background: C.paper,
+                color: C.ink,
+                border: `2.5px solid ${C.ink}`,
+                boxShadow: hot2 ? `1px 1px 0 ${C.ink}` : `3px 3px 0 ${C.ink}`,
+                touchAction: "none",
+              }}
+              onPointerDown={(e) => {
+                e.currentTarget.setPointerCapture(e.pointerId);
+                setHot2(true);
+              }}
+              onPointerUp={() => setHot2(false)}
+              onPointerCancel={() => setHot2(false)}
+              onPointerLeave={() => setHot2(false)}
+              onKeyDown={(e) => {
+                if ((e.key === " " || e.key === "Enter") && !e.repeat) {
+                  e.preventDefault();
+                  setHot2(true);
+                }
+              }}
+              onKeyUp={(e) => {
+                if (e.key === " " || e.key === "Enter") setHot2(false);
+              }}
+              onBlur={() => setHot2(false)}
+            >
+              {/* Green, not red: this is the press that clears. */}
+              <span
+                aria-hidden="true"
+                className="absolute inset-x-0 bottom-0 h-[3px]"
+                style={{
+                  transform: `scaleX(${Math.min(1, cleared.current).toFixed(3)})`,
+                  transformOrigin: "left",
+                  background: C.green,
+                  transition: "transform 140ms linear",
+                }}
+              />
+              <span className="relative">{hot2 ? "Dosing…" : "Hold — give the matched dose"}</span>
             </button>
           </span>
         </div>

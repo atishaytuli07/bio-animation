@@ -22,7 +22,18 @@ const say = (ok, label, detail) => {
 /** Scroll to a page fraction and let the spring settle. */
 async function at(page, f, ms = 1500) {
   await page.evaluate((v) => {
-    const m = document.documentElement.scrollHeight - innerHeight;
+    /*
+      A fraction of the STORY, not of the document.
+
+      Every window in this file was calibrated when the page ended at the last
+      scene. It does not any more — a closing section follows it — so dividing
+      by `scrollHeight` would silently point each of these numbers at a
+      different moment than the one it was written for. The page marks where
+      the story ends; `usePageProgress` divides by the same marker, so the
+      harness and the page agree by construction rather than by coincidence.
+    */
+    const e = document.getElementById("story-end");
+    const m = (e ? e.offsetTop : document.documentElement.scrollHeight) - innerHeight;
     window.scrollTo(0, m * v);
   }, f);
   await page.waitForTimeout(ms);
@@ -58,17 +69,27 @@ await page.waitForTimeout(1800);
 console.log("\n── 1 · the transition into the body ──────────────────────");
 await at(page, 0.72);
 {
+  /*
+    ALL the figure's svgs, not the first one.
+
+    The drip line was moved into its own svg behind the <img> so the body
+    occludes it, which made two svgs share this viewBox. `find` returned the
+    tube layer — no rect, no dashed paths — and this reported the cannula and
+    both guides missing while they were plainly on screen. A selector that
+    assumes "one element matches" is a claim about the DOM, and the DOM changed.
+  */
   const r = await page.evaluate(`(() => {
-    const svg = [...document.querySelectorAll("#why svg")].find(s => s.getAttribute("viewBox") === "0 0 415 1415");
-    if (!svg) return { found:false };
-    const circles = [...svg.querySelectorAll("circle")];
-    const guides = [...svg.querySelectorAll("path")].filter(p => (p.getAttribute("stroke-dasharray")||"").length);
+    const svgs = [...document.querySelectorAll("#why svg")].filter(s => s.getAttribute("viewBox") === "0 0 415 1415");
+    if (!svgs.length) return { found:false };
+    const all = sel => svgs.flatMap(s => [...s.querySelectorAll(sel)]);
+    const guides = all("path").filter(p => (p.getAttribute("stroke-dasharray")||"").length);
     return {
       found: true,
-      dashedCircles: circles.filter(c => (c.getAttribute("stroke-dasharray")||"").length).length,
+      dashedCircles: all("circle").filter(c => (c.getAttribute("stroke-dasharray")||"").length).length,
       guideCount: guides.length,
       guideStarts: guides.map(g => (g.getAttribute("d")||"").slice(0, 10)),
-      cannula: !!svg.querySelector("rect"),
+      cannula: all("rect").length > 0,
+      layers: svgs.length,
     };
   })()`);
   say(

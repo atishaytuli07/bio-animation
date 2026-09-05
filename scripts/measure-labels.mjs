@@ -72,7 +72,18 @@ let checked = 0;
 for (let i = 0; i <= STEPS; i++) {
   const pp = FROM + ((TO - FROM) * i) / STEPS;
   await page.evaluate((v) => {
-    const max = document.documentElement.scrollHeight - window.innerHeight;
+    /*
+      A fraction of the STORY, not of the document.
+
+      Every window in this file was calibrated when the page ended at the last
+      scene. It does not any more — a closing section follows it — so dividing
+      by `scrollHeight` would silently point each of these numbers at a
+      different moment than the one it was written for. The page marks where
+      the story ends; `usePageProgress` divides by the same marker, so the
+      harness and the page agree by construction rather than by coincidence.
+    */
+    const e = document.getElementById("story-end");
+    const max = (e ? e.offsetTop : document.documentElement.scrollHeight) - window.innerHeight;
     window.scrollTo({ top: max * v, behavior: "instant" });
   }, pp);
   await page.waitForTimeout(SETTLE);

@@ -13,7 +13,10 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AttributionsRouteImport } from './routes/attributions'
 import { Route as DescriptionRouteImport } from './routes/description'
 import { Route as EngineeringRouteImport } from './routes/engineering'
+import { Route as HumanPracticesRouteImport } from './routes/human-practices'
 import { Route as NewRouteImport } from './routes/new'
+import { Route as SafetyRouteImport } from './routes/safety'
+import { Route as TeamRouteImport } from './routes/team'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -35,9 +38,24 @@ const EngineeringRoute = EngineeringRouteImport.update({
   path: '/engineering',
   getParentRoute: () => rootRouteImport,
 } as any)
+const HumanPracticesRoute = HumanPracticesRouteImport.update({
+  id: '/human-practices',
+  path: '/human-practices',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const NewRoute = NewRouteImport.update({
   id: '/new',
   path: '/new',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SafetyRoute = SafetyRouteImport.update({
+  id: '/safety',
+  path: '/safety',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TeamRoute = TeamRouteImport.update({
+  id: '/team',
+  path: '/team',
   getParentRoute: () => rootRouteImport,
 } as any)
 
@@ -46,14 +64,20 @@ export interface FileRoutesByFullPath {
   '/attributions': typeof AttributionsRoute
   '/description': typeof DescriptionRoute
   '/engineering': typeof EngineeringRoute
+  '/human-practices': typeof HumanPracticesRoute
   '/new': typeof NewRoute
+  '/safety': typeof SafetyRoute
+  '/team': typeof TeamRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/attributions': typeof AttributionsRoute
   '/description': typeof DescriptionRoute
   '/engineering': typeof EngineeringRoute
+  '/human-practices': typeof HumanPracticesRoute
   '/new': typeof NewRoute
+  '/safety': typeof SafetyRoute
+  '/team': typeof TeamRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -61,20 +85,42 @@ export interface FileRoutesById {
   '/attributions': typeof AttributionsRoute
   '/description': typeof DescriptionRoute
   '/engineering': typeof EngineeringRoute
+  '/human-practices': typeof HumanPracticesRoute
   '/new': typeof NewRoute
+  '/safety': typeof SafetyRoute
+  '/team': typeof TeamRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/attributions' | '/description' | '/engineering' | '/new'
+  fullPaths:
+    | '/'
+    | '/attributions'
+    | '/description'
+    | '/engineering'
+    | '/human-practices'
+    | '/new'
+    | '/safety'
+    | '/team'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/attributions' | '/description' | '/engineering' | '/new'
+  to:
+    | '/'
+    | '/attributions'
+    | '/description'
+    | '/engineering'
+    | '/human-practices'
+    | '/new'
+    | '/safety'
+    | '/team'
   id:
     | '__root__'
     | '/'
     | '/attributions'
     | '/description'
     | '/engineering'
+    | '/human-practices'
     | '/new'
+    | '/safety'
+    | '/team'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -82,7 +128,10 @@ export interface RootRouteChildren {
   AttributionsRoute: typeof AttributionsRoute
   DescriptionRoute: typeof DescriptionRoute
   EngineeringRoute: typeof EngineeringRoute
+  HumanPracticesRoute: typeof HumanPracticesRoute
   NewRoute: typeof NewRoute
+  SafetyRoute: typeof SafetyRoute
+  TeamRoute: typeof TeamRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -115,11 +164,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EngineeringRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/human-practices': {
+      id: '/human-practices'
+      path: '/human-practices'
+      fullPath: '/human-practices'
+      preLoaderRoute: typeof HumanPracticesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/new': {
       id: '/new'
       path: '/new'
       fullPath: '/new'
       preLoaderRoute: typeof NewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/safety': {
+      id: '/safety'
+      path: '/safety'
+      fullPath: '/safety'
+      preLoaderRoute: typeof SafetyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/team': {
+      id: '/team'
+      path: '/team'
+      fullPath: '/team'
+      preLoaderRoute: typeof TeamRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -130,7 +200,10 @@ const rootRouteChildren: RootRouteChildren = {
   AttributionsRoute: AttributionsRoute,
   DescriptionRoute: DescriptionRoute,
   EngineeringRoute: EngineeringRoute,
+  HumanPracticesRoute: HumanPracticesRoute,
   NewRoute: NewRoute,
+  SafetyRoute: SafetyRoute,
+  TeamRoute: TeamRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

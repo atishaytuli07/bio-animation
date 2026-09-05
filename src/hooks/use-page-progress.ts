@@ -18,6 +18,24 @@ import { clamp01 } from "./use-scroll-progress";
  * leaves here: a background repaint every 1/500th of the page is invisible, and
  * repainting a full-viewport gradient on every pixel of scroll is not free.
  */
+/**
+ * Where the STORY ends, if the page says so.
+ *
+ * This used to divide by the whole document, which quietly made every measured
+ * constant on the page a function of how much furniture followed the story.
+ * Sixteen ground keyframes, five chapter thresholds, two section handoffs, the
+ * header's switch and the world's density schedule are all expressed as page
+ * fractions — so appending a closing section to the end of the page would have
+ * moved all of them at once, by roughly the share of the page it occupied.
+ * That is not a tuning problem, it is a coupling problem: the story's timeline
+ * should not depend on what comes after the story.
+ *
+ * So the page can plant a marker at the end of the last scene and everything
+ * past it is furniture. Absent the marker this behaves exactly as before, which
+ * is what any other consumer of this hook still gets.
+ */
+const STORY_END = "story-end";
+
 export function usePageProgress(steps = 240) {
   const [p, setP] = useState(0);
 
@@ -25,7 +43,14 @@ export function usePageProgress(steps = 240) {
     let last = -1;
     return subscribe(() => {
       const doc = document.documentElement;
-      const span = doc.scrollHeight - window.innerHeight;
+      const end = document.getElementById(STORY_END);
+      /*
+        `offsetTop` is read every frame rather than cached because the ticker
+        already costs one layout read here and the marker moves with anything
+        above it — a font loading late, an image settling, a viewport resize.
+        A cached value would be wrong for exactly as long as it mattered.
+      */
+      const span = (end ? end.offsetTop : doc.scrollHeight) - window.innerHeight;
       const raw = span > 0 ? clamp01(window.scrollY / span) : 0;
       const next = Math.round(raw * steps) / steps;
       if (next !== last) {
