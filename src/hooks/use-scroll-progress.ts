@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type RefObject } from "react";
 
 import { subscribe } from "@/lib/ticker";
 
-export const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
+const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 export const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
 /** Maps p from [start,end] onto 0→1. */
 export const range = (p: number, start: number, end: number) =>
@@ -121,34 +121,4 @@ export function useTime(active = true) {
     return subscribe((_dt, now) => setT((now - start) / 1000));
   }, [active]);
   return t;
-}
-/**
- * `seen` latches true the first time the element enters the viewport (for
- * one-shot reveals); `visible` tracks whether it is on screen right now, which
- * is what ambient animation should be gated on — `seen` would keep it running
- * forever once scrolled past.
- */
-export function useInView<T extends HTMLElement>(
-  threshold = 0.35,
-): [RefObject<T | null>, boolean, boolean] {
-  const ref = useRef<T | null>(null);
-  const [seen, setSeen] = useState(false);
-  const [visible, setVisible] = useState(false);
-
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const io = new IntersectionObserver(
-      ([entry]) => {
-        const on = Boolean(entry?.isIntersecting);
-        setVisible(on);
-        if (on) setSeen(true);
-      },
-      { threshold },
-    );
-    io.observe(el);
-    return () => io.disconnect();
-  }, [threshold]);
-
-  return [ref, seen, visible];
 }

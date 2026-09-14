@@ -10,7 +10,7 @@
  *
  *   TanStack Start's own prerenderer boots a preview server before crawling,
  *   and that preview server imports `dist/server/server.js`. This project
- *   builds through Lovable's nitro pipeline, which writes `.output/server/`
+ *   builds through nitro, which writes `.output/server/`
  *   instead and never produces that path. The preview server therefore fails
  *   to start, every prerender fetch comes back 500, and the build dies on
  *   "Failed to fetch /new: Internal Server Error". It is also exactly why
@@ -19,7 +19,7 @@
  * So this script sidesteps the preview server entirely. It builds with nitro's
  * node-server preset, runs that real server, crawls it over HTTP, and writes
  * what comes back to disk. Nothing depends on the prerenderer, so a future
- * change to the Lovable pipeline cannot silently break the export again.
+ * change to the build pipeline cannot silently break the export again.
  *
  * Usage:
  *   bun run build:static                 → dist-static/

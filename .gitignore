@@ -35,5 +35,3 @@ dist-ssr
 assets-src/
 dist-static/
 
-# Frame dumps written by scripts/measure-descent.mjs
-end-*.png

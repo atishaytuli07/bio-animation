@@ -1,13 +1,12 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   Outlet,
   Link,
-  createRootRouteWithContext,
+  createRootRoute,
   useRouter,
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
-import { useEffect, type ReactNode } from "react";
+import type { ReactNode } from "react";
 
 /*
   Self-hosted typefaces, replacing a Google Fonts <link>. All three are OFL, so
@@ -24,10 +23,10 @@ import { useEffect, type ReactNode } from "react";
 import "@fontsource-variable/instrument-sans/wght.css";
 
 import { C, T } from "@/components/hero/palette";
+import { SiteFooter } from "@/components/story/PageShell";
 import { SiteHeader } from "@/components/story/SiteHeader";
 
 import appCss from "../styles.css?url";
-import { reportLovableError } from "../lib/lovable-error-reporting";
 
 /*
   A missing page still gets the site's navigation, so a mistyped link leaves
@@ -64,6 +63,7 @@ function NotFoundComponent() {
           </div>
         </div>
       </div>
+      <SiteFooter />
     </div>
   );
 }
@@ -71,34 +71,52 @@ function NotFoundComponent() {
 function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   console.error(error);
   const router = useRouter();
-  useEffect(() => {
-    reportLovableError(error, { boundary: "tanstack_root_error_component" });
-  }, [error]);
 
+  /*
+    In the site's own palette. It was the starter template's grey page, and it
+    was the last thing on the wiki using the template's colour theme — which is
+    why that theme could be deleted from styles.css.
+  */
+  const button = {
+    border: `2.5px solid ${C.ink}`,
+    borderRadius: 6,
+    boxShadow: `4px 4px 0 ${C.ink}`,
+  };
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
+    <div
+      className="flex min-h-screen items-center justify-center px-6"
+      style={{ background: C.paper, color: C.ink }}
+    >
       <div className="max-w-md text-center">
-        <h1 className="text-xl font-semibold tracking-tight text-foreground">
-          This page didn't load
+        <h1 className="font-black" style={{ ...T.headline }}>
+          This page didn&rsquo;t load
         </h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Something went wrong on our end. You can try refreshing or head back home.
+        <p className="mt-4 text-[15px] leading-relaxed" style={{ color: C.inkBody }}>
+          Something went wrong on our side. Try again, or go back to the story.
         </p>
-        <div className="mt-6 flex flex-wrap justify-center gap-2">
+        <div className="mt-8 flex flex-wrap justify-center gap-3">
           <button
             onClick={() => {
               router.invalidate();
               reset();
             }}
-            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+            className="px-6 py-3 text-[15px] font-bold"
+            style={{ ...button, background: C.redDeep, color: "#fff" }}
           >
             Try again
           </button>
+          {/*
+            The wiki's own root, not the domain's. On 2026.igem.wiki a bare "/"
+            leaves the team's wiki for iGEM's index of every team. A plain
+            anchor rather than a router Link, because this renders when the
+            app itself has failed.
+          */}
           <a
-            href="/"
-            className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
+            href={`${import.meta.env.BASE_URL}new/`}
+            className="px-6 py-3 text-[15px] font-bold"
+            style={{ ...button, background: C.paper, color: C.ink }}
           >
-            Go home
+            Back to the story
           </a>
         </div>
       </div>
@@ -106,7 +124,7 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   );
 }
 
-export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
+export const Route = createRootRoute({
   head: () => ({
     meta: [
       { charSet: "utf-8" },
@@ -169,12 +187,6 @@ function RootShell({ children }: { children: ReactNode }) {
 }
 
 function RootComponent() {
-  const { queryClient } = Route.useRouteContext();
-
-  return (
-    <QueryClientProvider client={queryClient}>
-      {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <Outlet />
-    </QueryClientProvider>
-  );
+  // Required: nested routes render here. Removing <Outlet /> breaks all child routes.
+  return <Outlet />;
 }

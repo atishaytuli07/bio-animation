@@ -59,7 +59,22 @@ for (const width of [1900, 1440, 768, 390]) {
       bandTeam: box(find(band, "NIS Kazakhstan · iGEM 2026")),
       footTeam: box(find(foot, "NIS Kazakhstan · iGEM 2026")),
       footGuard: box(find(foot, "Guard")),
-      attrib: box(find(foot, "Content on this wiki is the team’s own unless attributed.")),
+      /*
+        The two lines iGEM requires in every footer — the licence and the
+        repository. Matched by how they START: each carries a link, so its
+        text is split across nodes and an exact match on the whole would miss
+        it, which is how this check crashed when the old one-line notice went.
+      */
+      license: box(
+        [...foot.querySelectorAll("p")].find((e) =>
+          e.textContent.trim().startsWith("Team-authored content on this wiki is licensed under"),
+        ),
+      ),
+      repo: box(
+        [...foot.querySelectorAll("p")].find((e) =>
+          e.textContent.trim().startsWith("The source for this wiki is at"),
+        ),
+      ),
       rules: [...foot.querySelectorAll("*")].filter((e) => {
         const s = getComputedStyle(e);
         return parseFloat(s.borderTopWidth) > 0 || parseFloat(s.borderBottomWidth) > 0;
@@ -148,11 +163,17 @@ for (const width of [1900, 1440, 768, 390]) {
     "footer team line clears 4.5:1",
     `${read(geo.footTeam, false).ratio.toFixed(2)}:1`,
   );
-  say(
-    read(geo.attrib, false).ratio >= 4.5,
-    "footer attribution clears 4.5:1",
-    `${read(geo.attrib, false).ratio.toFixed(2)}:1`,
-  );
+  for (const [key, label] of [
+    ["license", "footer licence line"],
+    ["repo", "footer repository line"],
+  ]) {
+    if (!geo[key]) {
+      say(false, `${label} is present`, "not found in the footer");
+      continue;
+    }
+    const r = read(geo[key], false).ratio;
+    say(r >= 4.5, `${label} clears 4.5:1 (AA, small text)`, `${r.toFixed(2)}:1`);
+  }
 
   /*
     The footer's "Guard" is the brand red, not the pale on-field tint, and it

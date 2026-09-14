@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 
 import { C, L, T } from "@/components/hero/palette";
+import { SiteFooter } from "@/components/story/PageShell";
 import { SiteHeader } from "@/components/story/SiteHeader";
 
 /**
@@ -55,13 +56,24 @@ const AI_USE: Entry[] = [
   },
   {
     what: "Wiki code and interaction design",
-    who: "Written by the team with Claude, an AI assistant",
-    note: "The scroll engine, the SVG illustrations drawn in code, the animation timing and the layout were produced in an assisted workflow: the team set the direction, reviewed every change and is responsible for what ships. No scientific claim on this wiki was authored by the model.",
+    who: "Written with Claude (Anthropic), an AI coding assistant, directed and reviewed by the team",
+    note: "The scroll engine, the SVG illustrations drawn in code, the animation timing, the layout and the build pipeline were produced in an assisted workflow: the team set the direction, reviewed the changes and is responsible for what ships.",
   },
+  /*
+    STATED AS IT HAPPENED. This entry used to say that no scientific claim on
+    the wiki was authored by the model, and that every statement was checked
+    against the cited literature before publication. Neither was true: the
+    explanatory science wording was drafted in the assisted workflow and then
+    corrected in the team's scientific review, and five sources are still
+    marked "Source needed". iGEM 2026 treats AI disclosure as a rule, and a
+    declaration that overstates the team's checking is worse than an
+    incomplete one. Keep this entry true as the wording is replaced and the
+    sources arrive — update it, do not delete it.
+  */
   {
-    what: "Copywriting",
-    who: "Drafted with AI assistance, edited by the team",
-    note: "Headlines and captions were drafted in the same workflow and rewritten by the team. Every statement about DPYD, DPD or fluoropyrimidine toxicity is checked against the cited literature by a team member before publication.",
+    what: "Copywriting and explanatory science text",
+    who: "Drafted with AI assistance; scientific wording corrected in the team's scientific review",
+    note: "Headlines, captions and the plain-language explanations of DPYD, DPD and fluoropyrimidine toxicity on the Description page and in the story were drafted in the same workflow. The scientific wording was then reviewed and corrected by the team's scientific reviewer. Claims that still show a \u201cSource needed\u201d marker on the Description page have not yet been verified against the literature.",
   },
 ];
 
@@ -79,6 +91,7 @@ const THIRD_PARTY: Entry[] = [
 
 /** Blocks only the team can fill. Rendered visibly so they cannot be missed. */
 const TODO = [
+  "AI use (iGEM 2026 requirement): for each use above, the model name and version, what it was used for, and the team member who reviewed the output and signed off.",
   "Wet-lab work: who performed which experiments, and under whose supervision.",
   "Dry-lab and modelling: who built the model, and on whose prior work it builds.",
   "Principal investigators, advisors and instructors, named individually.",
@@ -188,6 +201,8 @@ function Attributions() {
           </section>
         </div>
       </main>
+      {/* the footer carries the licence and repository link iGEM requires on every page */}
+      <SiteFooter />
     </div>
   );
 }

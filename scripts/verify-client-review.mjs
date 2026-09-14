@@ -384,12 +384,19 @@ console.log("\n── 10 · every page has it, including the ones outside the sh
         if (!h) return { count: 0 };
         const cs = getComputedStyle(h);
         const r = h.getBoundingClientRect();
+        /*
+          And the footer iGEM requires on every page: the CC BY 4.0 licence
+          link and the team's GitLab repository link.
+        */
+        const foot = document.querySelector("footer");
         return {
           count: hs.length,
           top: Math.round(r.top),
           w: Math.round(r.width),
           bg: cs.backgroundColor,
           links: h.querySelectorAll("nav a").length,
+          license: !!foot?.querySelector('a[href="https://creativecommons.org/licenses/by/4.0/"]'),
+          repo: !!foot?.querySelector('a[href^="https://gitlab.igem.org/2026/"]'),
         };
       })),
     });
@@ -397,9 +404,17 @@ console.log("\n── 10 · every page has it, including the ones outside the sh
   }
   for (const r of rows) {
     say(
-      r.count === 1 && r.top === 0 && r.bg === paper && r.w === 1280 && r.links >= 5,
-      `${r.route} — one cream header, on screen halfway down, with the nav`,
-      r.count ? `${r.count}× top ${r.top} ${r.bg} ${r.w}px, ${r.links} links` : "NO HEADER",
+      r.count === 1 &&
+        r.top === 0 &&
+        r.bg === paper &&
+        r.w === 1280 &&
+        r.links >= 5 &&
+        r.license &&
+        r.repo,
+      `${r.route} — one cream header with the nav, and a footer with the licence and repository`,
+      r.count
+        ? `${r.count}× top ${r.top} ${r.bg} ${r.w}px, ${r.links} links · licence ${r.license ? "yes" : "NO"} · repo ${r.repo ? "yes" : "NO"}`
+        : "NO HEADER",
     );
   }
 }

@@ -1,58 +1,56 @@
-# bio-animation — DPYD Diagnostics
+# ChemoGuard — NIS-Kazakhstan, iGEM 2026
 
-An interactive scroll-driven story about DPYD gene variants, DPD deficiency and
-fluoropyrimidine (5-FU) chemotherapy toxicity — and the pre-treatment test that
-prevents it. Built for **iGEM 2026 — Diagnostics**.
+The team wiki for **ChemoGuard**, the iGEM 2026 project of NIS-Kazakhstan. It is
+about DPYD gene variants, reduced DPD activity and fluoropyrimidine (5-FU)
+chemotherapy toxicity — and why testing before the first dose matters.
 
-The site is one continuous scroll film in seven chapters (The Problem → Why It
-Happens → The Discovery → The Solution → The Results → The Future → The Work),
-opening on a WebGL DNA helix and closing on a skimmable reference layer for
-judges.
+Served at **https://2026.igem.wiki/nis-kazakhstan/** and built from
+**https://gitlab.igem.org/2026/nis-kazakhstan**.
+
+Team-authored content is licensed under
+[Creative Commons Attribution 4.0](https://creativecommons.org/licenses/by/4.0/).
+Where generative AI was used is declared on the wiki's Attributions page.
+
+## What is in it
+
+- **`/new`** — the story: a scroll-driven explanation in nine beats, from the
+  gene to a dose adjusted before treatment.
+- **Documentation pages** — Description, Engineering, Human Practices, Safety,
+  Team, Contribution and Attributions. Anything only the team can write is shown
+  on the page as a visible "Needs the team" block rather than invented.
 
 ## Running it
 
 ```sh
-npm install       # or: bun install
-npm run dev       # http://localhost:5178 (or the port Vite reports)
-npm run build
-npm run lint
+bun install
+bun run dev          # http://localhost:8080
+bun run verify       # lint, types and build — must pass before a commit
+bun run check        # browser checks; needs the dev server running
 ```
-
-> **Do not use `npx vite preview`.** It is broken in this template — it imports
-> `dist/server/server.js`, which this Lovable/nitro pipeline never writes (it
-> outputs to `.output/`). Use `npm run dev`.
 
 ## Deploying
 
-The app is server-rendered (TanStack Start on nitro), so it needs a host that
-runs a server — **Vercel** (nitro auto-detects it in CI) or Lovable. There is no
-static-HTML export: both TanStack Start's and nitro's prerenderers fail against
-this pipeline. If static hosting (e.g. `static.igem.wiki`) becomes a hard
-requirement, see `MERGE-NOTES.md` for the approach to resurrect.
+iGEM serves static files. The app renders on a server, so it is exported rather
+than built with a plain `vite build`: `scripts/build-static.mjs` builds it, runs
+it locally, crawls every page in the site map and writes static HTML under the
+team's base path.
 
-## Before this goes in front of judges
-
-Three things are deliberately **not real yet**, and none of them are code
-problems:
-
-1. **The statistics are placeholders** — Act Two's prevalence/toxicity figures
-   and the Results tiles. The footer discloses this.
-2. **"The Work" panels are empty labelled slots** — protocols, notebook, team,
-   attributions. Left empty on purpose so nobody ships invented content.
-3. **The DNA flanking sequence in the hero is illustrative**, not the verified
-   reference flank around `chr1:97,450,058`. Marked in code.
+- **`.gitlab-ci.yml`** runs `scripts/ci-build.sh` on every push to `main` and
+  publishes `public/`.
+- **`bash scripts/test-ci.sh`** rehearses that job locally in the same `node:22`
+  image and verifies what it publishes (needs Docker).
+- **`node scripts/verify-static.mjs --base=nis-kazakhstan`** checks an export the
+  way iGEM serves it: every page, every link and request inside the base path.
 
 ## Where things live
 
 | Path | What |
 |---|---|
-| `src/routes/index.tsx` | chapter order — the spine of the story |
-| `src/components/story/` | every chapter, plus the shared SVG primitives |
-| `src/three/` | the WebGL helix (lazy-loaded, capability-gated) |
-| `src/hooks/use-scroll-progress.ts` | the scroll spring every chapter subscribes to |
-| `src/lib/ticker.ts` | the single shared rAF loop |
-| `MERGE-NOTES.md` | **read this first** — architecture, perf rules, and the traps |
-
-`MERGE-NOTES.md` documents the decisions that are easy to undo by accident:
-one scroll engine (never call `requestAnimationFrame` in a component), the
-three-canvas colour grade, the loader gate, and the measured performance rules.
+| `src/routes/` | one file per page; `__root.tsx` is the document shell |
+| `src/components/story/` | the page shell, header, footer, figures and the story's shared pieces |
+| `src/components/story/site-map.ts` | every page, once — the nav, footer, export and checks all read it |
+| `src/components/hero/`, `story2/`, `story3/` | the story's scenes |
+| `src/components/hero/palette.ts` | colour and type — the site's design tokens |
+| `src/lib/wiki.ts` | the team's iGEM identity: year, slug, repository, licence |
+| `scripts/` | the static export, CI, and the verification checks |
+| `CONTEXT.md` | why things are the way they are — read before changing anything |

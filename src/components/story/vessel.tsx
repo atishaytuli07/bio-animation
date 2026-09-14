@@ -39,7 +39,7 @@ const WALL_R = "M328 0 C 348 130, 308 260, 328 390 C 342 460, 322 500, 328 520";
 export const ENZYME = ENZYME_PATH;
 
 /** Red cells drifting past, so the tube reads as a blood vessel. */
-export const RBC = Array.from({ length: 11 }, (_, i) => ({
+const RBC = Array.from({ length: 11 }, (_, i) => ({
   x: ((i * 0.37) % 1) * 0.9,
   phase: (i * 0.143) % 1,
   r: 19 + ((i * 5) % 4) * 4,

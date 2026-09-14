@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AttributionsRouteImport } from './routes/attributions'
+import { Route as ContributionRouteImport } from './routes/contribution'
 import { Route as DescriptionRouteImport } from './routes/description'
 import { Route as EngineeringRouteImport } from './routes/engineering'
 import { Route as HumanPracticesRouteImport } from './routes/human-practices'
@@ -26,6 +27,11 @@ const IndexRoute = IndexRouteImport.update({
 const AttributionsRoute = AttributionsRouteImport.update({
   id: '/attributions',
   path: '/attributions',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ContributionRoute = ContributionRouteImport.update({
+  id: '/contribution',
+  path: '/contribution',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DescriptionRoute = DescriptionRouteImport.update({
@@ -62,6 +68,7 @@ const TeamRoute = TeamRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/attributions': typeof AttributionsRoute
+  '/contribution': typeof ContributionRoute
   '/description': typeof DescriptionRoute
   '/engineering': typeof EngineeringRoute
   '/human-practices': typeof HumanPracticesRoute
@@ -72,6 +79,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/attributions': typeof AttributionsRoute
+  '/contribution': typeof ContributionRoute
   '/description': typeof DescriptionRoute
   '/engineering': typeof EngineeringRoute
   '/human-practices': typeof HumanPracticesRoute
@@ -83,6 +91,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/attributions': typeof AttributionsRoute
+  '/contribution': typeof ContributionRoute
   '/description': typeof DescriptionRoute
   '/engineering': typeof EngineeringRoute
   '/human-practices': typeof HumanPracticesRoute
@@ -95,6 +104,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/attributions'
+    | '/contribution'
     | '/description'
     | '/engineering'
     | '/human-practices'
@@ -105,6 +115,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/attributions'
+    | '/contribution'
     | '/description'
     | '/engineering'
     | '/human-practices'
@@ -115,6 +126,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/attributions'
+    | '/contribution'
     | '/description'
     | '/engineering'
     | '/human-practices'
@@ -126,6 +138,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AttributionsRoute: typeof AttributionsRoute
+  ContributionRoute: typeof ContributionRoute
   DescriptionRoute: typeof DescriptionRoute
   EngineeringRoute: typeof EngineeringRoute
   HumanPracticesRoute: typeof HumanPracticesRoute
@@ -148,6 +161,13 @@ declare module '@tanstack/react-router' {
       path: '/attributions'
       fullPath: '/attributions'
       preLoaderRoute: typeof AttributionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/contribution': {
+      id: '/contribution'
+      path: '/contribution'
+      fullPath: '/contribution'
+      preLoaderRoute: typeof ContributionRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/description': {
@@ -198,6 +218,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AttributionsRoute: AttributionsRoute,
+  ContributionRoute: ContributionRoute,
   DescriptionRoute: DescriptionRoute,
   EngineeringRoute: EngineeringRoute,
   HumanPracticesRoute: HumanPracticesRoute,
@@ -210,11 +231,10 @@ export const routeTree = rootRouteImport
   ._addFileTypes<FileRouteTypes>()
 
 import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
+import type { createStart } from '@tanstack/react-start'
 declare module '@tanstack/react-start' {
   interface Register {
     ssr: true
     router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
   }
 }

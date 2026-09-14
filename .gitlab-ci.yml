@@ -1,0 +1,22 @@
+# iGEM GitLab Pages — builds the wiki from source on every push to main.
+#
+# Same shape as iGEM's official template (gitlab.igem.org/templates/
+# wiki-react-vite): a single `pages` job on node:22 that publishes `public`,
+# running only on the default branch. The steps themselves live in
+# scripts/ci-build.sh so they can be rehearsed locally in the same image
+# (scripts/test-ci.sh) — see that file for why this app is exported rather
+# than built with a plain `vite build`.
+image: node:22
+
+pages:
+  stage: build
+  script:
+    - bash scripts/ci-build.sh
+  artifacts:
+    paths:
+      - public
+  rules:
+    - if: $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH
+      when: never # iGEM runners build only the default branch
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      when: always

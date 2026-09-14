@@ -6,6 +6,7 @@ import { asset, C, DISPLAY, L, T } from "@/components/hero/palette";
 import { PageHero, type Art, type Plate } from "@/components/story/PageHero";
 import { SiteHeader } from "@/components/story/SiteHeader";
 import { PAGES } from "@/components/story/site-map";
+import { WIKI } from "@/lib/wiki";
 
 /**
  * The frame every content page sits in.
@@ -499,9 +500,31 @@ export function SiteFooter() {
           is in the block above and this is the one thing that block does not
           say. Space separates it, which is what space is for.
         */}
-        <p className="mt-10 text-[13px]" style={{ opacity: 0.55 }}>
-          Content on this wiki is the team&rsquo;s own unless attributed.
-        </p>
+        {/*
+          THE LICENCE AND THE REPOSITORY, which iGEM requires in the footer of
+          every page: "The license link must appear in your wiki footer", and
+          "Your wiki footer must include a visible link to your team's GitLab
+          repository". The official template marks both MUST and asks that they
+          are never removed. Underlined, because a link that looks like the rest
+          of a grey line is a link a judge does not find.
+        */}
+        <div className="mt-10 space-y-1.5 text-[13px]" style={{ opacity: 0.72 }}>
+          <p>
+            Team-authored content on this wiki is licensed under{" "}
+            <a href={WIKI.license.url} rel="license" className="underline underline-offset-2">
+              {WIKI.license.name}
+            </a>
+            . Third-party material is credited where it appears.
+          </p>
+          <p>
+            The source for this wiki is at{" "}
+            {/* one unit: on a phone it broke at the hyphen, "nis-" / "kazakhstan" */}
+            <a href={WIKI.repo} className="whitespace-nowrap underline underline-offset-2">
+              {WIKI.repo.replace("https://", "")}
+            </a>
+            .
+          </p>
+        </div>
       </div>
 
       <FooterDrift />

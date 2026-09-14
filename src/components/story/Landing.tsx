@@ -31,8 +31,14 @@ import { useStoryState } from "@/lib/story-state";
  * the thesis the story just made and hands off. It does not describe an assay.
  */
 
-/** The pages worth offering at the end, in the order a reader should meet them. */
-const ONWARD = PAGES.filter((p) => p.to !== "/new");
+/**
+ * The pages worth offering at the end, in the order a reader should meet them.
+ *
+ * Not Attributions: it is a record, not a next step in the project, and it is
+ * one click away in the footer directly below. It also keeps the grid whole —
+ * with Contribution added, seven cards left one stranded on a row of its own.
+ */
+const ONWARD = PAGES.filter((p) => p.to !== "/new" && p.to !== "/attributions");
 
 export function Landing() {
   const [ref, seen] = useSeen<HTMLDivElement>();

@@ -74,6 +74,12 @@ export const PAGES: Page[] = [
     blurb: "The students at NIS Kazakhstan who built it, and who worked on what.",
   },
   {
+    label: "Contribution",
+    to: "/contribution",
+    ready: true,
+    blurb: "What this project leaves behind for future iGEM teams, and why it is useful to them.",
+  },
+  {
     label: "Attributions",
     to: "/attributions",
     ready: true,
@@ -81,5 +87,9 @@ export const PAGES: Page[] = [
   },
 ];
 
-/** What the header shows. Attributions lives in the footer, not the nav. */
-export const NAV = PAGES.filter((p) => p.to !== "/attributions");
+/**
+ * What the header shows. Contribution and Attributions live in the footer and
+ * the closing cards instead: six items already fill the desktop bar at 1024px,
+ * and both pages are found by their standard URLs as much as by browsing.
+ */
+export const NAV = PAGES.filter((p) => p.to !== "/attributions" && p.to !== "/contribution");

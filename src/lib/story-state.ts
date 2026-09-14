@@ -13,7 +13,7 @@ import { useSyncExternalStore } from "react";
  * Nothing here is science. It is a record of presses and molecule counts on
  * screen, and the closing section says so.
  */
-export type StoryState = {
+type StoryState = {
   /** The reader held the first control and gave the standard dose. */
   standardGiven: boolean;
   /** The reader held the second control and gave the adjusted dose. */
@@ -41,7 +41,7 @@ const listeners = new Set<() => void>();
  * explicit `undefined` — and callers want to pass exactly that for "no change
  * this time", which is what the loop below already ignores.
  */
-export type StoryPatch = { [K in keyof StoryState]?: StoryState[K] | undefined };
+type StoryPatch = { [K in keyof StoryState]?: StoryState[K] | undefined };
 
 export function recordStory(patch: StoryPatch) {
   let changed = false;
