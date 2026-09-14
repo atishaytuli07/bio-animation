@@ -475,6 +475,18 @@ try {
   process.exit(1);
 }
 
+/*
+  AN UNKNOWN CHECK NAME IS AN ERROR, not an empty run.
+
+  The argument names a check, not a page. `node scripts/audit.mjs description`
+  matched no check, ran nothing, and printed "All checks passed" — a green
+  result for an audit that never opened a browser tab.
+*/
+if (only && !(only in TASKS)) {
+  console.error(`No check called "${only}". Checks: ${Object.keys(TASKS).join(", ")}.`);
+  process.exit(2);
+}
+
 const browser = await chromium.launch();
 try {
   for (const [name, fn] of Object.entries(TASKS)) if (!only || only === name) await fn(browser);

@@ -5,7 +5,7 @@ import { C, ENZYME_PATH } from "@/components/hero/palette";
  *
  * Two scenes now show the same vessel — "Inside the body", where a standard
  * dose accumulates, and "Before the first dose", where the identical vessel
- * is replayed with a dose matched to the test result and stays clear. The
+ * is replayed with a dose adjusted after the test result and stays clear. The
  * whole argument of the second scene is that NOTHING has changed except the
  * dose, so the two must be the same object, drawn from the same numbers. Two
  * copies of this geometry would drift within a week and quietly destroy the

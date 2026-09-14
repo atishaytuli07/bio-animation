@@ -16,8 +16,8 @@ import { useSyncExternalStore } from "react";
 export type StoryState = {
   /** The reader held the first control and gave the standard dose. */
   standardGiven: boolean;
-  /** The reader held the second control and gave the matched dose. */
-  matchedGiven: boolean;
+  /** The reader held the second control and gave the adjusted dose. */
+  adjustedGiven: boolean;
   /** Most molecules held in the vessel at once, before the turn. */
   peakHeld: number;
   /** Molecules still held once the scene has resolved. */
@@ -28,7 +28,7 @@ export type StoryState = {
 
 let state: StoryState = {
   standardGiven: false,
-  matchedGiven: false,
+  adjustedGiven: false,
   peakHeld: 0,
   finalHeld: 0,
   sliderMoved: false,

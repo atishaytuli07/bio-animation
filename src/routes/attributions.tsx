@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 
 import { C, L, T } from "@/components/hero/palette";
+import { SiteHeader } from "@/components/story/SiteHeader";
 
 /**
  * Attributions.
@@ -125,60 +126,68 @@ function Section({ title, entries }: { title: string; entries: Entry[] }) {
 
 function Attributions() {
   return (
-    <main
-      className="min-h-screen px-6 pb-24 pt-20 md:px-10 md:pt-28"
-      style={{ background: C.paper }}
-    >
-      <div className="mx-auto max-w-3xl">
-        <Link to="/new" className={L.labelType} style={{ color: C.redDeep }}>
-          <span className="block h-0.5 w-7" style={{ background: C.red }} />
-          Back to the story
-        </Link>
+    /*
+      THE SHARED HEADER, which this page did not have. It was built before the
+      page shell and rendered only a "Back to the story" link, so the one page
+      iGEM requires every team to publish had no navigation — against the
+      client's "one navigation on every page". The top padding drops by the
+      header's height so the title sits where it did.
+    */
+    <div className="min-h-screen" style={{ background: C.paper }}>
+      <SiteHeader />
+      <main className="px-6 pb-24 pt-12 md:px-10 md:pt-16">
+        <div className="mx-auto max-w-3xl">
+          <Link to="/new" className={L.labelType} style={{ color: C.redDeep }}>
+            <span className="block h-0.5 w-7" style={{ background: C.red }} />
+            Back to the story
+          </Link>
 
-        <h1 className="mt-6 font-black md:mt-8" style={{ ...T.headline, color: C.ink }}>
-          Attributions
-        </h1>
-        <p
-          className="mt-5 max-w-[62ch] text-[15px] leading-relaxed md:text-[17px]"
-          style={{ color: C.inkBody }}
-        >
-          What the team made, what came from elsewhere, and where generative AI was used. iGEM asks
-          every team to declare this. We would rather over-declare than leave a reader guessing.
-        </p>
-
-        <Section title="Where generative AI was used" entries={AI_USE} />
-        <Section title="Third-party work" entries={THIRD_PARTY} />
-
-        <section className="mt-14 md:mt-20">
-          <h2 className="font-black" style={{ ...T.sub, color: C.ink }}>
-            Still to be completed by the team
-          </h2>
+          <h1 className="mt-6 font-black md:mt-8" style={{ ...T.headline, color: C.ink }}>
+            Attributions
+          </h1>
           <p
-            className="mt-3 max-w-[62ch] text-[14px] leading-relaxed md:text-[15px]"
+            className="mt-5 max-w-[62ch] text-[15px] leading-relaxed md:text-[17px]"
             style={{ color: C.inkBody }}
           >
-            This page is not finished. The items below can only be written by the people who did the
-            work, and they are shown here rather than hidden so that an incomplete page is never
-            mistaken for a complete one.
+            What the team made, what came from elsewhere, and where generative AI was used. iGEM
+            asks every team to declare this. We would rather over-declare than leave a reader
+            guessing.
           </p>
-          <ul className="mt-6 space-y-3">
-            {TODO.map((t) => (
-              <li
-                key={t}
-                className="flex gap-3 text-[14px] leading-relaxed md:text-[15px]"
-                style={{ color: C.ink }}
-              >
-                <span
-                  aria-hidden="true"
-                  className="mt-2 block h-1.5 w-1.5 shrink-0 rounded-full"
-                  style={{ background: C.red }}
-                />
-                {t}
-              </li>
-            ))}
-          </ul>
-        </section>
-      </div>
-    </main>
+
+          <Section title="Where generative AI was used" entries={AI_USE} />
+          <Section title="Third-party work" entries={THIRD_PARTY} />
+
+          <section className="mt-14 md:mt-20">
+            <h2 className="font-black" style={{ ...T.sub, color: C.ink }}>
+              Still to be completed by the team
+            </h2>
+            <p
+              className="mt-3 max-w-[62ch] text-[14px] leading-relaxed md:text-[15px]"
+              style={{ color: C.inkBody }}
+            >
+              This page is not finished. The items below can only be written by the people who did
+              the work, and they are shown here rather than hidden so that an incomplete page is
+              never mistaken for a complete one.
+            </p>
+            <ul className="mt-6 space-y-3">
+              {TODO.map((t) => (
+                <li
+                  key={t}
+                  className="flex gap-3 text-[14px] leading-relaxed md:text-[15px]"
+                  style={{ color: C.ink }}
+                >
+                  <span
+                    aria-hidden="true"
+                    className="mt-2 block h-1.5 w-1.5 shrink-0 rounded-full"
+                    style={{ background: C.red }}
+                  />
+                  {t}
+                </li>
+              ))}
+            </ul>
+          </section>
+        </div>
+      </main>
+    </div>
   );
 }

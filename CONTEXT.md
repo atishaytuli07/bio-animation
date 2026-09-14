@@ -44,13 +44,13 @@ these nine beats and stops:
 
 1. **Hero** — DNA, ChemoGuard, the illustrated world
 2. **The gene** — descend to DPYD and the variant; `c.1905+1G>A`, G→A
-3. **The enzyme** — one letter decides how much DPD this body builds
+3. **The enzyme** — one letter can reduce how much working DPD is made
 4. **Patients** — the same treatment, two people
 5. **Medicine** — the identical drug enters both, and for a long beat nothing separates them
 6. **Two paths** — she clears it, he does not
 7. **Inside** — follow the drug into his bloodstream and find the shortfall
 8. **The question** — *"What if we knew first?"*
-9. **The solution** — from genetic result to treatment decision; *"A dose that fits."*
+9. **The solution** — from genetic result to treatment decision; *"A safer starting dose."*
 
 **Results, experiments, Human Practices and Safety are NOT cinematic beats.**
 They belong in the documentation pages, which is also where iGEM judges look for
@@ -138,7 +138,9 @@ it and the freeze does not move.
    had to be removed. What replaced it is entailed by the variant's own name:
    `c.1905+1G>A` sits at intron 14 position +1, so the canonical GT donor reads
    AT. Every glyph is verifiable. See the note at the top of `Sequence.tsx`.
-2. **Never overclaim.** "One letter *decides* your dose" became "*can change*".
+2. **Never overclaim.** "One letter *decides* your dose" became "*can change*",
+   and after the client's science review (September 2026) "*can make a standard
+   dose too much*" — the test informs a dose, it never sets one.
    "The enzyme is never built" became "less is made". Variants **reduce**
    activity, they do not abolish it.
 3. **A `range` where a `band` was meant** — a range reaches 1 and stays there,
@@ -248,7 +250,7 @@ Local progress `p`, 0→1 across 420vh.
 | **`recede`** | **0.80 → 1.00** | **the camera pulls back — the story's only reversal** |
 | *(caption out)* | 0.806 → 0.85 | the explanatory sentence leaves |
 | *(breath)* | 0.85 → 0.87 | **nothing on screen but the receding DNA**, 8vh |
-| `closing` | 0.87 → 0.93 | "About three billion letters. / This one can change your dose." |
+| `closing` | 0.87 → 0.93 | "About three billion letters. / This one can make a standard dose too much." |
 | *(hold)* | 0.93 → 0.955 | the statement sits alone, 10vh |
 | `handoff` | page 0.196 → 0.231 | dissolves into scene 2, **while the camera is still moving** |
 
@@ -324,7 +326,7 @@ later.
 
 **Act one — the bridge** (`bridge` 0.02–0.09, out 0.20–0.27)
 
-The letter decides how much enzyme the body builds: five slots, two filled,
+The letter can reduce how much working enzyme is made: five slots, two filled,
 three dashed. This is the client's missing link, placed where she placed it —
 after the variant, before the patients. Copy: *"A DPYD variant can reduce DPD
 activity — limiting the body's ability to clear 5-FU."* (her wording, near
@@ -383,8 +385,8 @@ gesture survives, the fine detail is at the edge of legibility.
 | `result` | 0.72–0.78 | the result card; the in-vessel A hands over to it |
 | `trim` | 0.76 → 0.85 | nine dose molecules become four |
 | `drain` | 0.79 → 0.89 | **the pile drains away** |
-| `matched` | 0.81 → 0.90 | every molecule now finds enzyme — **the enzyme itself does not change** |
-| `lineD` | 0.91 → 0.96 | "A dose that fits." |
+| `adjusted` | 0.81 → 0.90 | every molecule now finds enzyme — **the enzyme itself does not change** |
+| `lineD` | 0.91 → 0.96 | "A safer starting dose." |
 
 The turn is the payoff and it only works because it is the **same pile** the
 reader watched build. The hold control retires at the turn — once the result is
@@ -546,14 +548,14 @@ with a composed hero.
 { label: "The story",        to: "/new",             ready: true  }
 { label: "Description",      to: "/description",     ready: true  }
 { label: "Engineering",      to: "/engineering",     ready: true  }
-{ label: "Human Practices",  to: "/human-practices", ready: false }
-{ label: "Safety",           to: "/safety",          ready: false }
-{ label: "Team",             to: "/team",            ready: false }
+{ label: "Human Practices",  to: "/human-practices", ready: true  }
+{ label: "Safety",           to: "/safety",          ready: true  }
+{ label: "Team",             to: "/team",            ready: true  }
 { label: "Attributions",     to: "/attributions",    ready: true  }
 ```
 
-**Flipping `ready: true` is the entire wiring.** It lights up: the story page's
-desktop nav, its mobile menu, every content page's nav and menu, the footer,
+**Flipping `ready: true` is the entire wiring.** It lights up: the shared
+header's nav and mobile menu on every page, the footer,
 the hero's second CTA, and the static export's route list. There is no second
 list to keep in step — that was a real bug twice (the nav, then the exporter).
 
@@ -562,11 +564,24 @@ an explicit "soon". Never a control that silently does nothing.
 
 ## The page system
 
-**`PageShell`** — sticky header, hero, section index, content column, footer.
+**`SiteHeader`** — the one header, on every page including the story (the
+client's review, September 2026): cream, full width, and it stays. `sticky` on
+content pages; **`fixed` on the story**, because sticky adds its height to the
+document and every story beat is timed against scroll position. The story's
+progress rail rides the header's bottom seam, so the knob never crosses the
+logo or the nav. There used to be a second, story-only header inside scene
+one's pinned stage — it scrolled away after scene one and switched colour with
+the ground; it is gone, and so is the contrast problem that switch existed for.
+
+**`PageShell`** — header, hero, section index, content column, footer.
 **`PageHero`** — badge, display title, two-rule treatment, lede panel, an
 optional illustrated character, and objects composed from the story's own
 `Cell` / `Molecule` / `Enzyme`. Arrangements live in `ART`, characters in
-`PLATE`; a new page costs a config object.
+`PLATE`; a new page costs a config object. On a character page, objects appear
+only from xl (1280px): below it there is no space between the copy and the
+character, and below lg the character stands in the corner under the copy.
+Description carries one composed object instead of a scatter — `PLATE.description.dock` / `<Dock>`,
+DPD with 5-FU in its cleft, labelled and anchored to the character.
 
 ### Character plates — and the one rule that governs them
 
@@ -591,13 +606,19 @@ Two recurring characters rather than a new face per page, so the pages read as
 one world. Both are cutouts with real alpha, anchored bottom-right, standing
 *in* the hero rather than boxed on it.
 
-**The objects move, they do not vanish.** A figure occupies roughly the right
-22% of the viewport, which is the same band the scattered objects used — a
-molecule landed in her hair and a cell beside her head. Deleting them was tried
-and was wrong: the page lost the depth that ties it to the story's travelling
-world. `ART` coordinates are percentages of the right-hand 42% band, and on a
-plate page they are confined to x 8→42, the corridor between the copy and the
-figure.
+**The objects move rather than scatter over the figure.** A figure occupies
+roughly the right 22% of the viewport, which is the same band the scattered
+objects used — a molecule landed in her hair and a cell beside her head. `ART`
+coordinates are percentages of the right-hand 42% band, and on a plate page they
+are confined to the corridor between the copy and the figure. Two later rules,
+both measured against the plate's painted pixels:
+
+- **From xl only on a plate page.** Below 1280px there is no corridor — the
+  objects landed on the lede at 768 and on the character's hands at 1024.
+- **Description has no scatter at all** (`ART.description = []`). The client
+  read five shapes as random; it carries one composed object instead,
+  `PLATE.description.dock` → `<Dock>`: DPD with 5-FU in its cleft, labelled,
+  anchored a fixed gap left of the figure.
 
 **No mask on a plate.** A left-edge gradient was added to blend a halo that did
 not exist and it ate the DNA strand — the one element carrying the page's
@@ -647,13 +668,13 @@ still. `prefers-reduced-motion` turns even the reveal off.
 
 | Page | State | Notes |
 |---|---|---|
-| `/new` | **Built** | the story, all eight beats |
-| `/description` | **Built, awaiting content** | 3 figures; method, citations and lab work are `Awaiting` |
+| `/new` | **Built** | the story, all nine beats |
+| `/description` | **Built, awaiting content** | 3 figures; worded to the client's review; 5 citation marks with sources pending; method and lab work are `Awaiting` |
 | `/engineering` | **Built, awaiting content** | Design/Build/Test/Learn laid out; every phase is `Awaiting` |
 | `/attributions` | **Built, awaiting content** | AI use declared; team/lab/PI blocks visible and empty |
-| `/human-practices` | **Not started** | |
-| `/safety` | **Not started** | |
-| `/team` | **Not started** | |
+| `/human-practices` | **Built, awaiting content** | structure in place; content blocks are `Awaiting` |
+| `/safety` | **Built, awaiting content** | structure in place; content blocks are `Awaiting` |
+| `/team` | **Built, awaiting content** | structure in place; roster, people and roles are `Awaiting` |
 
 ### Description
 
@@ -662,12 +683,27 @@ what we are building · references.
 
 Three figures, drawn from the story's vocabulary:
 1. **the splice donor** — `exon 14 │ A T │ intron 14` with the struck-through G
-2. **the causal chain** — variant → less DPD → slower clearance → build-up →
-   risk, as a vertical flow with a rail
-3. **the two doses** — the same vessel under a standard and a matched dose
+   and the positions `+1 +2` under the two bases
+2. **the causal chain** — variant → less DPD activity → slower clearance → 5-FU
+   exposure increases → higher toxicity risk, as a vertical flow with a rail
+3. **a conceptual illustration** — the same vessel under a standard and an
+   adjusted dose, labelled as not a pharmacokinetic model
 
 Figure 1 **replaces** the paragraph that described it. That is the point: a
 reader who has not scrolled the animation gets the same picture at a glance.
+
+**The wording follows the client's science review (September 2026).** A variant
+*can* or *may* do something, never always does; the test *informs* dose
+adjustment under clinical guidelines and never sets a dose; nothing says the
+test measures enzyme activity. New copy on any page holds to the same standard.
+The words to avoid, because each was corrected once: "where to cut", "the drug
+builds up", "matched dose", "a dose that fits", "decides your dose", "nothing
+changes except the amount". The story uses "adjusted dose", and the result card
+says "reduced DPD activity expected" — expected, not measured.
+
+**Citations** are numbered superscripts (`Cite.tsx`). A source the team has not
+supplied is listed by what it has to support, under one "Needs the team" notice
+— never filled with a plausible-looking reference.
 
 ### Engineering
 
@@ -731,12 +767,12 @@ rendered at 13px.
 
 **Next, in order of value:**
 
-1. **A cycle diagram for Engineering** — four stacked panels is the weakest
-   page; the Design→Build→Test→Learn loop wants to be drawn as a loop.
-2. **Human Practices, Safety, Team** — each is a route file plus an `ART`
-   entry now.
-3. **Drop content in** as it arrives; each `Awaiting` marks exactly what fits.
-4. **A real deploy**, so there is a stable link.
+1. **Drop content in** as it arrives; each `Awaiting` marks exactly what fits,
+   and each pending source in `description.tsx`'s `SOURCES` gets its `cite`.
+2. **The client's open questions** — the story's plain-language lines ("So the
+   drug stays."), and whether the other page heroes get Description's
+   one-composed-object treatment.
+3. **A real deploy**, so there is a stable link.
 
 **Known gaps, honestly:**
 

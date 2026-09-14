@@ -3,6 +3,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { C, R } from "@/components/hero/palette";
 import { ART, PLATE } from "@/components/story/PageHero";
 import { Awaiting, P, PageShell, Section } from "@/components/story/PageShell";
+import { CiteMark, SourceList, type Source } from "@/components/story/Cite";
 import { Figure } from "@/components/story/Figure";
 import { ChainFigure, DoseFigure, SpliceFigure } from "@/components/story/diagrams";
 
@@ -23,9 +24,14 @@ import { ChainFigure, DoseFigure, SpliceFigure } from "@/components/story/diagra
  * as visible <Awaiting> panels rather than TODO comments, so an unfinished
  * page cannot pass for a finished one on the deployed site.
  *
- * PLACEHOLDER SCIENCE, marked like everywhere else: the mechanism is textbook,
- * but the team must attach its own citations before the freeze. iGEM requires
- * that nothing on a wiki be unverifiable, and references are a medal
+ * THE SCIENCE IS WORDED TO THE CLIENT'S REVIEW. Every claim here says what a
+ * variant CAN do, not what it always does, and the test is described as
+ * informing a dose under clinical guidelines rather than setting one. Keep new
+ * copy to that standard: "may", "can", "is associated with".
+ *
+ * Every claim that needs a source carries a numbered mark, and a source the
+ * team has not supplied renders as visibly missing — see Cite.tsx. iGEM
+ * requires that nothing on a wiki be unverifiable, and references are a medal
  * criterion in their own right.
  */
 
@@ -38,12 +44,54 @@ export const Route = createFileRoute("/description")({
       {
         name: "description",
         content:
-          "Why a single DPYD variant changes what a safe dose of fluoropyrimidine chemotherapy is, and what ChemoGuard proposes to do about it.",
+          "How DPYD variants can raise the risk of toxicity from a standard dose of fluoropyrimidine chemotherapy, and what ChemoGuard proposes to do about it.",
       },
     ],
   }),
   component: Description,
 });
+
+/**
+ * Sources, in the order they are first cited on the page.
+ *
+ * `supports` is what the source has to establish, written for the team to
+ * match against their own reading. When they supply a reference, add it as
+ * `cite` and the mark and the list both stop reading as missing.
+ */
+const SOURCES = [
+  {
+    id: "use",
+    supports:
+      "Fluoropyrimidines (5-FU and capecitabine) are among the most widely used chemotherapy drugs.",
+  },
+  {
+    id: "catabolism",
+    supports:
+      "A large proportion of administered 5-FU is broken down by dihydropyrimidine dehydrogenase (DPD).",
+  },
+  {
+    id: "splicing",
+    supports:
+      "DPYD c.1905+1G>A (rs3918290, DPYD*2A) alters the 5′ splice donor site of intron 14 and leads to skipping of exon 14.",
+  },
+  {
+    id: "toxicity",
+    supports:
+      "Reduced DPD activity is associated with increased 5-FU exposure and a higher risk of severe toxicity.",
+  },
+  {
+    id: "guidelines",
+    supports:
+      "The clinical guideline used for pre-treatment DPYD genotyping and dose adjustment (for example CPIC or DPWG), named.",
+  },
+] as const satisfies readonly Source[];
+
+type SourceId = (typeof SOURCES)[number]["id"];
+
+/** A citation mark for one of this page's sources. */
+function Cite({ id }: { id: SourceId }) {
+  return <CiteMark sources={SOURCES} id={id} />;
+}
 
 /** The index rail; ids match the sections below. */
 const SECTIONS = [
@@ -58,23 +106,24 @@ function Description() {
   return (
     <PageShell
       title="Description"
-      lede="Two people can be given the same chemotherapy, at the same dose, on the same day, and one of them can be harmed by it. This page explains why, and what we propose to do about it."
+      lede="Two patients can receive the same fluoropyrimidine treatment at the same dose, yet experience very different toxicity because of differences in drug metabolism."
       art={ART.description}
       plate={PLATE.description}
       sections={SECTIONS}
     >
       <Section id="problem" title="The problem">
         <P>
-          Fluoropyrimidines — 5-FU and its oral form capecitabine — are among the most widely used
-          chemotherapy drugs in the world. Most of the dose a patient receives is not used to treat
-          the tumour at all: it is broken down and cleared, by an enzyme called dihydropyrimidine
-          dehydrogenase, or DPD.
+          Fluoropyrimidines — 5-FU and its oral prodrug capecitabine — are among the most widely
+          used chemotherapy drugs in the world.
+          <Cite id="use" /> A large proportion of 5-FU is normally broken down by the enzyme
+          dihydropyrimidine dehydrogenase (DPD), which helps control systemic drug exposure.
+          <Cite id="catabolism" />
         </P>
         <P>
-          DPD is built from instructions in the <strong>DPYD</strong> gene. Some people carry a
-          variant in that gene which reduces how much working enzyme their body makes. They are
-          given a standard dose, because nothing about them looks different — and their body cannot
-          clear it at the expected rate.
+          DPD is encoded by the <strong>DPYD</strong> gene. Some DPYD variants disrupt normal gene
+          processing and reduce functional DPD activity.
+          <Cite id="splicing" /> Without a test, a carrier looks no different from anyone else, so
+          they are given a standard dose — and their body may not clear it at the expected rate.
         </P>
       </Section>
 
@@ -82,51 +131,60 @@ function Description() {
         <P>
           The variant this project focuses on is <strong>DPYD c.1905+1G&gt;A</strong>, also known as
           rs3918290 or the DPYD*2A allele. It sits at the first position of intron 14, immediately
-          after the end of exon 14 — the two letters that tell the cell where to cut when it
-          assembles the finished instructions.
+          after the end of exon 14. The conserved GT sequence there marks the 5′ splice donor site
+          used during pre-mRNA processing. When G changes to A, the splice site may no longer be
+          recognised correctly.
         </P>
         <Figure
           label="Figure 1 · the splice donor"
-          caption="Positions +1 and +2 of an intron are the canonical GT that marks where the cut goes. The variant changes that G to an A, so the donor reads AT, the spliceosome does not recognise it, and exon 14 is skipped."
+          caption={
+            <>
+              Positions +1 and +2 of intron 14 carry the conserved GT of the 5′ splice donor site.
+              The variant changes that G to an A, so the site reads AT and may no longer be
+              recognised, which can lead to exon 14 being skipped.
+              <Cite id="splicing" />
+            </>
+          }
         >
           <SpliceFigure />
         </Figure>
         <P>
-          The enzyme built from the result does not work as it should. What follows is short, and it
-          is the whole argument of the project:
+          Abnormal splicing can reduce the amount of functional DPD produced. What follows is short,
+          and it is the whole argument of the project:
         </P>
         <Figure
           label="Figure 2 · from a letter to a risk"
-          caption="Each step follows from the one before it. Nothing here is specific to one patient — it is what the variant does in anyone who carries it."
+          caption={
+            <>
+              This pathway illustrates the expected biological consequence associated with reduced
+              DPD activity.
+              <Cite id="toxicity" /> Individual clinical effects can vary.
+            </>
+          }
         >
           <ChainFigure />
         </Figure>
         <P>
-          It is worth being precise about what this does <em>not</em> mean. A variant reduces enzyme
-          activity; it does not usually abolish it, and carrying one does not mean a patient cannot
-          be treated. It means the dose that is safe for them is not the standard one.
+          It is worth being precise about what this does <em>not</em> mean. A variant usually
+          reduces DPD activity rather than abolishing it,
+          <Cite id="toxicity" /> and carrying one does not mean a patient cannot be treated. It
+          means a standard dose may not be appropriate for them.
         </P>
       </Section>
 
       <Section id="testing" title="Why testing first matters">
         <P>
-          The variant is knowable before treatment begins. If it is found first, the dose can be
-          matched to the enzyme activity the patient actually has, rather than to the average of
-          people who do not carry it. Nothing about the diagnosis changes and nothing about the drug
-          changes — only the amount.
+          Testing does not have to wait for treatment to begin. If a clinically relevant DPYD
+          variant is identified before treatment, the result can inform dose adjustment according to
+          established clinical guidelines.
+          <Cite id="guidelines" />
         </P>
         <Figure
-          label="Figure 3 · the same variant, two doses"
-          caption="Left: what a standard dose leaves behind in a body that cannot clear it at the expected rate. Right: the same person, the same drug, at a dose matched to the enzyme activity they actually have."
+          label="Figure 3 · two doses, a conceptual illustration"
+          caption="Not a quantitative pharmacokinetic model. Left: a standard dose in a person with reduced DPD activity. Right: the same person, with the dose adjusted according to clinical guidelines."
         >
           <DoseFigure />
         </Figure>
-        <Awaiting what="Needs the team: citation">
-          The clinical guidance for pre-treatment DPYD testing and dose adjustment must be cited
-          here from the team&rsquo;s own reading, with the source named. Do not publish this section
-          without it — unverifiable claims cost marks, and this is the claim the whole project rests
-          on.
-        </Awaiting>
       </Section>
 
       <Section id="building" title="What we are building">
@@ -143,10 +201,7 @@ function Description() {
       </Section>
 
       <Section id="references" title="References">
-        <Awaiting what="Needs the team: reference list">
-          Every factual claim on this page and in the animation, with its source. The mechanism
-          described above is textbook, but textbook is not the same as cited.
-        </Awaiting>
+        <SourceList sources={SOURCES} />
       </Section>
 
       <div className="mt-14 md:mt-20">

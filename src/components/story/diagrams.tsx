@@ -1,3 +1,5 @@
+import type { CSSProperties } from "react";
+
 import { C, L, R } from "@/components/hero/palette";
 import { useSeen } from "@/hooks/use-seen";
 
@@ -18,10 +20,11 @@ const ease = "cubic-bezier(.22,1,.36,1)";
 /**
  * The splice donor, and what the variant does to it.
  *
- * Positions +1 and +2 of an intron are the canonical GT that marks where the
- * cut goes. c.1905+1G>A changes that G to an A, the donor reads AT, and exon
- * 14 is skipped. The whole claim of the project is in two letters, so the
- * figure is two letters.
+ * Positions +1 and +2 of intron 14 carry the conserved GT of the 5′ splice
+ * donor site. c.1905+1G>A changes that G to an A, so the site reads AT and may
+ * no longer be recognised. The whole claim of the project is in two letters,
+ * so the figure is two letters — numbered, because the caption refers to them
+ * by position and a reader should be able to find +1 without counting.
  */
 export function SpliceFigure() {
   const [ref, seen] = useSeen<HTMLDivElement>();
@@ -69,20 +72,24 @@ export function SpliceFigure() {
           >
             A
           </span>
+          <Position n="+1" style={box(160)} />
         </span>
 
-        <span
-          className="ml-1 inline-flex items-center justify-center rounded-[6px] font-mono font-bold md:ml-1.5"
-          style={{
-            ...box(240),
-            width: "2.6rem",
-            height: "2.8rem",
-            fontSize: "1.5rem",
-            border: `2px solid ${C.ink}55`,
-            color: C.ink,
-          }}
-        >
-          T
+        <span className="relative ml-1 inline-flex flex-col items-center md:ml-1.5">
+          <span
+            className="inline-flex items-center justify-center rounded-[6px] font-mono font-bold"
+            style={{
+              ...box(240),
+              width: "2.6rem",
+              height: "2.8rem",
+              fontSize: "1.5rem",
+              border: `2px solid ${C.ink}55`,
+              color: C.ink,
+            }}
+          >
+            T
+          </span>
+          <Position n="+2" style={box(240)} />
         </span>
         <span
           className={L.note}
@@ -93,12 +100,32 @@ export function SpliceFigure() {
       </div>
 
       <p
-        className="mt-6 max-w-[36ch] text-center text-[14px] font-semibold leading-snug md:text-[15px]"
+        className="mt-10 text-center text-[14px] font-semibold leading-snug md:text-[15px]"
         style={{ ...box(420), color: C.ink }}
       >
-        These two letters tell the cell where to cut.
+        {/* One sentence a line, so a wide column cannot break "The" off the second. */}
+        <span className="block">The conserved GT marks the 5′ splice donor site.</span>
+        <span className="block">The variant changes it to AT.</span>
       </p>
     </div>
+  );
+}
+
+/**
+ * A base's position in the intron, hung below its box.
+ *
+ * Absolutely placed so it adds no height to the row: the exon and intron
+ * labels are centred on the boxes, and a label that pushed the row taller would
+ * pull them off-centre.
+ */
+function Position({ n, style }: { n: string; style: CSSProperties }) {
+  return (
+    <span
+      className="absolute top-full mt-1.5 font-mono text-[12px] font-bold leading-none"
+      style={{ ...style, color: C.inkNote }}
+    >
+      {n}
+    </span>
   );
 }
 
@@ -114,7 +141,7 @@ const CHAIN = [
   { t: "A DPYD variant", tone: C.red, solid: true },
   { t: "less DPD activity", tone: C.green, solid: false },
   { t: "slower clearance", tone: C.coral, solid: false },
-  { t: "the drug builds up", tone: C.coral, solid: false },
+  { t: "5-FU exposure increases", tone: C.coral, solid: false },
   { t: "higher toxicity risk", tone: C.red, solid: true },
 ];
 
@@ -178,12 +205,34 @@ export function ChainFigure() {
 }
 
 /**
- * The two outcomes, side by side: a standard dose against a matched one.
+ * The two outcomes, side by side: a standard dose against an adjusted one.
  *
  * The homepage makes this point by running the same vessel twice and letting
  * the pile drain. A still page cannot do that, so here it IS the comparison —
  * the one place a side-by-side is the right form rather than the lazy one.
+ *
+ * CONCEPTUAL, AND LABELLED AS SUCH by the figure around it. The counts are a
+ * picture of "more" and "less", not a pharmacokinetic model. The right-hand
+ * label says "adjusted", never "matched to the result": the test informs a dose
+ * under clinical guidelines, it does not set one.
  */
+/**
+ * Where `n` molecules settle in a vessel, bottom row first.
+ *
+ * Rows alternate three and two, each centred, so the pile nests the way stacked
+ * balls do. The old grid shifted every other row of THREE by half a step, which
+ * pushed the third molecule of those rows through the vessel wall — and a short
+ * pile of two sat against the left side instead of in the middle.
+ */
+function pile(n: number) {
+  const out: { x: number; y: number }[] = [];
+  for (let row = 0; out.length < n; row++) {
+    const k = Math.min(row % 2 ? 2 : 3, n - out.length);
+    for (let j = 0; j < k; j++) out.push({ x: 60 + (j - (k - 1) / 2) * 24, y: 168 - row * 22 });
+  }
+  return out;
+}
+
 export function DoseFigure() {
   const [ref, seen] = useSeen<HTMLDivElement>();
   const col = (delay: number) => ({
@@ -204,21 +253,9 @@ export function DoseFigure() {
           stroke={C.ink}
           strokeWidth="2.5"
         />
-        {Array.from({ length: n }, (_, i) => {
-          const row = Math.floor(i / 3);
-          const c = i % 3;
-          return (
-            <circle
-              key={i}
-              cx={36 + c * 24 + (row % 2 ? 12 : 0)}
-              cy={168 - row * 22}
-              r="8.5"
-              fill={tone}
-              stroke={C.ink}
-              strokeWidth="2"
-            />
-          );
-        })}
+        {pile(n).map((m, i) => (
+          <circle key={i} cx={m.x} cy={m.y} r="8.5" fill={tone} stroke={C.ink} strokeWidth="2" />
+        ))}
       </svg>
       <span className={`mt-3 ${L.note}`} style={{ color: C.ink }}>
         {label}
@@ -231,7 +268,7 @@ export function DoseFigure() {
         <Vessel n={11} tone={C.red} label="standard dose" />
       </div>
       <div style={col(180)}>
-        <Vessel n={2} tone={C.coral} label="dose matched to the result" />
+        <Vessel n={2} tone={C.coral} label="adjusted dose" />
       </div>
     </div>
   );

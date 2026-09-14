@@ -48,15 +48,18 @@ export type Plate = {
   alt?: string;
   /** Roughly where the figure starts, as a fraction of the plate's width. */
   lead?: number;
+  /** Draw DPD with 5-FU in its cleft beside the figure. See <Dock>. */
+  dock?: boolean;
 };
 
 /**
  * The arrangement each page uses. Deliberately few, and never behind the copy.
  *
- * WHEN A PAGE HAS A CHARACTER PLATE, THE OBJECTS MOVE — they do not disappear.
- * Removing them entirely was tried and it was the wrong fix: the page lost the
- * depth that ties it to the story's travelling world. The actual fault was
- * placement. These coordinates are percentages of the right-hand 42% band, and
+ * WHEN A PAGE HAS A CHARACTER PLATE, THE OBJECTS MOVE rather than scatter over
+ * her. (Two later rules narrow this, both measured: on a character page they
+ * appear only from xl, where there is room beside the figure; and Description
+ * replaces its scatter with one composed object, see <Dock>.) The original
+ * fault was placement. These coordinates are percentages of the right-hand 42% band, and
  * the figure occupies roughly x 47→100 of that same band, so anything past 45
  * lands ON her — which is how a molecule ended up in her hair and a cell beside
  * her head.
@@ -66,16 +69,22 @@ export type Plate = {
  * standing in rather than as debris stuck to her.
  */
 export const ART = {
-  description: [
-    { k: "cell", x: 14, y: 22, s: 0.92, tone: C.pink },
-    { k: "mol", x: 34, y: 12, s: 0.6, tone: C.coral },
-    { k: "enz", x: 8, y: 62, s: 0.66, tone: C.green },
-    { k: "mol", x: 30, y: 78, s: 0.5, tone: C.coral },
-    { k: "cell", x: 42, y: 44, s: 0.46, tone: C.blue },
-  ],
+  /*
+    EMPTY, ON PURPOSE. Description's hero carries one composed object instead —
+    the enzyme with the drug in its cleft, see <Dock> — because the client read
+    five scattered shapes as random, and two of them were blood cells, which
+    belong to the bloodstream scene rather than to a page about a gene.
+  */
+  description: [],
   engineering: [
     { k: "enz", x: 16, y: 20, s: 0.86, tone: C.green },
-    { k: "enz", x: 38, y: 40, s: 0.5, tone: C.green },
+    /*
+      x 28, not 38. Measured against the plate's painted pixels, at 38 this one
+      sat on his hand and the test device at 1280 (2651 px within 14px) and
+      1366 (970 px) — the character reaches further left than `lead` says,
+      because he holds the device out in front of him.
+    */
+    { k: "enz", x: 28, y: 42, s: 0.5, tone: C.green },
     { k: "mol", x: 10, y: 62, s: 0.62, tone: C.coral },
     { k: "cell", x: 32, y: 80, s: 0.54, tone: C.lavender },
     { k: "mol", x: 40, y: 10, s: 0.44, tone: C.coral },
@@ -98,9 +107,64 @@ export const ART = {
  * what the heading beside it already says, which is decoration.
  */
 export const PLATE = {
-  description: { src: "hero-description.webp", lead: 0.5 },
+  description: { src: "hero-description.webp", lead: 0.5, dock: true },
   engineering: { src: "hero-engineering.webp", lead: 0.55 },
 } satisfies Record<string, Plate>;
+
+/**
+ * DPD with 5-FU in its cleft, labelled.
+ *
+ * The page's whole subject is one relationship — this enzyme breaks down this
+ * drug — and the site already owns both shapes: the green enzyme with its
+ * single cleft, the coral pyrimidine ring. Put together they say that before a
+ * word is read, which is the difference between an illustration and a
+ * decoration.
+ *
+ * THE LABELS ARE ANNOTATIONS, NOT CHIPS. Paper type with a hairline leader, the
+ * way the story labels what it points at. A boxed label with an offset shadow
+ * would look pressable, and on this site the offset shadow means exactly that.
+ *
+ * Geometry: the enzyme is drawn at 1.8×, so its cleft sits at (117, 103) in its
+ * own box; the molecule's centre sits 40px right of that and 5px up, which is
+ * the fit the prototype was judged on.
+ */
+function Dock() {
+  const label = `${L.note} absolute whitespace-nowrap leading-none`;
+  return (
+    <div data-dock className="relative" style={{ width: 230, height: 250 }}>
+      <div
+        className="absolute"
+        style={{ left: 0, top: 28, filter: "drop-shadow(0 8px 14px rgba(36,28,46,0.26))" }}
+      >
+        <Enzyme s={1.8} tone={C.green} />
+      </div>
+      <div
+        className="absolute"
+        style={{ left: 110, top: 78, filter: "drop-shadow(0 6px 10px rgba(36,28,46,0.24))" }}
+      >
+        <Molecule s={0.95} tone={C.coral} />
+      </div>
+
+      {/* 5-FU, above the molecule */}
+      <span data-dock-label className={label} style={{ left: 142, top: 30, color: C.paper }}>
+        5-FU
+      </span>
+      <span
+        className="absolute block w-[1.5px]"
+        style={{ left: 157, top: 46, height: 38, background: `${C.paper}b3` }}
+      />
+
+      {/* DPD, below the enzyme */}
+      <span
+        className="absolute block w-[1.5px]"
+        style={{ left: 91, top: 196, height: 20, background: `${C.paper}b3` }}
+      />
+      <span data-dock-label className={label} style={{ left: 76, top: 222, color: C.paper }}>
+        DPD
+      </span>
+    </div>
+  );
+}
 
 export function PageHero({
   title,
@@ -181,8 +245,43 @@ export function PageHero({
       {plate && (
         <div
           aria-hidden={plate.alt ? undefined : "true"}
-          className="pointer-events-none absolute bottom-0 right-0 block h-[152px] md:h-[92%]"
+          /*
+            TABLETS STAND HER IN THE CORNER, like phones do.
+
+            Full height began at md, and at 768px that put her DNA and arm
+            across the right third of the lede panel — measured, the plate
+            reached x 446 against a lede ending at 651. From lg the copy and
+            the figure fit side by side; below it they cannot, so she stands
+            under the copy instead of on it.
+          */
+          className="pointer-events-none absolute bottom-0 right-0 block h-[152px] md:h-[250px] lg:h-[92%]"
         >
+          {plate.dock && (
+            /*
+              ANCHORED TO THE FIGURE, NOT TO THE PAGE.
+
+              `lead` is where she starts inside the plate, so the pair's right
+              edge is placed a fixed gap left of that — wherever the plate
+              lands, the pair cannot land on her. Placed by percentage of the
+              page instead, the old scattered objects ended up on her chest at
+              1024px and on the lede panel at 768px.
+
+              Shown from xl only. Measured, the space between the lede and her
+              is 288px at 1280, 445 at 1440 and 700 at 1920 — and below 1280 it
+              is nothing: the plate already reaches the copy. An object with no
+              room is the clutter this replaced, so below xl there is none.
+            */
+            <div
+              className="absolute hidden xl:block"
+              style={{
+                right: `calc(${((1 - (plate.lead ?? 0.5)) * 100).toFixed(1)}% + 28px)`,
+                top: "26%",
+                transform: `translateY(${(Math.sin(t * 0.32 + 1.7) * 6).toFixed(2)}px) rotate(${(Math.sin(t * 0.22) * 1.6).toFixed(2)}deg)`,
+              }}
+            >
+              <Dock />
+            </div>
+          )}
           <img
             src={asset(plate.src)}
             alt={plate.alt ?? ""}
@@ -202,14 +301,19 @@ export function PageHero({
       )}
 
       {/*
-        The scattered elements. They stay on plate pages — see ART above for why
-        their coordinates change instead. On a plate page they sit slightly back
-        so the figure stays the subject, but they are still there: they are what
-        connects this hero to the world travelling through the whole story.
+        The scattered elements. On a plate page they sit slightly back so the
+        figure stays the subject, and they appear only from xl — see ART above.
+        They are what connects a hero to the world travelling through the story.
       */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-y-0 right-0 hidden w-[42%] md:block"
+        /*
+          On a plate page, from xl only — the same rule and the same reason as
+          the dock: below 1280 there is no space between the copy and the
+          figure, and measured, these landed on the lede panel at 768 and on
+          the character's hands at 1024.
+        */
+        className={`pointer-events-none absolute inset-y-0 right-0 hidden w-[42%] ${plate ? "xl:block" : "md:block"}`}
         style={plate ? { opacity: 0.72 } : undefined}
       >
         {art.map((a, i) => (
@@ -239,7 +343,7 @@ export function PageHero({
         figure stands in, so the lede is not sharing a corner with her.
       */}
       <div
-        className={`relative mx-auto max-w-[92rem] px-6 pt-14 md:px-10 md:py-20 ${plate ? "pb-40" : "pb-14"} md:pb-20`}
+        className={`relative mx-auto max-w-[92rem] px-6 pt-14 md:px-10 md:py-20 ${plate ? "pb-40 md:pb-[17rem]" : "pb-14 md:pb-20"} lg:pb-20`}
       >
         <div className="max-w-[46rem]">
           {/* the badge, in the site's paper/ink/offset-shadow language */}

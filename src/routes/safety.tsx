@@ -118,7 +118,7 @@ function Safety() {
           The two ways of being wrong are not equally bad. A test that wrongly flags a variant leads
           to a reduced dose in someone who could have tolerated a full one — undertreatment, which
           is serious. A test that wrongly reports normal gives false reassurance and a full dose to
-          someone who cannot clear it, which is the harm the project exists to prevent. A test like
+          someone who may not clear it, which is the harm the project exists to prevent. A test like
           this has to be built and described with that asymmetry in front of it.
         </P>
         <P>

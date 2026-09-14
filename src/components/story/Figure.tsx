@@ -30,7 +30,8 @@ export function Figure({
 }: {
   /** The figure's short name, e.g. "Figure 1 · the splice site". */
   label: string;
-  caption: string;
+  /** A node rather than a string so a caption can carry a citation mark. */
+  caption: ReactNode;
   children: ReactNode;
 }) {
   const [ref, seen] = useSeen<HTMLDivElement>();

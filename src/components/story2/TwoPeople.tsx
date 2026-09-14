@@ -308,7 +308,7 @@ export function TwoPeople() {
 
     It used to open at local 0.02, which is page 0.209 — inside the descent's
     handoff window of 0.196 → 0.231. So the enzyme diagram was arriving while
-    "About three billion letters. This one can change your dose." was still on
+    "About three billion letters. This one can make a standard dose too much." was still on
     screen fading out: two unrelated pieces of information sharing a frame at
     the one boundary that most needed to feel clean.
 

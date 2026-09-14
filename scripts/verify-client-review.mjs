@@ -307,6 +307,103 @@ console.log("\n── 8 · the documentation nav stays put ───────
   await doc.close();
 }
 
+console.log("\n── 9 · the story nav stays too, and it is the cream one ───");
+{
+  /*
+    The client's review: one cream, full-width navigation that stays while
+    scrolling, on every page INCLUDING the story. The story's header used to live
+    inside scene one's pinned stage and scrolled away with it, so from the second
+    scene on there was no navigation at all — this reads it deep into the story,
+    where that failure showed.
+  */
+  const story = await browser.newPage({ viewport: { width: 1280, height: 800 } });
+  await story.goto(BASE + "/new", { waitUntil: "networkidle" });
+  await story.waitForTimeout(1200);
+  const rows = [];
+  for (const f of [0, 0.4, 0.9]) {
+    await at(story, f, 500);
+    rows.push(
+      await story.evaluate(() => {
+        const h = document.querySelector("header");
+        const r = h.getBoundingClientRect();
+        const cs = getComputedStyle(h);
+        return {
+          pos: cs.position,
+          top: Math.round(r.top),
+          w: Math.round(r.width),
+          bg: cs.backgroundColor,
+          count: document.querySelectorAll("header").length,
+        };
+      }),
+    );
+  }
+  // C.paper, #FBF3E7
+  const paper = "rgb(251, 243, 231)";
+  say(
+    rows.every((r) => r.top === 0 && (r.pos === "fixed" || r.pos === "sticky")),
+    "on screen at the top at 0%, 40% and 90% of the story",
+    rows.map((r, i) => `${[0, 40, 90][i]}%: ${r.pos} top ${r.top}`).join("   "),
+  );
+  say(
+    rows.every((r) => r.bg === paper && r.w === 1280 && r.count === 1),
+    "one header, cream, full width",
+    rows.map((r) => `${r.count}× ${r.bg} ${r.w}px`).join("   "),
+  );
+  await story.close();
+}
+
+console.log("\n── 10 · every page has it, including the ones outside the shell ─");
+{
+  /*
+    Check 9 read the story and check 8 read Description, and both passed while
+    Attributions had no header at all — it was built before the page shell and
+    rendered only a "Back to the story" link. A check that reads two pages
+    cannot say "every page". Routes come from the site map, read as text for
+    the same reason audit.mjs does; a 404 is added because a mistyped link is a
+    page a reader can land on too.
+  */
+  const { readFileSync } = await import("node:fs");
+  const map = readFileSync(new URL("../src/components/story/site-map.ts", import.meta.url), "utf8");
+  const routes = [...new Set([...map.matchAll(/to:\s*"(\/[^"]*)"/g)].map((m) => m[1]))];
+  if (routes.length < 5) {
+    console.error("could not read routes from site-map.ts");
+    process.exit(2);
+  }
+  const paper = "rgb(251, 243, 231)";
+  const rows = [];
+  for (const route of [...routes, "/no-such-page"]) {
+    const pg = await browser.newPage({ viewport: { width: 1280, height: 800 } });
+    await pg.goto(BASE + route, { waitUntil: "networkidle" });
+    await pg.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight * 0.5));
+    await pg.waitForTimeout(500);
+    rows.push({
+      route,
+      ...(await pg.evaluate(() => {
+        const hs = document.querySelectorAll("header");
+        const h = hs[0];
+        if (!h) return { count: 0 };
+        const cs = getComputedStyle(h);
+        const r = h.getBoundingClientRect();
+        return {
+          count: hs.length,
+          top: Math.round(r.top),
+          w: Math.round(r.width),
+          bg: cs.backgroundColor,
+          links: h.querySelectorAll("nav a").length,
+        };
+      })),
+    });
+    await pg.close();
+  }
+  for (const r of rows) {
+    say(
+      r.count === 1 && r.top === 0 && r.bg === paper && r.w === 1280 && r.links >= 5,
+      `${r.route} — one cream header, on screen halfway down, with the nav`,
+      r.count ? `${r.count}× top ${r.top} ${r.bg} ${r.w}px, ${r.links} links` : "NO HEADER",
+    );
+  }
+}
+
 await browser.close();
 console.log(fails === 0 ? "\nALL POINTS VERIFIED\n" : `\n${fails} NOT SATISFIED\n`);
 process.exit(fails ? 1 : 0);

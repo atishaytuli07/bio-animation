@@ -1,20 +1,18 @@
-import { Link, useRouterState } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import { useEffect, useState, type ReactNode } from "react";
 
 import { Cell, Enzyme, Molecule } from "@/components/hero/elements";
-import { asset, C, DISPLAY, L, T, R } from "@/components/hero/palette";
+import { asset, C, DISPLAY, L, T } from "@/components/hero/palette";
 import { PageHero, type Art, type Plate } from "@/components/story/PageHero";
-import { NAV, PAGES } from "@/components/story/site-map";
-import { Underline } from "@/components/story/Underline";
+import { SiteHeader } from "@/components/story/SiteHeader";
+import { PAGES } from "@/components/story/site-map";
 
 /**
  * The frame every content page sits in.
  *
- * The story route paints its own header because that one is scroll-driven. A
- * content page has none of that, so it gets a plain static header here rather
- * than the story's bent into a shape it was not built for. What must NOT
- * diverge is the navigation, and it cannot: both are generated from the site
- * map, so a page appearing or being renamed shows up everywhere at once.
+ * The header is <SiteHeader>, the same component the story uses, so the
+ * navigation cannot diverge between the two: one bar, generated from the site
+ * map, on every page.
  *
  * The first version of this was a header, an h1 and some paragraphs. It was
  * honest and it was plain, and the client was right that plain is not enough:
@@ -43,10 +41,7 @@ export function PageShell({
   sections: { id: string; label: string }[];
   children: ReactNode;
 }) {
-  const [menu, setMenu] = useState(false);
   const [active, setActive] = useState(sections[0]?.id ?? "");
-  /** Which page we are on, for the nav's underline. */
-  const pathname = useRouterState({ select: (s) => s.location.pathname });
 
   /*
     Which section the reader is in. An IntersectionObserver rather than a
@@ -74,151 +69,7 @@ export function PageShell({
 
   return (
     <div className="min-h-screen" style={{ background: C.paper, color: C.ink }}>
-      <header
-        className="sticky top-0 z-40"
-        style={{ background: C.paper, borderBottom: `2px solid ${C.ink}14` }}
-      >
-        <div className="mx-auto flex max-w-[92rem] items-center justify-between gap-6 px-6 py-3.5 md:px-10">
-          <Link to="/new" className="flex items-center gap-2.5">
-            <span
-              className="grid h-[34px] w-[34px] shrink-0 place-items-center overflow-hidden rounded-full md:h-[38px] md:w-[38px]"
-              style={{ background: "#fff", boxShadow: `0 0 0 2px ${C.ink}1f` }}
-            >
-              <img
-                src={asset("logo-mark.webp")}
-                alt="ChemoGuard — NIS Kazakhstan, iGEM 2026"
-                width={28}
-                height={34}
-                className="h-[27px] w-auto md:h-[30px]"
-              />
-            </span>
-            {/* The same face and tracking the story page sets it in. It was
-                the body font here, so the logo changed typeface on navigation. */}
-            <span
-              className="text-[19px] font-extrabold leading-none md:text-[21px]"
-              style={{ fontFamily: DISPLAY, letterSpacing: "-0.01em" }}
-            >
-              Chemo<span style={{ color: C.red }}>Guard</span>
-            </span>
-          </Link>
-
-          {/*
-            THE "YOU ARE HERE" MARK, which these pages did not have.
-
-            The story route drew the hand-drawn underline under its own active
-            item; the documentation pages — the only ones a reader actually
-            navigates between — drew nothing, so six identical bold words gave
-            no clue which one you were reading. The component is shared now
-            rather than copied, so the two headers cannot drift.
-          */}
-          <nav className="hidden items-center gap-7 lg:flex" style={{ fontFamily: DISPLAY }}>
-            {NAV.map((page, i) =>
-              page.ready ? (
-                <Link
-                  key={page.label}
-                  to={page.to}
-                  className="group relative whitespace-nowrap pb-2 text-[15px] font-bold"
-                  style={{ color: C.ink }}
-                >
-                  {page.label}
-                  <Underline index={i} active={page.to === pathname} />
-                </Link>
-              ) : (
-                <span
-                  key={page.label}
-                  aria-disabled="true"
-                  title="Not written yet"
-                  className="whitespace-nowrap text-[15px] font-bold"
-                  style={{ color: C.ink, opacity: 0.4 }}
-                >
-                  {page.label}
-                </span>
-              ),
-            )}
-          </nav>
-
-          <button
-            type="button"
-            aria-label="Menu"
-            aria-expanded={menu}
-            onClick={() => setMenu((v) => !v)}
-            className="flex size-9 items-center justify-center lg:hidden"
-            style={{
-              background: C.paper,
-              border: `2.5px solid ${C.ink}`,
-              borderRadius: R.sm,
-              boxShadow: `3px 3px 0 ${C.ink}`,
-            }}
-          >
-            <svg width="16" height="12" viewBox="0 0 16 12" aria-hidden="true">
-              {[1, 6, 11].map((y) => (
-                <line
-                  key={y}
-                  x1="1"
-                  y1={y}
-                  x2="15"
-                  y2={y}
-                  stroke={C.ink}
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                />
-              ))}
-            </svg>
-          </button>
-        </div>
-
-        {menu && (
-          <div
-            className="mx-6 mb-4 lg:hidden"
-            style={{
-              background: C.paper,
-              border: `2.5px solid ${C.ink}`,
-              borderRadius: R.md,
-              boxShadow: `4px 4px 0 ${C.ink}`,
-            }}
-          >
-            {NAV.map((page, i) =>
-              page.ready ? (
-                <Link
-                  key={page.label}
-                  to={page.to}
-                  onClick={() => setMenu(false)}
-                  className="flex w-full items-center justify-between px-5 py-3 text-left text-[15px] font-bold"
-                  style={{ color: C.ink, borderTop: i ? `1.5px solid ${C.ink}22` : undefined }}
-                >
-                  {page.label}
-                  {/* The squiggle needs a baseline to sit under and a phone
-                      menu is a stack of rows, so the current page is marked
-                      with the same coral as a dot instead. */}
-                  {page.to === pathname && (
-                    <span
-                      aria-hidden="true"
-                      className="block size-2 shrink-0 rounded-full"
-                      style={{ background: C.coral }}
-                    />
-                  )}
-                </Link>
-              ) : (
-                <span
-                  key={page.label}
-                  aria-disabled="true"
-                  className="flex w-full items-center justify-between px-5 py-3 text-left text-[15px] font-bold"
-                  style={{
-                    color: C.ink,
-                    opacity: 0.45,
-                    borderTop: i ? `1.5px solid ${C.ink}22` : undefined,
-                  }}
-                >
-                  {page.label}
-                  <span className={L.note} style={{ opacity: 0.7 }}>
-                    soon
-                  </span>
-                </span>
-              ),
-            )}
-          </div>
-        )}
-      </header>
+      <SiteHeader />
 
       <PageHero title={title} lede={lede} art={art} plate={plate} />
 

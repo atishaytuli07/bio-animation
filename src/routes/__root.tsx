@@ -23,25 +23,45 @@ import { useEffect, type ReactNode } from "react";
 */
 import "@fontsource-variable/instrument-sans/wght.css";
 
+import { C, T } from "@/components/hero/palette";
+import { SiteHeader } from "@/components/story/SiteHeader";
+
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 
+/*
+  A missing page still gets the site's navigation, so a mistyped link leaves
+  the reader one click from anywhere rather than on a dead end. It was the
+  starter template's grey page, with nothing of the wiki in it.
+*/
 function NotFoundComponent() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <div className="max-w-md text-center">
-        <h1 className="text-7xl font-bold text-foreground">404</h1>
-        <h2 className="mt-4 text-xl font-semibold text-foreground">Page not found</h2>
-        <p className="mt-2 text-sm text-muted-foreground">
-          The page you're looking for doesn't exist or has been moved.
-        </p>
-        <div className="mt-6">
-          <Link
-            to="/"
-            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-          >
-            Go home
-          </Link>
+    <div className="min-h-screen" style={{ background: C.paper, color: C.ink }}>
+      <SiteHeader />
+      <div className="flex items-center justify-center px-6 py-24">
+        <div className="max-w-md text-center">
+          <h1 className="font-black" style={{ ...T.headline }}>
+            Page not found
+          </h1>
+          <p className="mt-4 text-[15px] leading-relaxed" style={{ color: C.inkBody }}>
+            The page you were looking for does not exist or has moved. Every page of the wiki is in
+            the navigation above.
+          </p>
+          <div className="mt-8">
+            <Link
+              to="/new"
+              className="inline-block px-6 py-3 text-[15px] font-bold"
+              style={{
+                background: C.redDeep,
+                color: "#fff",
+                border: `2.5px solid ${C.ink}`,
+                borderRadius: 6,
+                boxShadow: `4px 4px 0 ${C.ink}`,
+              }}
+            >
+              Back to the story
+            </Link>
+          </div>
         </div>
       </div>
     </div>

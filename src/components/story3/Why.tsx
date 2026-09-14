@@ -211,9 +211,9 @@ export function Why() {
    *
    * Nothing about the enzyme moves on this beat now. What moves is the load.
    */
-  const matched = range(p, 0.81, 0.9);
+  const adjusted = range(p, 0.81, 0.9);
   /*
-    "A dose that fits." — and it LEAVES, which it did not before.
+    "A safer starting dose." — and it LEAVES, which it did not before.
 
     Two separate faults were fixed here, and the second was caused by the first.
 
@@ -225,7 +225,7 @@ export function Why() {
     2. Moving it earlier to make room for the scene's exit put it INSIDE lineC's
        departure — the same mistake, and the same rule, as lineB/lineC above.
        lineC clears 12% opacity at 0.844; at an entrance of 0.82 this crossed it
-       at 0.822, and "What if we knew first?" sat under "A dose that fits." at up
+       at 0.822, and "What if we knew first?" sat under "A safer starting dose." at up
        to 65%. Entering at 0.86 crosses at 0.862, a clear 0.018 after lineC has
        gone.
 
@@ -274,7 +274,7 @@ export function Why() {
    * touches the control still gets the resolution, and every harness that
    * scrolls without pressing still holds. What the press does is bring the
    * clearing forward under the reader's thumb, so the vessel visibly empties
-   * because they gave the matched dose rather than because they kept
+   * because they gave the adjusted dose rather than because they kept
    * scrolling. It can only ever add to the drain, never take it past the
    * same 78%: "reduced, not absent" is a science rule, not a UI one.
    */
@@ -283,10 +283,10 @@ export function Why() {
     const dt = t - lastT.current;
     /*
       ONLY THE FIRST PRESS SPEEDS THE INFUSION. Letting the second inherit the
-      2.4x boost was backwards, and measured: holding the matched dose took the
+      2.4x boost was backwards, and measured: holding the adjusted dose took the
       held count from 8 down to 4 in 1.2s, then the faster inflow refilled it
       to 8 while the thumb was still down. The reader's clearing press was
-      visibly undoing itself. A matched dose is LESS arriving, not more.
+      visibly undoing itself. An adjusted dose is LESS arriving, not more.
     */
     speed.current += ((hot ? 2.4 : 1) - speed.current) * 0.15;
     phase.current += dt * speed.current;
@@ -325,7 +325,7 @@ export function Why() {
     A RESIDUAL SURVIVES THE TURN — about a fifth, not none.
 
     `1 - drain` emptied the vessel completely, which draws "no drug". The
-    treatment does not stop when the dose is matched; it is still 5-FU, still
+    treatment does not stop when the dose is adjusted; it is still 5-FU, still
     circulating, just at an exposure the person's own DPD can keep up with. So
     the drain takes 78% and leaves the rest, and the tone returns to coral
     rather than red — lower concentration, not absence.
@@ -374,7 +374,7 @@ export function Why() {
   useEffect(() => {
     recordStory({
       standardGiven: extra.current > 0.05 ? true : undefined,
-      matchedGiven: cleared.current > 0.05 ? true : undefined,
+      adjustedGiven: cleared.current > 0.05 ? true : undefined,
       peakHeld: peak.current,
       finalHeld: draining > 0.95 ? heldN : undefined,
     });
@@ -395,7 +395,7 @@ export function Why() {
       on: lineD,
       text: (
         <>
-          A dose that <span style={{ color: C.redDeep }}>fits.</span>
+          A safer starting <span style={{ color: C.redDeep }}>dose.</span>
         </>
       ),
     },
@@ -726,11 +726,11 @@ export function Why() {
                   const s = (((ph * 0.14 + i / IN_FLIGHT) % 1) + 1) % 1;
                   /*
                     One in four is cleared under a standard dose — the enzyme is
-                    reduced, not absent. Once the dose is matched, all of them
+                    reduced, not absent. Once the dose is adjusted, all of them
                     are: not because there is more enzyme, but because there is
                     less drug for the same enzyme to get through.
                   */
-                  const cleared = matched > 0.5 || i % CLEARED_EVERY === 0;
+                  const cleared = adjusted > 0.5 || i % CLEARED_EVERY === 0;
                   const x = W / 2 + Math.sin(s * 8 + i * 1.7) * 96;
 
                   // the one in four that still finds working enzyme
@@ -821,8 +821,11 @@ export function Why() {
           and stays for the rest of the scene, so the reader can see WHY the
           pile below it is draining. Drawn only in vocabulary already owned:
           the red A badge from the descent, and the drug molecules from this
-          same vessel. The dose is something you can count — nine, four kept,
-          five fading — so "reduced" is a quantity, not a word.
+          same vessel. The dose is something you can see — nine, four kept,
+          five fading — so "reduced" is a picture, not just a word. It is a
+          SCHEMATIC count, not a dose: the label says the reduction follows
+          clinical guidelines, because the client's review is explicit that the
+          test informs a dose and does not set one.
         */}
         {/*
           On a wide screen the card sits in the left third, beside the figure.
@@ -876,7 +879,7 @@ export function Why() {
                   Variant found before treatment
                 </span>
                 <span className={`mt-1 block ${L.sub}`} style={{ color: C.inkNote }}>
-                  less DPD expected — so the dose is matched to it
+                  reduced DPD activity expected
                 </span>
               </span>
             </div>
@@ -906,7 +909,7 @@ export function Why() {
               className={`mt-2 block ${L.note}`}
               style={{ color: C.ink, opacity: q(easeOut(trim)) * 0.7 }}
             >
-              dose reduced
+              dose reduced per guidelines
             </span>
           </div>
         </div>
@@ -1045,7 +1048,7 @@ export function Why() {
                   transition: "transform 140ms linear",
                 }}
               />
-              <span className="relative">{hot2 ? "Dosing…" : "Hold — give the matched dose"}</span>
+              <span className="relative">{hot2 ? "Dosing…" : "Hold — give the adjusted dose"}</span>
             </button>
           </span>
         </div>

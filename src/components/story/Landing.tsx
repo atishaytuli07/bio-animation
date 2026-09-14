@@ -8,7 +8,7 @@ import { useStoryState } from "@/lib/story-state";
 /**
  * What happens after the story ends.
  *
- * The scroll resolved on "A dose that fits." and then handed the reader a
+ * The scroll resolved on "A safer starting dose." and then handed the reader a
  * 118px cream strip reading "ChemoGuard · iGEM 2026 · Attributions" — three
  * elements, one link, and that link went to the least important page on the
  * wiki. Sixteen screens of argument, and then nothing to do with it.
@@ -42,7 +42,7 @@ export function Landing() {
     straight through has no decisions to be reminded of, and inventing a
     recap for them would be worse than leaving it out.
   */
-  const acted = story.standardGiven || story.matchedGiven || story.sliderMoved;
+  const acted = story.standardGiven || story.adjustedGiven || story.sliderMoved;
   /*
     One reveal, then hold — the rule the documentation pages already follow.
     Motion that replays every time you scroll past is the clearest tell of a
@@ -108,8 +108,8 @@ export function Landing() {
             <ul className="mt-3 space-y-1.5">
               {story.sliderMoved && (
                 <li className="text-[15px] leading-relaxed" style={{ color: C.inkBody }}>
-                  You looked for one dose that suited both patients. There is not one — that is what
-                  a matched dose means.
+                  You looked for one dose that suited both patients. There is not one — which is why
+                  a result before treatment matters.
                 </li>
               )}
               {story.standardGiven && (
@@ -119,9 +119,9 @@ export function Landing() {
                   bloodstream.
                 </li>
               )}
-              {story.matchedGiven && (
+              {story.adjustedGiven && (
                 <li className="text-[15px] leading-relaxed" style={{ color: C.inkBody }}>
-                  You gave the matched dose with the result in hand, and it came down to{" "}
+                  You gave the adjusted dose with the result in hand, and it came down to{" "}
                   <strong style={{ color: C.ink }}>{story.finalHeld}</strong> — fewer, not none. It
                   is still chemotherapy.
                 </li>

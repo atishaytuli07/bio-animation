@@ -88,7 +88,7 @@ function HumanPractices() {
   return (
     <PageShell
       title="Human Practices"
-      lede="A test that changes a chemotherapy dose is not only a technical problem. This page records who ChemoGuard is meant to serve, what the people around it told us, and the decisions we made differently because of what we heard."
+      lede="A test that can inform a chemotherapy dose is not only a technical problem. This page records who ChemoGuard is meant to serve, what the people around it told us, and the decisions we made differently because of what we heard."
       art={ART.generic}
       sections={SECTIONS}
     >

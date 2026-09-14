@@ -73,7 +73,7 @@ for (const pp of STOPS) {
     // Is the closing statement up, and is the caption gone?
     const texts = [...document.querySelectorAll("p")];
     const closing = texts.find((t) => t.textContent?.includes("About three billion"));
-    const caption = texts.find((t) => t.textContent?.includes("tell the cell where to cut"));
+    const caption = texts.find((t) => t.textContent?.includes("mark the splice site"));
 
     return {
       helix: helixRoot ? r(attr(helixRoot, "opacity", 1)) : null,

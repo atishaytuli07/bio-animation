@@ -45,7 +45,7 @@ export const PAGES: Page[] = [
     to: "/description",
     ready: true,
     blurb:
-      "What the problem is, what one letter of DNA does, and why the timing of a test decides whether it helps.",
+      "What the problem is, what one letter of DNA can do, and why testing before treatment matters.",
   },
   {
     label: "Engineering",

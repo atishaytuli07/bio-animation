@@ -2,7 +2,7 @@ import { createFileRoute, redirect } from "@tanstack/react-router";
 
 const TITLE = "ChemoGuard — Precision starts in your DNA";
 const DESCRIPTION =
-  "An interactive story about DPYD gene variants, DPD deficiency and fluoropyrimidine chemotherapy toxicity — and the pre-treatment test that prevents it.";
+  "An interactive story about DPYD gene variants, DPD deficiency and fluoropyrimidine chemotherapy toxicity — and why testing before the first dose matters.";
 
 /**
  * The root redirects to /new, which is the approved direction and the only

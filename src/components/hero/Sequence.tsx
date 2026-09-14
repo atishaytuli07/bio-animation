@@ -27,9 +27,10 @@ import { BASES_ON_FIELD, C } from "./palette";
  *
  *   DPYD c.1905+1G>A (rs3918290, the DPYD*2A allele) sits at position +1 of
  *   intron 14, immediately after the end of exon 14. Positions +1 and +2 of an
- *   intron are the canonical GT splice donor — the two letters that mark where
- *   the cut goes. The variant changes that G to an A, so the donor reads AT,
- *   the spliceosome does not recognise it, and exon 14 is skipped.
+ *   intron carry the conserved GT of the 5' splice donor site. The variant
+ *   changes that G to an A, so the site reads AT and may no longer be
+ *   recognised, which can lead to exon 14 being skipped. (Worded to the
+ *   client's science review — "may" and "can", never "is skipped".)
  *
  * So the frame shows the boundary, the two donor letters, and the G becoming
  * an A. Every glyph on screen is entailed by the variant's name. Nothing is
@@ -493,8 +494,7 @@ export function Sequence({
             opacity: Math.min(1, Math.max(0, flip * 2 - 0.7)) * 0.8 * (1 - captionOut),
           }}
         >
-          These two letters tell the cell where to cut. Change one, and the cut is made in the wrong
-          place.
+          These two letters mark the splice site. Change one, and it may no longer be recognised.
         </p>
       </div>
     </div>
