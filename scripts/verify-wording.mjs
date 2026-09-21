@@ -31,14 +31,14 @@ const REQUIRED = [
   "A large proportion of 5-FU is normally broken down by the enzyme dihydropyrimidine dehydrogenase (DPD), which helps control systemic drug exposure.",
   "DPD is encoded by the DPYD gene.",
   "Some DPYD variants disrupt normal gene processing and reduce functional DPD activity.",
-  "The conserved GT sequence there marks the 5′ splice donor site used during pre-mRNA processing.",
+  "The conserved GT sequence marks the 5′ splice donor site used during pre-mRNA processing.",
+  "Without pre-treatment DPYD testing, reduced DPD activity may not be known before fluoropyrimidine therapy begins.",
   "When G changes to A, the splice site may no longer be recognised correctly.",
   "Abnormal splicing can reduce the amount of functional DPD produced.",
   "5-FU exposure increases",
   "This pathway illustrates the expected biological consequence associated with reduced DPD activity. Individual clinical effects can vary.",
   "If a clinically relevant DPYD variant is identified before treatment, the result can inform dose adjustment according to established clinical guidelines.",
-  "a conceptual illustration",
-  "Not a quantitative pharmacokinetic model.",
+  "Conceptual illustration, not a quantitative pharmacokinetic model.",
 ];
 
 /**

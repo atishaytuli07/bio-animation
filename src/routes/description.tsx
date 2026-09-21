@@ -82,7 +82,7 @@ const SOURCES = [
   {
     id: "guidelines",
     supports:
-      "The clinical guideline used for pre-treatment DPYD genotyping and dose adjustment (for example CPIC or DPWG), named.",
+      "The clinical guideline for pre-treatment DPYD genotyping and dose adjustment, named — the team supplies which one.",
   },
 ] as const satisfies readonly Source[];
 
@@ -122,8 +122,8 @@ function Description() {
         <P>
           DPD is encoded by the <strong>DPYD</strong> gene. Some DPYD variants disrupt normal gene
           processing and reduce functional DPD activity.
-          <Cite id="splicing" /> Without a test, a carrier looks no different from anyone else, so
-          they are given a standard dose — and their body may not clear it at the expected rate.
+          <Cite id="splicing" /> Without pre-treatment DPYD testing, reduced DPD activity may not be
+          known before fluoropyrimidine therapy begins.
         </P>
       </Section>
 
@@ -131,8 +131,8 @@ function Description() {
         <P>
           The variant this project focuses on is <strong>DPYD c.1905+1G&gt;A</strong>, also known as
           rs3918290 or the DPYD*2A allele. It sits at the first position of intron 14, immediately
-          after the end of exon 14. The conserved GT sequence there marks the 5′ splice donor site
-          used during pre-mRNA processing. When G changes to A, the splice site may no longer be
+          after the end of exon 14. The conserved GT sequence marks the 5′ splice donor site used
+          during pre-mRNA processing. When G changes to A, the splice site may no longer be
           recognised correctly.
         </P>
         <Figure
@@ -180,8 +180,8 @@ function Description() {
           <Cite id="guidelines" />
         </P>
         <Figure
-          label="Figure 3 · two doses, a conceptual illustration"
-          caption="Not a quantitative pharmacokinetic model. Left: a standard dose in a person with reduced DPD activity. Right: the same person, with the dose adjusted according to clinical guidelines."
+          label="Figure 3 · two doses"
+          caption="Conceptual illustration, not a quantitative pharmacokinetic model. Left: a standard dose in a person with reduced DPD activity. Right: the same person at a guideline-adjusted dose."
         >
           <DoseFigure />
         </Figure>
