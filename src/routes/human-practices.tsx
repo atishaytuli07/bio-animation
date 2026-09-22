@@ -1,7 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 
 import { C, L, R } from "@/components/hero/palette";
-import { ART } from "@/components/story/PageHero";
 import { Awaiting, P, PageShell, Section } from "@/components/story/PageShell";
 
 /**
@@ -89,7 +88,7 @@ function HumanPractices() {
     <PageShell
       title="Human Practices"
       lede="A test that can inform a chemotherapy dose is not only a technical problem. This page records who ChemoGuard is meant to serve, what the people around it told us, and the decisions we made differently because of what we heard."
-      art={ART.generic}
+      piece="voices"
       sections={SECTIONS}
     >
       <Section id="why" title="Why this matters">

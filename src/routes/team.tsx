@@ -1,7 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 
 import { C, L, R } from "@/components/hero/palette";
-import { ART } from "@/components/story/PageHero";
 import { Awaiting, P, PageShell, Section } from "@/components/story/PageShell";
 
 /**
@@ -62,7 +61,7 @@ function Team() {
     <PageShell
       title="Team"
       lede="ChemoGuard is built by students at Nazarbayev Intellectual Schools, Kazakhstan, for iGEM 2026. This page is who we are and what each of us worked on."
-      art={ART.generic}
+      piece="crew"
       sections={SECTIONS}
     >
       <Section id="students" title="The team">

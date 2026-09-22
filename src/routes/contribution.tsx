@@ -1,7 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 
 import { C, R } from "@/components/hero/palette";
-import { ART } from "@/components/story/PageHero";
 import { Awaiting, P, PageShell, Section } from "@/components/story/PageShell";
 
 /**
@@ -52,7 +51,7 @@ function Contribution() {
     <PageShell
       title="Contribution"
       lede="What this project leaves behind for the teams that come after it — and why it is worth their time."
-      art={ART.generic}
+      piece="handoff"
       sections={SECTIONS}
     >
       <Section id="what" title="What we contribute">

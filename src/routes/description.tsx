@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 
 import { C, R } from "@/components/hero/palette";
-import { ART, PLATE } from "@/components/story/PageHero";
+import { PLATE } from "@/components/story/PageHero";
 import { Awaiting, P, PageShell, Section } from "@/components/story/PageShell";
 import { CiteMark, SourceList, type Source } from "@/components/story/Cite";
 import { Figure } from "@/components/story/Figure";
@@ -107,7 +107,7 @@ function Description() {
     <PageShell
       title="Description"
       lede="Two patients can receive the same fluoropyrimidine treatment at the same dose, yet experience very different toxicity because of differences in drug metabolism."
-      art={ART.description}
+      piece="dock"
       plate={PLATE.description}
       sections={SECTIONS}
     >

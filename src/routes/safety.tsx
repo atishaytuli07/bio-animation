@@ -1,7 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 
 import { C, L, R } from "@/components/hero/palette";
-import { ART } from "@/components/story/PageHero";
 import { Awaiting, P, PageShell, Section } from "@/components/story/PageShell";
 
 /**
@@ -55,7 +54,7 @@ function Safety() {
     <PageShell
       title="Safety"
       lede="What we worked with, how we contained it, and what a test that informs a chemotherapy dose has to be careful about — including the way it could do harm by being wrong."
-      art={ART.generic}
+      piece="result"
       sections={SECTIONS}
     >
       <Section id="lab" title="In the laboratory">

@@ -1,3 +1,5 @@
+import type { CSSProperties, ReactNode } from "react";
+
 import { Cell, Enzyme, Molecule } from "@/components/hero/elements";
 import { asset, C, L, T, R } from "@/components/hero/palette";
 import { useTime } from "@/hooks/use-scroll-progress";
@@ -23,8 +25,29 @@ import { useTime } from "@/hooks/use-scroll-progress";
  * asset per page, so a page costs a config object and nothing else.
  */
 
-/** Per-page illustration, composed from the shared elements. */
-export type Art = { k: "cell" | "mol" | "enz"; x: number; y: number; s: number; tone: string }[];
+/**
+ * THE ONE OBJECT A PAGE CARRIES, instead of a scatter.
+ *
+ * The client's note was that floating icons read as random, and she asked for
+ * fewer, larger, more meaningful elements — but explicitly not four pages
+ * wearing the same picture: "I don't want every hero to look identical. Each
+ * page can still have its own visual identity."
+ *
+ * So each piece is drawn from the site's own vocabulary and says what ITS page
+ * is about:
+ *
+ *   dock    Description  DPD with 5-FU in its cleft — the page's whole subject
+ *   cycle   Engineering  the enzyme inside a loop — design, build, test, learn
+ *   voices  Human Practices  people of different sizes around one test
+ *   result  Safety       a variant found, beside what a partial test never saw
+ *   crew    Team         the team's own emblem, at the size of an illustration
+ *   handoff Contribution one built thing and its dashed twin — what the next
+ *                        team can rebuild from what this one leaves behind
+ *
+ * Where a page has a character plate the piece is anchored to the figure (see
+ * the plate block below); where it has none it sits in the empty right band.
+ */
+export type Piece = "dock" | "cycle" | "voices" | "result" | "crew" | "handoff";
 
 /**
  * An illustrated character plate for a page hero.
@@ -68,35 +91,6 @@ export type Plate = {
  * between the copy column and the figure, where they read as the space she is
  * standing in rather than as debris stuck to her.
  */
-export const ART = {
-  /*
-    EMPTY, ON PURPOSE. Description's hero carries one composed object instead —
-    the enzyme with the drug in its cleft, see <Dock> — because the client read
-    five scattered shapes as random, and two of them were blood cells, which
-    belong to the bloodstream scene rather than to a page about a gene.
-  */
-  description: [],
-  engineering: [
-    { k: "enz", x: 16, y: 20, s: 0.86, tone: C.green },
-    /*
-      x 28, not 38. Measured against the plate's painted pixels, at 38 this one
-      sat on his hand and the test device at 1280 (2651 px within 14px) and
-      1366 (970 px) — the character reaches further left than `lead` says,
-      because he holds the device out in front of him.
-    */
-    { k: "enz", x: 28, y: 42, s: 0.5, tone: C.green },
-    { k: "mol", x: 10, y: 62, s: 0.62, tone: C.coral },
-    { k: "cell", x: 32, y: 80, s: 0.54, tone: C.lavender },
-    { k: "mol", x: 40, y: 10, s: 0.44, tone: C.coral },
-  ],
-  generic: [
-    { k: "cell", x: 30, y: 26, s: 1.0, tone: C.pink },
-    { k: "mol", x: 66, y: 20, s: 0.75, tone: C.coral },
-    { k: "enz", x: 60, y: 62, s: 0.85, tone: C.green },
-    { k: "cell", x: 24, y: 72, s: 0.62, tone: C.blue },
-  ],
-} satisfies Record<string, Art>;
-
 /**
  * The character plate each page opens with, where one exists.
  *
@@ -108,7 +102,13 @@ export const ART = {
  */
 export const PLATE = {
   description: { src: "hero-description.webp", lead: 0.5, dock: true },
-  engineering: { src: "hero-engineering.webp", lead: 0.55 },
+  /*
+    lead 0.5, not 0.55: he holds the test device out in front of him, so his
+    painted pixels start earlier than the figure itself. Measured against the
+    plate's alpha, the piece beside him overlapped his hands by 237 px at every
+    width from 1280 up while `lead` said there was room.
+  */
+  engineering: { src: "hero-engineering.webp", lead: 0.5 },
 } satisfies Record<string, Plate>;
 
 /**
@@ -131,7 +131,7 @@ export const PLATE = {
 function Dock() {
   const label = `${L.note} absolute whitespace-nowrap leading-none`;
   return (
-    <div data-dock className="relative" style={{ width: 230, height: 250 }}>
+    <div data-dock data-piece className="relative" style={{ width: 230, height: 250 }}>
       <div
         className="absolute"
         style={{ left: 0, top: 28, filter: "drop-shadow(0 8px 14px rgba(36,28,46,0.26))" }}
@@ -166,15 +166,243 @@ function Dock() {
   );
 }
 
+/** A label in the hero's annotation voice: paper type on a hairline leader. */
+function Tag({ children, style }: { children: ReactNode; style: React.CSSProperties }) {
+  return (
+    <span
+      data-piece-label
+      className={`${L.note} absolute whitespace-nowrap leading-none`}
+      style={{ color: C.paper, ...style }}
+    >
+      {children}
+    </span>
+  );
+}
+
+function Leader({ style }: { style: CSSProperties }) {
+  return (
+    <span
+      aria-hidden="true"
+      className="absolute block w-[1.5px]"
+      style={{ background: `${C.paper}b3`, ...style }}
+    />
+  );
+}
+
+/**
+ * Engineering: the enzyme inside the loop.
+ *
+ * The page is judged on whether the team went round the design–build–test–learn
+ * cycle more than once, and the loop is the shape that says so. The arrow is
+ * drawn open, with its head just short of the tail, because a closed ring reads
+ * as a logo and an open one reads as motion returning.
+ */
+function Cycle() {
+  return (
+    <div data-piece className="relative" style={{ width: 230, height: 230 }}>
+      <svg
+        viewBox="0 0 230 230"
+        className="absolute inset-0 h-full w-full"
+        aria-hidden="true"
+        style={{ filter: "drop-shadow(0 8px 14px rgba(36,28,46,0.26))" }}
+      >
+        <defs>
+          <marker
+            id="hero-cycle-head"
+            viewBox="0 0 10 10"
+            refX="8"
+            refY="5"
+            markerWidth="5"
+            markerHeight="5"
+            orient="auto-start-reverse"
+          >
+            <path d="M0 0 L10 5 L0 10 z" fill={C.paper} />
+          </marker>
+        </defs>
+        <path
+          d="M 187 84 A 78 78 0 1 1 84 43"
+          fill="none"
+          stroke={C.paper}
+          strokeOpacity="0.92"
+          strokeWidth="4"
+          strokeLinecap="round"
+          markerEnd="url(#hero-cycle-head)"
+        />
+      </svg>
+      <div className="absolute" style={{ left: 50, top: 50 }}>
+        <Enzyme s={1.3} tone={C.green} />
+      </div>
+      <Leader style={{ left: 115, top: 182, height: 20 }} />
+      <Tag style={{ left: 74, top: 208 }}>again</Tag>
+    </div>
+  );
+}
+
+/**
+ * Human Practices: the people around one test.
+ *
+ * Three cells at three sizes, overlapping the way a group does rather than
+ * spaced like a diagram. The page's own subject is who the test reaches — the
+ * patient, the clinician who acts on the result, the lab that runs it — so the
+ * sizes differ and none of them is the same shape twice.
+ */
+function Voices() {
+  return (
+    <div data-piece className="relative" style={{ width: 250, height: 210 }}>
+      <div
+        className="absolute"
+        style={{ left: 0, top: 22, filter: "drop-shadow(0 8px 14px rgba(36,28,46,0.24))" }}
+      >
+        <Cell s={1.15} tone={C.pink} />
+      </div>
+      <div
+        className="absolute"
+        style={{ left: 96, top: 0, filter: "drop-shadow(0 6px 12px rgba(36,28,46,0.22))" }}
+      >
+        <Cell s={0.82} tone={C.blue} />
+      </div>
+      <div
+        className="absolute"
+        style={{ left: 120, top: 84, filter: "drop-shadow(0 6px 12px rgba(36,28,46,0.22))" }}
+      >
+        <Cell s={0.62} tone={C.lavender} />
+      </div>
+      {/* centred under the group: hung off the left cell it read as a label
+          for that one cell rather than for the three of them */}
+      <Leader style={{ left: 96, top: 152, height: 22 }} />
+      <Tag style={{ left: 42, top: 182 }}>who it reaches</Tag>
+    </div>
+  );
+}
+
+/**
+ * Safety: what the test found, and what it never looked at.
+ *
+ * The same red base tile the story and Figure 1 use, beside an empty dashed
+ * one. The page says it plainly — "screening a set of variants tells you about
+ * those variants and nothing else" — and this is that sentence as a picture.
+ */
+function Result() {
+  const tile = {
+    width: "3.6rem",
+    height: "3.9rem",
+    fontSize: "2rem",
+  } as const;
+  return (
+    <div data-piece className="relative" style={{ width: 250, height: 200 }}>
+      <span
+        className="absolute inline-flex items-center justify-center rounded-[8px] font-mono font-bold"
+        style={{
+          ...tile,
+          left: 24,
+          top: 40,
+          background: C.red,
+          color: "#fff",
+          border: `3px solid ${C.ink}`,
+          boxShadow: `4px 4px 0 ${C.ink}`,
+        }}
+      >
+        A
+      </span>
+      <span
+        className="absolute inline-flex items-center justify-center rounded-[8px] font-mono font-bold"
+        style={{
+          ...tile,
+          left: 118,
+          top: 40,
+          color: `${C.paper}66`,
+          border: `3px dashed ${C.paper}80`,
+        }}
+      >
+        ?
+      </span>
+      {/* one baseline for both, equal leaders: the pair is a comparison, and
+          staggering them read as a layout accident rather than a composition */}
+      <Leader style={{ left: 53, top: 110, height: 22 }} />
+      <Tag style={{ left: 12, top: 140 }}>screened</Tag>
+      <Leader style={{ left: 160, top: 110, height: 22 }} />
+      <Tag style={{ left: 108, top: 140 }}>not screened</Tag>
+    </div>
+  );
+}
+
+/**
+ * Team: the emblem, as an illustration rather than as chrome.
+ *
+ * Every other page's piece is drawn from the science; this page is about the
+ * people, and the one mark that belongs to them is their own. It sits on the
+ * white chip the header uses, because the supplied artwork is transparent
+ * wherever it should be white and loses its structure on the purple field.
+ */
+function Crew() {
+  return (
+    <div
+      data-piece
+      className="relative grid place-items-center overflow-hidden rounded-full"
+      style={{
+        width: 190,
+        height: 190,
+        background: "#fff",
+        boxShadow: `0 18px 30px rgba(36,28,46,0.28), 0 0 0 3px ${C.ink}1f`,
+      }}
+    >
+      <img
+        src={asset("logo-mark.webp")}
+        alt=""
+        draggable={false}
+        className="h-[150px] w-auto select-none"
+      />
+    </div>
+  );
+}
+
+/**
+ * Contribution: the built thing, and its dashed twin.
+ *
+ * Bronze #3 asks what a future team can take and use. Solid is what this team
+ * made; dashed is the same shape in someone else's hands, which is the whole
+ * point of documenting it. The dashed outline is the vocabulary the story
+ * already uses for an enzyme slot that is not filled yet.
+ */
+function Handoff() {
+  return (
+    <div data-piece className="relative" style={{ width: 240, height: 200 }}>
+      <div
+        className="absolute"
+        style={{ left: 0, top: 24, filter: "drop-shadow(0 8px 14px rgba(36,28,46,0.26))" }}
+      >
+        <Enzyme s={1.15} tone={C.green} />
+      </div>
+      <div className="absolute" style={{ left: 104, top: 24, opacity: 0.55 }}>
+        <Enzyme s={1.15} tone="transparent" line={`${C.paper}cc`} />
+      </div>
+      <Leader style={{ left: 58, top: 150, height: 20 }} />
+      <Tag style={{ left: 20, top: 178 }}>ours</Tag>
+      <Leader style={{ left: 162, top: 150, height: 20 }} />
+      <Tag style={{ left: 120, top: 178 }}>theirs to reuse</Tag>
+    </div>
+  );
+}
+
+function PieceArt({ piece }: { piece: Piece }) {
+  if (piece === "handoff") return <Handoff />;
+  if (piece === "cycle") return <Cycle />;
+  if (piece === "voices") return <Voices />;
+  if (piece === "result") return <Result />;
+  if (piece === "crew") return <Crew />;
+  return <Dock />;
+}
+
 export function PageHero({
   title,
   lede,
-  art,
   plate,
+  piece,
 }: {
   title: string;
   lede: string;
-  art: Art;
+  /** The one composed object this page carries. See Piece above. */
+  piece?: Piece | undefined;
   /* `| undefined` explicitly: exactOptionalPropertyTypes is on, so a caller
      forwarding an absent plate is passing undefined, not omitting the key. */
   plate?: Plate | undefined;
@@ -256,7 +484,7 @@ export function PageHero({
           */
           className="pointer-events-none absolute bottom-0 right-0 block h-[152px] md:h-[250px] lg:h-[92%]"
         >
-          {plate.dock && (
+          {piece && (
             /*
               ANCHORED TO THE FIGURE, NOT TO THE PAGE.
 
@@ -279,7 +507,7 @@ export function PageHero({
                 transform: `translateY(${(Math.sin(t * 0.32 + 1.7) * 6).toFixed(2)}px) rotate(${(Math.sin(t * 0.22) * 1.6).toFixed(2)}deg)`,
               }}
             >
-              <Dock />
+              <PieceArt piece={piece} />
             </div>
           )}
           <img
@@ -301,49 +529,54 @@ export function PageHero({
       )}
 
       {/*
-        The scattered elements. On a plate page they sit slightly back so the
-        figure stays the subject, and they appear only from xl — see ART above.
-        They are what connects a hero to the world travelling through the story.
+        A PAGE WITHOUT A CHARACTER still gets its one object, centred in the
+        band the scatter used to fill. From lg: at 768 the copy column is the
+        full width and the band overlaps it.
       */}
-      <div
-        aria-hidden="true"
-        /*
-          On a plate page, from xl only — the same rule and the same reason as
-          the dock: below 1280 there is no space between the copy and the
-          figure, and measured, these landed on the lede panel at 768 and on
-          the character's hands at 1024.
-        */
-        className={`pointer-events-none absolute inset-y-0 right-0 hidden w-[42%] ${plate ? "xl:block" : "md:block"}`}
-        style={plate ? { opacity: 0.72 } : undefined}
-      >
-        {art.map((a, i) => (
-          <div
-            key={i}
-            className="absolute"
-            style={{
-              left: `${a.x}%`,
-              top: `${a.y}%`,
-              transform: `translate(-50%,-50%) translateY(${(Math.sin(t * 0.32 + i * 1.7) * 7).toFixed(2)}px) rotate(${((i * 47) % 40) - 20 + Math.sin(t * 0.22 + i) * 2}deg)`,
-              filter: `drop-shadow(0 6px 12px rgba(36,28,46,0.22))`,
-            }}
-          >
-            {a.k === "cell" ? (
-              <Cell s={a.s} tone={a.tone} />
-            ) : a.k === "mol" ? (
-              <Molecule s={a.s} tone={a.tone} />
-            ) : (
-              <Enzyme s={a.s} tone={a.tone} />
-            )}
-          </div>
-        ))}
-      </div>
+      {piece && !plate && (
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute right-[6%] top-1/2 hidden lg:block xl:right-[10%]"
+          style={{
+            transform: `translateY(-50%) translateY(${(Math.sin(t * 0.32 + 1.7) * 6).toFixed(2)}px) rotate(${(Math.sin(t * 0.22) * 1.4).toFixed(2)}deg)`,
+          }}
+        >
+          <PieceArt piece={piece} />
+        </div>
+      )}
+
+      {/*
+        AND IT STANDS IN THE CORNER ON SMALL SCREENS, the way a character does.
+
+        Below lg the piece cannot sit beside the copy — the column is the full
+        width — and for a while that meant a phone got badge, title, two rules
+        and a lede panel on flat purple with nothing else. That is the emptiest
+        screen on the site, on the device most readers use, and it is the same
+        mistake the character plates already had to undo.
+
+        Scaled from its bottom-right corner so the drawing keeps its
+        proportions, and the copy block below carries the matching padding so
+        the two occupy different bands rather than the same one.
+      */}
+      {piece && !plate && (
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute bottom-5 right-5 origin-bottom-right scale-[0.6] md:scale-[0.78] lg:hidden"
+          style={{
+            // Tailwind v4 scales with the `scale` property, so this is drift only
+            transform: `translateY(${(Math.sin(t * 0.32 + 1.7) * 4).toFixed(2)}px)`,
+          }}
+        >
+          <PieceArt piece={piece} />
+        </div>
+      )}
 
       {/*
         `pb-40` on mobile only when a plate is present: it is the band the
         figure stands in, so the lede is not sharing a corner with her.
       */}
       <div
-        className={`relative mx-auto max-w-[92rem] px-6 pt-14 md:px-10 md:py-20 ${plate ? "pb-40 md:pb-[17rem]" : "pb-14 md:pb-20"} lg:pb-20`}
+        className={`relative mx-auto max-w-[92rem] px-6 pt-14 md:px-10 md:py-20 ${plate ? "pb-40 md:pb-[17rem]" : piece ? "pb-[11rem] md:pb-[13rem]" : "pb-14 md:pb-20"} lg:pb-20`}
       >
         <div className="max-w-[46rem]">
           {/* the badge, in the site's paper/ink/offset-shadow language */}

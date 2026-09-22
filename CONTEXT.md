@@ -575,13 +575,30 @@ the ground; it is gone, and so is the contrast problem that switch existed for.
 
 **`PageShell`** — header, hero, section index, content column, footer.
 **`PageHero`** — badge, display title, two-rule treatment, lede panel, an
-optional illustrated character, and objects composed from the story's own
-`Cell` / `Molecule` / `Enzyme`. Arrangements live in `ART`, characters in
-`PLATE`; a new page costs a config object. On a character page, objects appear
-only from xl (1280px): below it there is no space between the copy and the
-character, and below lg the character stands in the corner under the copy.
-Description carries one composed object instead of a scatter — `PLATE.description.dock` / `<Dock>`,
-DPD with 5-FU in its cleft, labelled and anchored to the character.
+optional illustrated character (`PLATE`), and **one composed object, its
+`piece`**. A page names its piece and nothing else; there is no per-page
+coordinate table any more.
+
+| Page | `piece` | What it says |
+|---|---|---|
+| Description | `dock` | DPD with 5-FU in its cleft — the page's subject |
+| Engineering | `cycle` | the enzyme inside a loop: design, build, test, learn |
+| Human Practices | `voices` | three people of different sizes around one test |
+| Safety | `result` | a variant screened, beside what a partial test never saw |
+| Team | `crew` | the team's own emblem, at illustration size |
+| Contribution | `handoff` | one built thing and its dashed twin, for the next team |
+
+**The scatter is gone.** `ART` — per-page arrays of `Cell` / `Molecule` /
+`Enzyme` at hand-placed percentages — was deleted with the `art` prop once
+every page carried a piece instead. The client's two notes govern what replaced
+it: fewer, larger, more meaningful elements, and **"I don't want every hero to
+look identical. Each page can still have its own visual identity."**
+`verify-hero-art.mjs` enforces both halves — nothing may touch the character's
+painted pixels or the copy, and no two pages may carry the same object.
+
+Where a page has a character the piece hangs a fixed gap left of where the
+figure starts (`PLATE.lead`), from xl; where it has none it sits in the empty
+band from lg. Below that there is no room and no piece.
 
 ### Character plates — and the one rule that governs them
 
@@ -606,19 +623,13 @@ Two recurring characters rather than a new face per page, so the pages read as
 one world. Both are cutouts with real alpha, anchored bottom-right, standing
 *in* the hero rather than boxed on it.
 
-**The objects move rather than scatter over the figure.** A figure occupies
-roughly the right 22% of the viewport, which is the same band the scattered
-objects used — a molecule landed in her hair and a cell beside her head. `ART`
-coordinates are percentages of the right-hand 42% band, and on a plate page they
-are confined to the corridor between the copy and the figure. Two later rules,
-both measured against the plate's painted pixels:
-
-- **From xl only on a plate page.** Below 1280px there is no corridor — the
-  objects landed on the lede at 768 and on the character's hands at 1024.
-- **Description has no scatter at all** (`ART.description = []`). The client
-  read five shapes as random; it carries one composed object instead,
-  `PLATE.description.dock` → `<Dock>`: DPD with 5-FU in its cleft, labelled,
-  anchored a fixed gap left of the figure.
+**`lead` is where the figure's PAINTED pixels start, not where the image does.**
+The piece beside a character is anchored to it, so that number is load-bearing,
+and it has been wrong twice in the same way: Engineering's was 0.55 while the
+boy holds a test device out in front of him, and the piece beside him overlapped
+his hands by 237 px at every width from 1280 up. Measured against the plate's
+alpha it is 0.5. If a piece ever looks close to a character, suspect `lead`
+before the piece.
 
 **No mask on a plate.** A left-edge gradient was added to blend a halo that did
 not exist and it ate the DNA strand — the one element carrying the page's

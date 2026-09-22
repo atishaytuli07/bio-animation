@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 
 import { C, L, R } from "@/components/hero/palette";
-import { ART, PLATE } from "@/components/story/PageHero";
+import { PLATE } from "@/components/story/PageHero";
 import { Awaiting, P, PageShell, Section } from "@/components/story/PageShell";
 import { Figure } from "@/components/story/Figure";
 import { CycleFigure } from "@/components/story/diagrams";
@@ -91,7 +91,7 @@ function Engineering() {
     <PageShell
       title="Engineering"
       lede="How the project was designed, built, tested and then changed because of what the testing showed. Each pass round the cycle is recorded here, including the ones that did not work."
-      art={ART.engineering}
+      piece="cycle"
       plate={PLATE.engineering}
       sections={SECTIONS}
     >

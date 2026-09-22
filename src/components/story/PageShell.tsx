@@ -3,7 +3,7 @@ import { useEffect, useState, type ReactNode } from "react";
 
 import { Cell, Enzyme, Molecule } from "@/components/hero/elements";
 import { asset, C, DISPLAY, L, T } from "@/components/hero/palette";
-import { PageHero, type Art, type Plate } from "@/components/story/PageHero";
+import { PageHero, type Piece, type Plate } from "@/components/story/PageHero";
 import { SiteHeader } from "@/components/story/SiteHeader";
 import { PAGES } from "@/components/story/site-map";
 import { WIKI } from "@/lib/wiki";
@@ -28,16 +28,17 @@ import { WIKI } from "@/lib/wiki";
 export function PageShell({
   title,
   lede,
-  art,
   plate,
+  piece,
   sections,
   children,
 }: {
   title: string;
   lede: string;
-  art: Art;
   /** Optional illustrated character for the hero. See PLATE in PageHero. */
   plate?: Plate | undefined;
+  /** The one composed object this page's hero carries. See Piece in PageHero. */
+  piece?: Piece | undefined;
   /** Ids and labels for the index rail; must match the <Section id>s below. */
   sections: { id: string; label: string }[];
   children: ReactNode;
@@ -72,7 +73,7 @@ export function PageShell({
     <div className="min-h-screen" style={{ background: C.paper, color: C.ink }}>
       <SiteHeader />
 
-      <PageHero title={title} lede={lede} art={art} plate={plate} />
+      <PageHero title={title} lede={lede} plate={plate} piece={piece} />
 
       <div className="mx-auto flex max-w-[92rem] gap-12 px-6 pb-24 pt-12 md:px-10 md:pt-16">
         {/*
