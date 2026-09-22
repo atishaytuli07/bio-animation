@@ -83,7 +83,7 @@ export function PageShell({
           them, and it marks where they are rather than only offering links.
         */}
         <aside className="hidden w-[15rem] shrink-0 xl:block">
-          <nav className="sticky top-28">
+          <nav aria-label="On this page" className="sticky top-28">
             <span className={L.note} style={{ color: C.inkNote }}>
               On this page
             </span>
@@ -474,6 +474,7 @@ export function SiteFooter() {
             reading a link that goes nowhere learns it is broken.
           */}
           <nav
+            aria-label="All pages"
             className="flex flex-wrap items-center gap-x-6 gap-y-2 text-[14px] font-semibold"
             style={{ fontFamily: DISPLAY }}
           >

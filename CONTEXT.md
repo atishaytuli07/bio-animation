@@ -987,6 +987,12 @@ node scripts/build-static.mjs --base=nis-kazakhstan && node scripts/verify-stati
 | `verify-hero-art` | every hero object, and Description's docked pair, clear of the character's painted pixels and the lede; nothing beside the character below xl | — |
 | `verify-static` | the export under a base path from a strict server: every route by deep link at two widths, client-side nav and reload, the root redirect, no request and no link outside the base, no external links | headless Chromium never fetches favicons, so a root-absolute icon link passed — the export is now also scanned as text |
 | `verify-client-review` 10 | the shared header on every route and a 404 | points 8 and 9 read two pages; Attributions had no header at all |
+| `verify-a11y` | axe-core on every page (no serious or critical), the story's slider and both hold controls operable by keyboard, reduced motion honoured | tested the controls at scroll positions picked from memory — both wrong, both "failing" controls worked; it now finds each control's live window itself |
+| `measure-perf` | frame time per scene at 4× CPU throttle, and page weight against the 5 MB limit | run against the dev server it read 3-8fps and 6.6 MB — a number about React in development mode. It must run against the built export, and it samples each scene three times because frame time quantises to 16.7ms and one run cannot tell 30fps from 60 |
+
+Measured September 2026 on the built export, 4× CPU throttle: every scene of
+the story at 60fps, the story page 823 kB, Description 663 kB, Team 547 kB.
+Accessibility: zero axe violations on all eight pages.
 
 `verify-static` is the only check that sees the site the way iGEM serves it.
 Everything else reads the dev server at the domain root, where a path that

@@ -416,7 +416,13 @@ export function PageHero({
   const t = useTime(true);
 
   return (
+    /*
+      A NAMED REGION. The hero sits outside <main>, so without a name its badge,
+      title and lede belong to no landmark at all and a screen reader reaches
+      them only by walking the whole document. Named by its own <h1>.
+    */
     <section
+      aria-labelledby="page-hero-title"
       className="relative overflow-hidden"
       style={{
         background: `linear-gradient(158deg, ${C.lavenderDeep}, color-mix(in oklab, ${C.lavenderDeep} 76%, ${C.ink}))`,
@@ -592,7 +598,11 @@ export function PageHero({
             ChemoGuard · iGEM 2026
           </span>
 
-          <h1 className="mt-6 font-black md:mt-8" style={{ ...T.display, color: C.paper }}>
+          <h1
+            id="page-hero-title"
+            className="mt-6 font-black md:mt-8"
+            style={{ ...T.display, color: C.paper }}
+          >
             {title}
           </h1>
 

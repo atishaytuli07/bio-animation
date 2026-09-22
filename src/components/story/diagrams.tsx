@@ -319,7 +319,16 @@ export function CycleFigure() {
 
   return (
     <div ref={ref}>
-      <svg viewBox="0 0 620 394" className="h-auto w-full" role="img" aria-label="">
+      {/*
+        NOT role="img". It carried role="img" with an empty aria-label, which
+        is two faults at once: an image with no accessible name, and — because
+        role="img" hides everything inside it — four working links to the
+        sections below, invisible to a screen reader. It is a graphic that
+        CONTAINS links, so the links stay reachable and each one is named by
+        the text drawn inside it; the arrows and the shadows are decoration and
+        are hidden individually.
+      */}
+      <svg viewBox="0 0 620 394" className="h-auto w-full">
         <defs>
           <marker
             id="cyc-head"
@@ -342,6 +351,7 @@ export function CycleFigure() {
           strokeWidth="2.5"
           strokeLinecap="round"
           markerEnd="url(#cyc-head)"
+          aria-hidden="true"
           pathLength={1}
           style={draw(0)}
         />
@@ -353,6 +363,7 @@ export function CycleFigure() {
           strokeWidth="2.5"
           strokeLinecap="round"
           markerEnd="url(#cyc-head)"
+          aria-hidden="true"
           pathLength={1}
           style={draw(1)}
         />
@@ -364,6 +375,7 @@ export function CycleFigure() {
           strokeWidth="2.5"
           strokeLinecap="round"
           markerEnd="url(#cyc-head)"
+          aria-hidden="true"
           pathLength={1}
           style={draw(2)}
         />
@@ -393,6 +405,7 @@ export function CycleFigure() {
           strokeWidth="4"
           strokeLinecap="round"
           markerEnd="url(#cyc-head)"
+          aria-hidden="true"
           pathLength={1}
           style={draw(3)}
         />
@@ -414,7 +427,7 @@ export function CycleFigure() {
         </text>
 
         {CYCLE_NODES.map((node, i) => (
-          <a key={node.id} href={`#${node.id}`}>
+          <a key={node.id} href={`#${node.id}`} aria-label={`${node.name} — go to that section`}>
             <g
               style={{
                 opacity: seen ? 1 : 0,

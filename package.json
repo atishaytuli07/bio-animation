@@ -13,7 +13,7 @@
     "build:static": "node scripts/build-static.mjs",
     "verify": "bash scripts/verify.sh",
     "audit": "node scripts/audit.mjs",
-    "check": "node scripts/verify-client-review.mjs && node scripts/verify-wording.mjs && node scripts/verify-header.mjs && node scripts/verify-hero-art.mjs && node scripts/audit.mjs",
+    "check": "node scripts/verify-client-review.mjs && node scripts/verify-wording.mjs && node scripts/verify-header.mjs && node scripts/verify-hero-art.mjs && node scripts/verify-a11y.mjs && node scripts/audit.mjs",
     "verify:static": "node scripts/verify-static.mjs"
   },
   "dependencies": {
@@ -32,6 +32,7 @@
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
     "@vitejs/plugin-react": "^5.2.0",
+    "axe-core": "^4.13.0",
     "eslint": "^9.32.0",
     "eslint-config-prettier": "^10.1.1",
     "eslint-plugin-prettier": "^5.2.6",

@@ -78,7 +78,11 @@ export function SiteHeader({
           </Link>
 
           {/* The hand-drawn underline marks the page you are on. */}
-          <nav className="hidden items-center gap-7 lg:flex" style={{ fontFamily: DISPLAY }}>
+          <nav
+            aria-label="Pages"
+            className="hidden items-center gap-7 lg:flex"
+            style={{ fontFamily: DISPLAY }}
+          >
             {NAV.map((page, i) =>
               page.ready ? (
                 <Link
@@ -153,6 +157,8 @@ export function SiteHeader({
 
       {menu && (
         <div
+          aria-label="Pages"
+          role="navigation"
           /*
             Scrolls inside itself. The header is fixed on the story, so a menu
             taller than the window could not be scrolled to — on a landscape

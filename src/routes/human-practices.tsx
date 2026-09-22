@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 
 import { C, L, R } from "@/components/hero/palette";
+import { CiteMark, SourceList, type Source } from "@/components/story/Cite";
 import { Awaiting, P, PageShell, Section } from "@/components/story/PageShell";
 
 /**
@@ -73,6 +74,42 @@ const STAKEHOLDERS = [
 ];
 
 /** The index rail; ids match the sections below. */
+/**
+ * Sources, in the order they are first cited.
+ *
+ * The client's instruction on references applies here too: the team supplies
+ * them, and we name no guideline or figure on their behalf. Until then each
+ * claim is listed by what its source has to establish, and the mark in the
+ * text shows a reader that it is not yet backed.
+ *
+ * Only claims about the world outside this project are cited. The rest of this
+ * page is what the team heard and what it decided, which is its own evidence.
+ */
+const SOURCES = [
+  {
+    id: "use",
+    supports:
+      "The scale of fluoropyrimidine use — how many people receive it, ideally with a figure for Kazakhstan.",
+  },
+  {
+    id: "bsa",
+    supports:
+      "That fluoropyrimidine dosing is usually calculated from body surface area rather than from a measure of how fast the drug is cleared.",
+  },
+  {
+    id: "toxicity",
+    supports:
+      "That reduced DPD activity is associated with a higher risk of severe toxicity at a standard dose.",
+  },
+] as const satisfies readonly Source[];
+
+type SourceId = (typeof SOURCES)[number]["id"];
+
+/** A citation mark for one of this page's sources. */
+function Cite({ id }: { id: SourceId }) {
+  return <CiteMark sources={SOURCES} id={id} />;
+}
+
 const SECTIONS = [
   { id: "why", label: "Why this matters" },
   { id: "who", label: "Who it affects" },
@@ -81,6 +118,7 @@ const SECTIONS = [
   { id: "changed", label: "What changed" },
   { id: "ethics", label: "Ethics and access" },
   { id: "reflection", label: "Reflection" },
+  { id: "references", label: "References" },
 ];
 
 function HumanPractices() {
@@ -93,10 +131,12 @@ function HumanPractices() {
     >
       <Section id="why" title="Why this matters">
         <P>
-          Fluoropyrimidine chemotherapy is given to very large numbers of people, and the dose is
-          usually calculated from body surface area rather than from how quickly a particular body
-          can clear the drug. For a person carrying a DPYD variant that reduces DPD activity, a
+          Fluoropyrimidine chemotherapy is given to very large numbers of people,
+          <Cite id="use" /> and the dose is usually calculated from body surface area rather than
+          from how quickly a particular body can clear the drug.
+          <Cite id="bsa" /> For a person carrying a DPYD variant that reduces DPD activity, a
           standard dose can be more than they can handle.
+          <Cite id="toxicity" />
         </P>
         <P>
           That makes this a project about a decision someone else makes on your behalf, before you
@@ -214,6 +254,10 @@ function HumanPractices() {
           defended.
         </P>
         <Awaiting what="Needs the team: what is still open" />
+      </Section>
+
+      <Section id="references" title="References">
+        <SourceList sources={SOURCES} />
       </Section>
 
       <div className="mt-14 flex flex-wrap gap-3 md:mt-20">
