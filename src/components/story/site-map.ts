@@ -33,7 +33,7 @@ export const PAGES: Page[] = [
     to: "/playground",
     ready: true,
     blurb:
-      "Find one dose that suits three people. You cannot, and that is the argument in twenty seconds.",
+      "You watched two people. Now set the dose yourself, for up to five patients, and see where the same dose lands in each.",
   },
   {
     label: "Description",
