@@ -1,58 +1,28 @@
 import { BASES_ON_FIELD, C } from "./palette";
 
-/**
- * The arrival: the strand resolved into DNA you can actually read.
- *
- * This is the payoff of the whole descent. The hero taught the base-pair
- * colours by hover; here those same colours become letters, and the one that
- * matters changes in front of you. The reader watches the mutation happen
- * rather than being told about it — which is the client's "communicated
- * through illustrations and visual transitions, not primarily through large
- * text", applied to the moment that most needed it.
- *
- * The letters assemble outward FROM the variant, not left to right, so the eye
- * is anchored on the base that matters before the context arrives around it.
- *
- * ─────────────────────────────────────────────────────────────────────────
- * WHY THERE IS NO FLANKING SEQUENCE HERE.
- *
- * This used to show six invented bases on each side of the variant. They were
- * decorative ACGT, not the reference sequence, and iGEM's policy is explicit
- * that nothing on a wiki may be fabricated — a judge checking a rendered
- * sequence against the reference genome is an entirely realistic thing to
- * happen, and inventing a locus is the kind of error that is not recoverable.
- *
- * What is shown instead is the part that is verifiable from the variant's own
- * name, and which happens to be the part that actually matters:
- *
- *   DPYD c.1905+1G>A (rs3918290, the DPYD*2A allele) sits at position +1 of
- *   intron 14, immediately after the end of exon 14. Positions +1 and +2 of an
- *   intron carry the conserved GT of the 5' splice donor site. The variant
- *   changes that G to an A, so the site reads AT and may no longer be
- *   recognised, which can lead to exon 14 being skipped. (Worded to the
- *   client's science review — "may" and "can", never "is skipped".)
- *
- * So the frame shows the boundary, the two donor letters, and the G becoming
- * an A. Every glyph on screen is entailed by the variant's name. Nothing is
- * invented, and the image now carries the mechanism rather than decoration.
- *
- * The team should still confirm the wording against their own cited source
- * before the freeze.
- * ─────────────────────────────────────────────────────────────────────────
- */
+// The arrival: the strand resolved into DNA you can read, and the payoff of the whole descent. The hero taught
+// the base-pair colours by hover; here those colours become letters and the one that matters changes in front of
+// the reader rather than being described to them.
+// The letters assemble outward from the variant, not left to right, so the eye is anchored on the base that
+// matters before the context arrives around it.
+// There is no flanking sequence. This used to show six invented bases on each side: decorative ACGT, not the
+// reference sequence, and iGEM's policy is that nothing on a wiki may be fabricated. A judge checking a rendered
+// sequence against the reference genome is a realistic thing to happen.
+// What is shown instead is verifiable from the variant's own name, and is the part that matters. DPYD
+// c.1905+1G>A (rs3918290, the DPYD*2A allele) sits at position +1 of intron 14, immediately after the end of
+// exon 14. Positions +1 and +2 of an intron carry the conserved GT of the 5' splice donor site; the variant
+// changes that G to an A, so the site reads AT and may no longer be recognised, which can lead to exon 14 being
+// skipped. Worded to the client's science review: "may" and "can", never "is skipped".
+// So the frame shows the boundary, the two donor letters, and the G becoming an A. The team should still attach
+// its own citation before the freeze.
 const REF_BASE = "G";
 const ALT_BASE = "A";
 /** Intron position +2. Canonical donor is GT, so this letter follows. */
 const DONOR_SECOND = "T";
 
-/**
- * Base → colour, the same mapping the hero's rungs use, in its on-field tint.
- *
- * The four hexes used to be copied here by hand from BASES. They were the rung
- * colours exactly, which is right for a stroke on a white backbone and wrong
- * for a 51px letter on bare purple — see BASES_ON_FIELD for the measurements.
- * Imported now, so the two can never drift apart again.
- */
+// Base to colour, the same mapping the hero's rungs use, in its on-field tint. The four hexes used to be copied
+// here by hand from BASES: the rung colours exactly, which is right for a stroke on a white backbone and wrong
+// for a 51px letter on bare purple. Imported now, so the two cannot drift apart.
 const TONE = BASES_ON_FIELD;
 
 const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
@@ -69,17 +39,10 @@ const AMP_FAR = 68;
 const SPAN = 1200;
 const MID = 130;
 
-/**
- * One backbone of the strand, generated rather than hardcoded.
- *
- * It used to be two literal `d` strings with the period baked in, which meant
- * the strand could never change shape. It has to: pulling the camera back must
- * fit MORE of the molecule into the same frame, and that is a shorter period,
- * not a smaller drawing. Scaling the whole thing down would just shrink the
- * picture, which is the "element being removed" reading we are trying to avoid.
- *
- * At `half = 300` this reproduces the original path exactly.
- */
+// One backbone of the strand, generated rather than hardcoded. It used to be two literal `d` strings with the
+// period baked in, so the strand could never change shape. It has to: pulling the camera back must fit more of
+// the molecule into the same frame, which is a shorter period, not a smaller drawing.
+// At half = 300 this reproduces the original path exactly.
 const backbone = (half: number, amp: number, startUp: boolean) => {
   let d = `M0 ${MID}`;
   let up = startUp;
@@ -92,6 +55,110 @@ const backbone = (half: number, amp: number, startUp: boolean) => {
   return d;
 };
 
+/**
+ * A named region rather than spelled-out bases. "exon 14" is verifiable, six invented letters are not, and
+ * this reads as an annotated locus instead of a sequence nobody can check.
+ */
+function Region({ label, t, align }: { label: string; t: number; align: "left" | "right" }) {
+  return (
+    <span
+      /* 0.4em, floored at 11px: these are the smallest strings in the scene, and at 0.32em of the old mobile
+                 size they rendered under 8px. */
+      // The gap is part of the label. At px-1.5 the right-hand label's box began at exactly the T's right edge,
+      // 809.4 against 809.4, so an 11px caption abutted a 51px glyph with nothing between them. It went unreported
+      // while the label was dimmed to 0.62, below the overlap audit's visibility floor.
+      // Fixed, not `em`. These used to be 0.4em of the row's own size, which was fine while that size was capped at
+      // 51px and absurd once it was not: at a 90px base they would set at 38px and compete with the letters they
+      // annotate. The letters are the subject and these are chrome.
+      className="font-sans text-[11px] font-bold uppercase mx-3 md:mx-5 md:text-[13px] lg:text-[16px]"
+      style={{
+        color: C.paper,
+        // 0.9, not 0.62. These name the exon/intron boundary, the mechanism the frame exists to show, and at 0.62
+        // paper on lavenderDeep they measured 2.53:1 against the 4.5:1 an 11px string is held to.
+        opacity: t * 0.9,
+        letterSpacing: "0.18em",
+        // They arrive from outside, not from on top of the letters. The offsets used to be +14 for the left label and
+        // -14 for the right, which pointed both inward: each began its entrance overlapping the glyph it labels, and at
+        // page 0.125 "intron 14" sat 3.2px inside the T. Reversed, the pair opens outward as the sequence assembles.
+        transform: `translateX(${((1 - t) * (align === "right" ? -14 : 14)).toFixed(1)}px)`,
+        display: "inline-block",
+        whiteSpace: "nowrap",
+      }}
+    >
+      {label}
+    </span>
+  );
+}
+
+// The strand this is a piece of, running behind the letters. Without it the arrival was four glyphs alone in a
+// very large purple field, the client's own example of a screen that felt empty. It is also the honest picture:
+// we have descended into the strand, so the strand should still be there, too magnified to read except at the
+// point of interest. It fades toward the centre so the letters sit in a clear window.
+function Strand({ far, t }: { far: number; t: number }) {
+  // The pull-back, drawn rather than tweened. Retreating from a molecule means more of it fits in the frame, so
+  // the half-period shortens from 300 units to 150 and the rungs halve their spacing: the same window holds twice
+  // as much DNA. The picture performs "about three billion letters" at the moment the statement says it.
+  // Meanwhile the contrast drops, which is what stops the strand competing with the statement in front of it.
+  const half = WAVE_NEAR - far * (WAVE_NEAR - WAVE_FAR);
+  const amp = AMP_NEAR - far * (AMP_NEAR - AMP_FAR);
+  const spacing = half / 10;
+  const rungs = Math.round(SPAN / spacing);
+  // The clear window the letters sit in closes as they recede into it: at rest the middle third is masked away so
+  // nothing crosses the glyphs, and by full retreat the strand runs almost unbroken.
+  const s1 = 0.2 - far * 0.12;
+  const s2 = 0.38 + far * 0.09;
+  const s3 = 0.62 - far * 0.09;
+  const s4 = 0.8 + far * 0.12;
+  return (
+    <svg
+      viewBox={`0 0 ${SPAN} 260`}
+      className="pointer-events-none absolute left-1/2 top-1/2 w-[128vw] max-w-none -translate-x-1/2 -translate-y-1/2"
+      aria-hidden="true"
+      style={{ opacity: t * (0.5 - far * 0.17) }}
+    >
+      <defs>
+        <linearGradient id="sq-fade" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stopColor="#fff" stopOpacity="0" />
+          <stop offset={s1.toFixed(3)} stopColor="#fff" stopOpacity="0.85" />
+          <stop offset={s2.toFixed(3)} stopColor="#fff" stopOpacity="0" />
+          <stop offset={s3.toFixed(3)} stopColor="#fff" stopOpacity="0" />
+          <stop offset={s4.toFixed(3)} stopColor="#fff" stopOpacity="0.85" />
+          <stop offset="1" stopColor="#fff" stopOpacity="0" />
+        </linearGradient>
+        <mask id="sq-mask">
+          <rect x="0" y="0" width={SPAN} height="260" fill="url(#sq-fade)" />
+        </mask>
+      </defs>
+      <g mask="url(#sq-mask)" fill="none" stroke={C.paper} strokeWidth="3">
+        <path d={backbone(half, amp, true)} />
+        <path d={backbone(half, amp, false)} />
+      </g>
+      {/* rungs, coloured by the same base convention the hero taught */}
+      <g mask="url(#sq-mask)">
+        {Array.from({ length: rungs }, (_, i) => {
+          const x = i * spacing + spacing / 2;
+          const k = Math.sin((x / half) * Math.PI);
+          const y1 = MID - k * (amp - 2);
+          const y2 = MID + k * (amp - 2);
+          return (
+            <line
+              key={i}
+              x1={x}
+              y1={y1}
+              x2={x}
+              y2={y2}
+              stroke={TONE[["A", "T", "G", "C"][i % 4] as string]}
+              strokeWidth={6 - far * 2.4}
+              strokeLinecap="round"
+              opacity="0.5"
+            />
+          );
+        })}
+      </g>
+    </svg>
+  );
+}
+
 export function Sequence({
   assemble,
   flip,
@@ -102,37 +169,24 @@ export function Sequence({
   /** 0 → 1: the reference base becomes the variant. */
   flip: number;
   /**
-   * 0 → 1: the camera retreats from the letters.
-   *
-   * The whole descent has pushed IN — genome, chromosome, gene, sequence, one
-   * base. This is the first and only time the story reverses, and it is what
-   * lets the closing statement take the frame without the DNA being deleted to
-   * make room for it.
-   *
-   * It is NOT a scale-down. Scaling one element reads as that element being
-   * removed. What sells a camera move is DIFFERENTIAL motion — near things
-   * change fast, far things barely change — so the letters recede hard while
-   * the strand behind them densifies and the ground does not move at all.
+   * 0 to 1: the camera retreats from the letters. The whole descent has pushed in, and this is the only time the
+   * story reverses, which is what lets the closing statement take the frame without the DNA being deleted.
+   * It is not a scale-down, since scaling one element reads as that element being removed. What sells a camera
+   * move is differential motion: the letters recede hard while the strand behind them densifies and the ground
+   * does not move at all.
    */
   recede?: number;
 }) {
   if (assemble <= 0.001) return null;
   const lit = flip > 0.28;
-  /*
-    Atmospheric perspective, and it settles what would otherwise be a
-    contradiction in the brief: "let more DNA become visible" and "stop the DNA
-    fighting the text" pull against each other until you notice that distance
-    drains contrast. So the strand gains EXTENT and loses CONTRAST at the same
-    time. More DNA, quieter DNA.
-  */
+  // Atmospheric perspective. "Let more DNA become visible" and "stop the DNA fighting the text" pull against each
+  // other until you notice that distance drains contrast, so the strand gains extent and loses contrast at the
+  // same time. More DNA, quieter DNA.
   const far = easeOutCubic(recede);
   /**
-   * The explanatory sentence leaves before the closing statement arrives.
-   *
-   * Tuned against the caller's budget: with `recede` running 0.80 → 1.00 of the
-   * scene, this puts the caption fully out by p 0.85, which leaves p 0.85 →
-   * 0.87 as a breath with nothing on screen but the receding DNA, before the
-   * statement starts arriving at 0.87.
+   * The explanatory sentence leaves before the closing statement arrives. Tuned against the caller's budget:
+   * with `recede` running 0.80 to 1.00 of the scene, the caption is fully out by p 0.85, leaving 0.85 to 0.87 as
+   * a breath with nothing on screen but the receding DNA before the statement starts at 0.87.
    */
   const captionOut = clamp01((recede - 0.03) / 0.22);
 
@@ -142,191 +196,12 @@ export function Sequence({
     return Math.min(1, Math.max(0, (assemble - start) / 0.22));
   };
 
-  const Base = ({ letter, distance }: { letter: string; distance: number }) => {
-    const t = step(distance);
-    return (
-      <span
-        style={{
-          color: TONE[letter] ?? C.paper,
-          opacity: t,
-          transform: `translateY(${((1 - t) * 14).toFixed(1)}px)`,
-          display: "inline-block",
-        }}
-      >
-        {letter}
-      </span>
-    );
-  };
-
-  /**
-   * A named region rather than spelled-out bases. "exon 14" is verifiable;
-   * six invented letters are not, and this reads as an annotated locus
-   * instead of a sequence nobody can check.
-   */
-  const Region = ({
-    label,
-    distance,
-    align,
-  }: {
-    label: string;
-    distance: number;
-    align: "left" | "right";
-  }) => {
-    const t = step(distance);
-    return (
-      <span
-        /* 0.4em, floored at 11px: these are the smallest strings in the scene
-           and at 0.32em of the old mobile size they rendered under 8px. */
-        /*
-          THE GAP IS PART OF THE LABEL. At px-1.5 the right-hand label's box
-          began at exactly the T's right edge — 809.4 against 809.4, measured —
-          so an 11px caption abutted a 51px glyph with nothing between them. It
-          went unreported for as long as the label was dimmed to 0.62, which is
-          below the overlap audit's visibility floor: raising it to something
-          readable is what surfaced the collision, not what caused it.
-        */
-        /*
-          FIXED, NOT `em`. These used to be 0.4em of the row's own size, which
-          was fine while that size was capped at 51px and absurd the moment it
-          was not — at a 90px base they would set at 38px and compete with the
-          letters they annotate. The letters are the subject and these are
-          chrome; locking the two together meant the subject could never grow
-          without the chrome growing with it.
-        */
-        className="font-sans text-[11px] font-bold uppercase mx-3 md:mx-5 md:text-[13px] lg:text-[16px]"
-        style={{
-          color: C.paper,
-          /*
-            0.9, not 0.62. These name the exon/intron boundary — the mechanism
-            the whole frame exists to show — and at 0.62 paper on lavenderDeep
-            they measured 2.53:1 against the 4.5:1 an 11px string is held to.
-            The dimming was making the only verifiable labels in the scene the
-            hardest thing in it to read.
-          */
-          opacity: t * 0.9,
-          letterSpacing: "0.18em",
-          /*
-            THEY ARRIVE FROM OUTSIDE, not from on top of the letters.
-
-            The offsets used to be +14 for the left label and -14 for the right
-            one, which pointed both of them INWARD: each began its entrance
-            overlapping the glyph it labels and slid off it. Measured at page
-            0.125, "intron 14" sat 3.2px inside the T.
-
-            Reversed, the pair opens outward as the sequence assembles — which
-            is also the better gesture, since the letters are what the eye
-            should land on first and the labels should get out of their way
-            rather than peel off them.
-          */
-          transform: `translateX(${((1 - t) * (align === "right" ? -14 : 14)).toFixed(1)}px)`,
-          display: "inline-block",
-          whiteSpace: "nowrap",
-        }}
-      >
-        {label}
-      </span>
-    );
-  };
-
-  /*
-    The strand this is a piece of, running behind the letters.
-
-    Without it the arrival was four glyphs alone in a very large purple field —
-    the client's own example of a screen that felt empty next to the DNA
-    section. It is also the honest picture: we have descended INTO the strand,
-    so the strand should still be there, just too magnified to read except at
-    the point of interest. It fades out toward the centre so the letters sit in
-    a clear window rather than fighting a pattern.
-  */
-  const Strand = () => {
-    /*
-      THE PULL-BACK, drawn rather than tweened.
-
-      Retreating from a molecule means more of it fits in the frame, so the
-      half-period shortens from 300 units to 150 and the rungs halve their
-      spacing: the same window ends up holding twice as much DNA. The picture
-      therefore PERFORMS "about three billion letters" at the exact moment the
-      closing statement says it, instead of the copy asserting something the
-      image does not show.
-
-      Meanwhile the contrast drops — distance drains contrast, and it is what
-      stops the strand competing with the statement now sitting in front of it.
-      More DNA, quieter DNA.
-    */
-    const half = WAVE_NEAR - far * (WAVE_NEAR - WAVE_FAR);
-    const amp = AMP_NEAR - far * (AMP_NEAR - AMP_FAR);
-    const spacing = half / 10;
-    const rungs = Math.round(SPAN / spacing);
-    /*
-      The clear window the letters sit in closes as they recede into it: at rest
-      the middle third is masked away so nothing crosses the glyphs, and by full
-      retreat the strand runs almost unbroken because the letters no longer need
-      that much room.
-    */
-    const s1 = 0.2 - far * 0.12;
-    const s2 = 0.38 + far * 0.09;
-    const s3 = 0.62 - far * 0.09;
-    const s4 = 0.8 + far * 0.12;
-    return (
-      <svg
-        viewBox={`0 0 ${SPAN} 260`}
-        className="pointer-events-none absolute left-1/2 top-1/2 w-[128vw] max-w-none -translate-x-1/2 -translate-y-1/2"
-        aria-hidden="true"
-        style={{ opacity: step(2) * (0.5 - far * 0.17) }}
-      >
-        <defs>
-          <linearGradient id="sq-fade" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0" stopColor="#fff" stopOpacity="0" />
-            <stop offset={s1.toFixed(3)} stopColor="#fff" stopOpacity="0.85" />
-            <stop offset={s2.toFixed(3)} stopColor="#fff" stopOpacity="0" />
-            <stop offset={s3.toFixed(3)} stopColor="#fff" stopOpacity="0" />
-            <stop offset={s4.toFixed(3)} stopColor="#fff" stopOpacity="0.85" />
-            <stop offset="1" stopColor="#fff" stopOpacity="0" />
-          </linearGradient>
-          <mask id="sq-mask">
-            <rect x="0" y="0" width={SPAN} height="260" fill="url(#sq-fade)" />
-          </mask>
-        </defs>
-        <g mask="url(#sq-mask)" fill="none" stroke={C.paper} strokeWidth="3">
-          <path d={backbone(half, amp, true)} />
-          <path d={backbone(half, amp, false)} />
-        </g>
-        {/* rungs, coloured by the same base convention the hero taught */}
-        <g mask="url(#sq-mask)">
-          {Array.from({ length: rungs }, (_, i) => {
-            const x = i * spacing + spacing / 2;
-            const k = Math.sin((x / half) * Math.PI);
-            const y1 = MID - k * (amp - 2);
-            const y2 = MID + k * (amp - 2);
-            return (
-              <line
-                key={i}
-                x1={x}
-                y1={y1}
-                x2={x}
-                y2={y2}
-                stroke={TONE[["A", "T", "G", "C"][i % 4] as string]}
-                strokeWidth={6 - far * 2.4}
-                strokeLinecap="round"
-                opacity="0.5"
-              />
-            );
-          })}
-        </g>
-      </svg>
-    );
-  };
-
   return (
     <div className="pointer-events-none relative flex flex-col items-center">
-      <Strand />
-      {/*
-        Everything the reader READS sits in this group, and the group is what
-        the camera moves away from. The strand above is deliberately outside it:
-        if the strand receded too, the frame would simply hold a smaller picture
-        of the same thing. Letters shrinking INTO a strand that is gaining
-        detail is what reads as distance rather than as an element leaving.
-      */}
+      <Strand far={far} t={step(2)} />
+      {/* Everything the reader reads sits in this group, and the group is what the camera moves away from. The
+          strand above is deliberately outside it: if the strand receded too, the frame would hold a smaller picture
+          of the same thing. Letters shrinking into a strand that is gaining detail is what reads as distance. */}
       <div
         className="flex flex-col items-center"
         style={{
@@ -335,40 +210,18 @@ export function Sequence({
           opacity: 1 - far * 0.3,
         }}
       >
-        {/*
-          The lower bound is 2rem, not 1.5rem.
-
-          Everything in this block is sized in `em` off this one value, so it
-          set the scale of the whole climax of the descent — and at 4vw a
-          390px phone resolved to the 1.5rem floor, which made the boxed letters
-          36px, the locus line 13px and the region labels (0.32em) SEVEN POINT
-          SEVEN pixels. The most important frame in the story was its least
-          legible one on the device most people will read it on.
-        */}
+        {/* The lower bound is 2rem, not 1.5rem. Everything in this block is sized in em off this one value, so it
+            sets the scale of the whole climax of the descent, and at 4vw a 390px phone resolved to the 1.5rem floor:
+            the boxed letters 36px, the locus line 13px and the region labels 7.7px. */}
         <div
           className="flex items-center font-mono font-bold"
-          /*
-            THE CEILING IS WHAT MADE THE PAYOFF SMALL.
-
-            7vw resolves to 100px at 1440, so on every desktop the 3.2rem
-            ceiling was binding and the climax of the entire descent rendered
-            at 51px — measured, a 323x49 box, which is 1.2% of the frame. The
-            reader travels a whole act inward to arrive at something the size
-            of a caption.
-
-            5.6rem lifts desktop to 90px without touching phones: at 390px the
-            2rem floor still binds, and 7vw does not reach the new ceiling until
-            about 1280px, so tablets scale smoothly between the two rather than
-            jumping.
-          */
-          /*
-            THE G COUNTS. It hangs above the row as `absolute bottom-full`, so
-            it is outside the box the flex centring measures — the row and the
-            caption were centred and the G floated above them, uncounted, which
-            is why the assembly always sat high. This margin is the G's own
-            height (0.72em glyph + 0.7em line + the gap), so what gets centred
-            is the whole gesture from the struck letter down to the caption.
-          */
+          // The ceiling is what made the payoff small. 7vw resolves to 100px at 1440, so on every desktop the 3.2rem
+          // ceiling was binding and the climax of the descent rendered at 51px: a 323x49 box, 1.2% of the frame.
+          // 5.6rem lifts desktop to 90px without touching phones, since at 390px the 2rem floor still binds and 7vw does
+          // not reach the new ceiling until about 1280px.
+          // The G counts. It hangs above the row as absolute bottom-full, so it is outside the box the flex centring
+          // measures, which is why the assembly always sat high. This margin is the G's own height (0.72em glyph +
+          // 0.7em line + the gap), so what gets centred is the whole gesture from the struck letter down to the caption.
           style={{
             fontSize: "clamp(2rem, 7vw, 5.6rem)",
             letterSpacing: "0.24em",
@@ -376,7 +229,7 @@ export function Sequence({
           }}
         >
           {/* the end of exon 14 — named, not spelled out */}
-          <Region label="exon 14" distance={3} align="right" />
+          <Region label="exon 14" t={step(3)} align="right" />
           {/* the boundary the variant sits on */}
           <span
             className="mx-2 block md:mx-3"
@@ -390,11 +243,8 @@ export function Sequence({
 
           {/* the one that matters */}
           <span className="relative mx-2 inline-flex flex-col items-center md:mx-3">
-            {/*
-            What it used to be, directly above what it became, on a shared
-            vertical axis. "G struck through, A below it" is the whole story of
-            this variant in two glyphs — far more legible than a sentence.
-          */}
+            {/* What it used to be, directly above what it became, on a shared vertical axis. "G struck through, A below
+                it" is the whole story of this variant in two glyphs. */}
             <span
               className="absolute bottom-full flex flex-col items-center"
               style={{
@@ -425,12 +275,8 @@ export function Sequence({
                 border: `max(2px, 0.042em) solid ${lit ? C.red : `${C.paper}66`}`,
                 color: lit ? "#fff" : C.paper,
                 transform: `scale(${(step(0) * (lit ? 1 + flip * 0.06 : 1)).toFixed(3)})`,
-                /*
-                No glow. A 34px red bloom behind the letter was doing what a
-                neon sign does — the box is already the loudest object in the
-                frame because it is the only filled red thing on the page, and
-                a halo only made it look like a template.
-              */
+                // No glow. A 34px red bloom behind the letter was doing what a neon sign does: the box is already the loudest
+                // object in the frame, being the only filled red thing on the page, and a halo made it look like a template.
                 transition: "background .45s ease, border-color .45s ease, color .45s ease",
               }}
             >
@@ -438,14 +284,9 @@ export function Sequence({
             </span>
           </span>
 
-          {/*
-          Intron position +2, boxed to match the variant.
-
-          The whole claim of this frame is that these are a PAIR — the two
-          letters that together say "cut here". A solid red box beside a small
-          pale letter read as one important thing next to some background
-          typography, which is the opposite of that.
-        */}
+          {/* Intron position +2, boxed to match the variant. The claim of this frame is that these are a pair, the two
+              letters that together say "cut here". A solid red box beside a small pale letter read as one important
+              thing next to some background typography. */}
           <span
             className="ml-1 inline-flex items-center justify-center rounded-[6px] md:ml-1.5"
             style={{
@@ -460,33 +301,22 @@ export function Sequence({
           >
             {DONOR_SECOND}
           </span>
-          <Region label="intron 14" distance={3} align="left" />
+          <Region label="intron 14" t={step(3)} align="left" />
         </div>
 
-        {/*
-          The locus stays through the retreat. It is four tokens of monospace,
-          it labels the thing on screen rather than explaining it, and at 58% of
-          its original size it cannot compete with a display headline. What
-          leaves is the sentence below, which can.
-        */}
+        {/* The locus stays through the retreat. It is four tokens of monospace, it labels the thing on screen rather
+            than explaining it, and at 58% of its original size it cannot compete with a display headline. */}
         <p
           className="mt-7 font-mono text-[13px] font-bold tracking-[0.22em] md:text-[16px]"
           style={{ color: C.paper, opacity: Math.min(1, Math.max(0, flip * 2 - 0.3)) }}
         >
           DPYD · c.1905+1G&gt;A
         </p>
-        {/*
-          What the two letters were for. Without this the reader sees a letter
-          change and has to take on faith that it matters; with it, the image is
-          self-explaining — a two-letter signal that says "cut here", broken.
-
-          AND IT LEAVES BEFORE THE CLOSING STATEMENT ARRIVES. It used to hold
-          for the rest of the scene, so the frame carried the mechanism and the
-          stakes at once — two paragraphs stacked under a receding diagram, each
-          making the other harder to read. The caption's job is finished the
-          moment the reader has understood the flip, and the small gap it leaves
-          behind is the breathing beat before the statement lands.
-        */}
+        {/* What the two letters were for. Without this the reader sees a letter change and has to take on faith that
+            it matters; with it, the image is self-explaining.
+            It leaves before the closing statement arrives. It used to hold for the rest of the scene, so the frame
+            carried the mechanism and the stakes at once, two paragraphs stacked under a receding diagram. The
+            caption's job is finished once the reader has understood the flip. */}
         <p
           className="mt-3 max-w-[34ch] text-center text-[13px] font-semibold leading-snug md:text-[15px]"
           style={{

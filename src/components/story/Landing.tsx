@@ -5,55 +5,29 @@ import { PAGES } from "@/components/story/site-map";
 import { useSeen } from "@/hooks/use-seen";
 import { useStoryState } from "@/lib/story-state";
 
-/**
- * What happens after the story ends.
- *
- * The scroll resolved on "A safer starting dose." and then handed the reader a
- * 118px cream strip reading "ChemoGuard · iGEM 2026 · Attributions" — three
- * elements, one link, and that link went to the least important page on the
- * wiki. Sixteen screens of argument, and then nothing to do with it.
- *
- * Every documentation page already closed better than the homepage did, which
- * is the wrong way round: they end on a composed band with two figures and a
- * full site map, and the page a judge actually lands on ended on a copyright
- * line.
- *
- * THIS IS NOT A TENTH BEAT. The spine is locked at nine and this does not
- * touch it — the story is over before any of this is on screen. What was
- * missing is not another scene, it is the page's ending as opposed to the
- * story's ending: the answer the reader has earned, and somewhere to go with
- * it.
- *
- * WHAT IT DOES NOT SAY is as deliberate as what it does. The method — what the
- * test is, what it measures, what it reports — is not written anywhere on this
- * wiki, on purpose, because it is the team's to describe and this project has
- * already had to undo one invented claim. So the closing statement restates
- * the thesis the story just made and hands off. It does not describe an assay.
- */
+// What happens after the story ends. The scroll resolved on "A safer starting dose." and then handed the reader
+// a 118px cream strip with one link, to the least important page on the wiki. Every documentation page closed
+// better than the homepage, which is the wrong way round.
+// This is not a tenth beat. The spine is locked at nine and the story is over before any of this is on screen.
+// What was missing is the page's ending as opposed to the story's: the answer the reader has earned, and
+// somewhere to go with it.
+// What it does not say is as deliberate as what it does. The method, what the test is and what it reports, is
+// not written anywhere on this wiki on purpose: it is the team's to describe, and this project has already had
+// to undo one invented claim. The closing statement restates the thesis and hands off.
 
-/**
- * The pages worth offering at the end, in the order a reader should meet them.
- *
- * Not Attributions: it is a record, not a next step in the project, and it is
- * one click away in the footer directly below. It also keeps the grid whole —
- * with Contribution added, seven cards left one stranded on a row of its own.
- */
-const ONWARD = PAGES.filter((p) => p.to !== "/new" && p.to !== "/attributions");
+// The pages worth offering at the end, in the order a reader should meet them. Not Attributions: it is a
+// record, not a next step, and it is one click away in the footer below. It also keeps the grid whole, since
+// with Contribution added, seven cards left one stranded on a row of its own.
+const ONWARD = PAGES.filter((p) => p.to !== "/" && p.to !== "/attributions");
 
 export function Landing() {
   const [ref, seen] = useSeen<HTMLDivElement>();
   const story = useStoryState();
-  /*
-    Only shown to a reader who actually did something. Someone who scrolled
-    straight through has no decisions to be reminded of, and inventing a
-    recap for them would be worse than leaving it out.
-  */
+  // Only shown to a reader who actually did something. Someone who scrolled straight through has no decisions to
+  // be reminded of, and inventing a recap for them would be worse than leaving it out.
   const acted = story.standardGiven || story.adjustedGiven || story.sliderMoved;
-  /*
-    One reveal, then hold — the rule the documentation pages already follow.
-    Motion that replays every time you scroll past is the clearest tell of a
-    generated site, and this is the last thing on the page.
-  */
+  // One reveal, then hold, the rule the documentation pages follow. Motion that replays every time you scroll
+  // past is the clearest tell of a generated site, and this is the last thing on the page.
   const rise = (i: number) => ({
     opacity: seen ? 1 : 0,
     transform: seen ? "translateY(0)" : "translateY(10px)",
@@ -88,20 +62,12 @@ export function Landing() {
           how it was built, who it is for, and who built it.
         </p>
 
-        {/*
-          WHAT THE READER DID, in their own numbers.
-
-          The story is about a decision made with and without information, and
-          the reader has just made it twice. Playing their own figures back is
-          worth more than any summary we could write — people remember what
-          they did far longer than what they read.
-
-          Nothing here is a claim about biology. It counts presses and the
-          molecules that were on screen, and it says so.
-        */}
+        {/* What the reader did, in their own numbers. The story is about a decision made with and without
+            information, and the reader has just made it twice; people remember what they did longer than what they
+            read. Nothing here is a claim about biology: it counts presses and the molecules that were on screen. */}
         {acted && (
           <div
-            className="mt-10 rounded-xl px-5 py-4 md:px-6 md:py-5"
+            className="mt-10 rounded-[10px] px-5 py-4 md:px-6 md:py-5"
             style={{
               ...rise(3),
               background: `${C.lavender}14`,
@@ -139,12 +105,9 @@ export function Landing() {
           </div>
         )}
 
-        {/*
-          Generated from the site map, like every other list of pages on this
-          site. A page that is not written yet still appears, dimmed and
-          unlinked, because a judge reading a greyed "Safety" learns the shape
-          of the wiki while a link that goes nowhere teaches them it is broken.
-        */}
+        {/* Generated from the site map, like every other list of pages here. A page that is not written yet still
+            appears, dimmed and unlinked: a judge reading a greyed "Safety" learns the shape of the wiki, while a link
+            that goes nowhere teaches them it is broken. */}
         <div className="mt-12 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {ONWARD.map((page, i) => {
             const body = (

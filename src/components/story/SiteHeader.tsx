@@ -5,42 +5,26 @@ import { asset, C, DISPLAY, L, R } from "@/components/hero/palette";
 import { NAV } from "@/components/story/site-map";
 import { Underline } from "@/components/story/Underline";
 
-/**
- * The one header, on every page.
- *
- * THERE WERE TWO. The documentation pages had a cream bar that stayed; the
- * story had its own, transparent over the hero and a plum bar after it, and it
- * lived inside the first scene's pinned stage — so it scrolled away with that
- * scene and the reader went through the rest of the story with no navigation
- * at all. The client asked for one cream, full-width navigation that stays
- * while scrolling, on every page including the story. One component is the only
- * way that stays true: two copies drift, and these already had.
- *
- * CREAM IS ALSO WHAT ENDED THE CONTRAST FIGHT. The story's header had to switch
- * type colour and backing as the ground under it went from cream to deep
- * purple, and every version of that switch had a frame where something was
- * unreadable. A bar that owns its own ground has no such frame: ink on paper
- * is the same ratio at every scroll position.
- *
- * `fixed` on the story, `sticky` everywhere else. Sticky takes 68px of the
- * document's height, and every scene on the story is timed against scroll
- * position — adding height above them would move every beat. Fixed sits over
- * the page without changing its length; the story's first screen already
- * leaves the header's height clear.
- */
+// The one header, on every page.
+// There were two. The documentation pages had a cream bar that stayed; the story had its own, transparent over
+// the hero and plum after it, and it lived inside the first scene's pinned stage, so it scrolled away with that
+// scene and the reader went through the rest of the story with no navigation. The client asked for one cream,
+// full-width navigation that stays while scrolling, on every page. One component is the only way that stays
+// true: two copies drift, and these already had.
+// Cream also ended the contrast fight. The story's header had to switch type colour and backing as the ground
+// went from cream to deep purple, and every version of that switch had a frame where something was unreadable.
+// A bar that owns its own ground has no such frame: ink on paper is the same ratio at every scroll position.
+// fixed on the story, sticky everywhere else. Sticky takes 68px of the document's height, and every scene on the
+// story is timed against scroll position, so adding height above them would move every beat.
 export function SiteHeader({
   position = "sticky",
   rail,
 }: {
   position?: "sticky" | "fixed";
   /**
-   * Drawn along the bottom edge of the bar — the story's progress rail.
-   *
-   * INSIDE the header rather than in a fixed layer above it. As a layer above,
-   * it and the chapter label painted over the phone menu when it opened: the
-   * label read through as faint white text between "The story" and
-   * "Description", and the knob sat on the menu's border. Inside, the menu is
-   * simply stacked over it.
+   * Drawn along the bottom edge of the bar: the story's progress rail.
+   * Inside the header rather than in a fixed layer above it. As a layer above, it and the chapter label painted
+   * over the phone menu when it opened, the label reading through as faint white text between two nav rows.
    */
   rail?: ReactNode;
 }) {
@@ -52,11 +36,10 @@ export function SiteHeader({
       className={`${position === "fixed" ? "fixed inset-x-0" : "sticky"} top-0 z-40`}
       style={{ background: C.paper, borderBottom: `2px solid ${C.ink}14` }}
     >
-      {/* `relative` so the rail can hang off the bottom of the bar row, which
-          stays put when the menu opens beneath it. */}
+      {/* relative, so the rail can hang off the bottom of the bar row, which stays put when the menu opens. */}
       <div className="relative">
         <div className="mx-auto flex max-w-[92rem] items-center justify-between gap-6 px-6 py-3.5 md:px-10">
-          <Link to="/new" className="flex items-center gap-2.5">
+          <Link to="/" className="flex items-center gap-2.5">
             <span
               className="grid h-[34px] w-[34px] shrink-0 place-items-center overflow-hidden rounded-full md:h-[38px] md:w-[38px]"
               style={{ background: "#fff", boxShadow: `0 0 0 2px ${C.ink}1f` }}
@@ -88,6 +71,7 @@ export function SiteHeader({
                 <Link
                   key={page.label}
                   to={page.to}
+                  aria-current={page.to === pathname ? "page" : undefined}
                   className="group relative whitespace-nowrap pb-2 text-[15px] font-bold"
                   style={{ color: C.ink }}
                 >
@@ -159,11 +143,8 @@ export function SiteHeader({
         <div
           aria-label="Pages"
           role="navigation"
-          /*
-            Scrolls inside itself. The header is fixed on the story, so a menu
-            taller than the window could not be scrolled to — on a landscape
-            phone the last rows were out of reach.
-          */
+          // Scrolls inside itself. The header is fixed on the story, so a menu taller than the window could not be
+          // scrolled to: on a landscape phone the last rows were out of reach.
           className="relative z-[2] mx-6 mb-4 max-h-[calc(100dvh-6rem)] overflow-y-auto lg:hidden"
           style={{
             background: C.paper,
@@ -178,12 +159,12 @@ export function SiteHeader({
                 key={page.label}
                 to={page.to}
                 onClick={() => setMenu(false)}
+                aria-current={page.to === pathname ? "page" : undefined}
                 className="flex w-full items-center justify-between px-5 py-3 text-left text-[15px] font-bold"
                 style={{ color: C.ink, borderTop: i ? `1.5px solid ${C.ink}22` : undefined }}
               >
                 {page.label}
-                {/* A phone menu is a stack of rows with no baseline for the
-                    squiggle, so the current page is marked with a coral dot. */}
+                {/* A phone menu is a stack of rows with no baseline for the squiggle, so the current page gets a coral dot. */}
                 {page.to === pathname && (
                   <span
                     aria-hidden="true"

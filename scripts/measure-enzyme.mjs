@@ -1,46 +1,30 @@
-/**
- * Prove the enzyme is constant across scene 3.
- *
- * The claim: the enzyme shows the SAME amount of DPD before the test and after
- * it, because a dose reduction does not change how much enzyme a body makes.
- * That is a claim about pixels, so it is checked in pixels.
- *
- * It SWEEPS the section rather than sampling two points, because a two-point
- * sample cannot tell "the enzyme is constant" apart from "I sampled the wrong
- * two places". The sweep also prints where green first appears, which is the
- * `gap` beat, so the beat window can be checked against the source.
- */
+// Prove the enzyme is constant across scene 3.
+// The claim: the enzyme shows the same amount of DPD before the test and after it, because a dose reduction does not
+// change how much enzyme a body makes. That is a claim about pixels, so it is checked in pixels.
+// It sweeps the section rather than sampling two points, because a two-point sample cannot tell "the enzyme is
+// constant" apart from "I sampled the wrong two places". The sweep also prints where green first appears, which is
+// the `gap` beat, so the beat window can be checked against the source.
 import { chromium } from "playwright";
 import { PNG } from "pngjs";
 
-const URL = process.argv[2] ?? "http://localhost:8080/new";
+const URL = process.argv[2] ?? "http://localhost:8080/";
 
-/**
- * Is this pixel the enzyme's green?
- *
- * BY HUE, NOT BY DISTANCE TO A HEX. The enzyme is painted at fillOpacity 0.9
- * over a semi-transparent lumen over the page's ground — and that ground
- * travels from pink to cream across exactly the stretch this check samples. So
- * the composited RGB of the same unchanged shape genuinely moves, and a
- * fixed-radius match around #3FA877 counts a different number of its
- * antialiased edge pixels at each stop. That alone produced an 11–14% "change"
- * in a drawing that is provably identical.
- *
- * Green dominance survives the backdrop moving under it: C.green has g−r=105
- * and g−b=49, while paper, pink, coral and ink are all negative on the first.
- *
- * AND THE THRESHOLD IS SET AT THE CORE, NOT AT THE EDGE. A loose test (g−r>25)
- * still moved 10–13%, because two things that are not the enzyme pass it: the
- * antialiased rim, which composites against whatever is behind it, and the
- * GROUND ITSELF — the resolution's ground carries 12% C.green at page 0.92, so
- * the check was counting the room the enzyme stands in. The instrumented proof
- * that the shape is innocent: across pages 0.70→0.94 its rect is 348.9x504 at
- * (635,324), its transform, its fill-opacity and its group opacity are byte
- * identical. Nothing about the drawing changes; only what is behind it does.
- *
- * Composited over the lumen the enzyme's core sits at g−r≈93; the ground at its
- * greenest reaches g−r≈7. 60 is comfortably between them.
- */
+// Is this pixel the enzyme's green?
+// BY hue, not BY distance to a hex. The enzyme is painted at fillOpacity 0.9 over a semi-transparent lumen over the
+// page's ground — and that ground travels from pink to cream across exactly the stretch this check samples. So the
+// composited rgb of the same unchanged shape genuinely moves, and a fixed-radius match around #3FA877 counts a
+// different number of its antialiased edge pixels at each stop. That alone produced an 11–14% "change" in a drawing
+// that is provably identical.
+// Green dominance survives the backdrop moving under it: C.green has g−r=105 and g−b=49, while paper, pink, coral and
+// ink are all negative on the first.
+// And the threshold is set AT the core, not AT the edge. A loose test (g−r>25) still moved 10–13%, because two things
+// that are not the enzyme pass it: the antialiased rim, which composites against whatever is behind it, and the
+// ground itself — the resolution's ground carries 12% C.green at page 0.92, so the check was counting the room the
+// enzyme stands in. The instrumented proof that the shape is innocent: across pages 0.70→0.94 its rect is 348.9x504
+// at (635,324), its transform, its fill-opacity and its group opacity are byte identical. Nothing about the drawing
+// changes; only what is behind it does.
+// Composited over the lumen the enzyme's core sits at g−r≈93; the ground at its greenest reaches g−r≈7. 60 is
+// comfortably between them.
 const isGreen = (r, g, b) => g - r > 60 && g - b > 25;
 
 const browser = await chromium.launch();
@@ -49,16 +33,11 @@ await page.goto(URL, { waitUntil: "networkidle" });
 
 async function sample(pageProgress) {
   await page.evaluate((pp) => {
-    /*
-      A fraction of the STORY, not of the document.
-
-      Every window in this file was calibrated when the page ended at the last
-      scene. It does not any more — a closing section follows it — so dividing
-      by `scrollHeight` would silently point each of these numbers at a
-      different moment than the one it was written for. The page marks where
-      the story ends; `usePageProgress` divides by the same marker, so the
-      harness and the page agree by construction rather than by coincidence.
-    */
+    // A fraction of the story, not of the document.
+    // Every window in this file was calibrated when the page ended at the last scene. It does not any more — a
+    // closing section follows it — so dividing by `scrollHeight` would silently point each of these numbers at a
+    // different moment than the one it was written for. The page marks where the story ends; `usePageProgress`
+    // divides by the same marker, so the harness and the page agree by construction rather than by coincidence.
     const e = document.getElementById("story-end");
     const max = (e ? e.offsetTop : document.documentElement.scrollHeight) - window.innerHeight;
     window.scrollTo(0, max * pp);
@@ -73,27 +52,19 @@ async function sample(pageProgress) {
     if (!svg) return null;
     const r = svg.getBoundingClientRect();
     if (r.width < 2 || r.bottom < 0 || r.top > window.innerHeight) return null;
-    /*
-      THE WINDOW FOLLOWS THE DRAWING, and it did not.
-
-      This was x 141→219, which was correct when the enzyme was ONE shape
-      centred on the vessel's axis. It is now five glyphs in a row and the two
-      filled ones sit LEFT of centre: `x = W/2 - 104 + i*52` at `scale(0.66)`,
-      so glyph i spans x = 84.6 + 52i to 119.6 + 52i. The old window missed the
-      first filled glyph entirely and cut the second in half.
-
-      The result looked exactly like a regression — the count fell from the
-      ~2235 in CONTEXT.md to ~790 and swung 38% across the turn — because a
-      narrow strip across one glyph's edge is mostly measuring whichever drug
-      molecule is drifting through it. The enzyme had not changed; the harness
-      had been left behind by the redraw the client asked for.
-
-      All five, with padding. The row is `x = 38.4 + 55i` at `scale(0.8)` and a
-      glyph occupies [13s, 66s] from its translate point, so it spans x
-      48.8→311.2 and y 248.4→295.6 of the 360x520 viewBox. RE-DERIVED, not
-      nudged: these numbers come from the same three constants the component
-      uses, so checking them against the source is a two-line job.
-    */
+    // The window follows the drawing, and it did not.
+    // This was x 141→219, which was correct when the enzyme was one shape centred on the vessel's axis. It is now
+    // five glyphs in a row and the two filled ones sit left of centre: `x = W/2 - 104 + i*52` at `scale(0.66)`, so
+    // glyph i spans x = 84.6 + 52i to 119.6 + 52i. The old window missed the first filled glyph entirely and cut the
+    // second in half.
+    // The result looked exactly like a regression — the count fell from the ~2235 in context.md to ~790 and swung 38%
+    // across the turn — because a narrow strip across one glyph's edge is mostly measuring whichever drug molecule is
+    // drifting through it. The enzyme had not changed; the harness had been left behind by the redraw the client
+    // asked for.
+    // All five, with padding. The row is `x = 38.4 + 55i` at `scale(0.8)` and a glyph occupies [13s, 66s] from its
+    // translate point, so it spans x 48.8→311.2 and y 248.4→295.6 of the 360x520 viewBox. re-derived, not nudged:
+    // these numbers come from the same three constants the component uses, so checking them against the source is a
+    // two-line job.
     return {
       clip: {
         x: Math.max(0, Math.round(r.left + r.width * (44 / 360)) - 4),
@@ -105,36 +76,22 @@ async function sample(pageProgress) {
   });
   if (!info) return null;
 
-  /*
-    THE OCCLUDERS ARE HIDDEN, AND THAT IS THE WHOLE POINT OF THE CHECK.
-
-    The claim under test is "the enzyme drawing does not change across the
-    turn". Drug molecules and red cells drift over it on a time clock that has
-    nothing to do with scroll, so any screenshot measures the enzyme MINUS
-    whatever happened to be in front of it at that millisecond. That is not the
-    claim, and it is not stable either.
-
-    Taking the largest of N frames was the previous answer and it does not hold
-    now that the row spans most of the lumen: at eight frames this measured
-    7.6%, 6.7% and 10.2% on three consecutive runs against a 10% threshold, and
-    then 10.1%, 6.9%, 9.5% on three more. A check that fails one run in three
-    is not a check, it is a coin toss — and sampling harder was solving the
-    wrong problem.
-
-    So the drug and the red cells are hidden for the screenshot and restored
-    straight after. What is left in the window is the enzyme and the lumen
-    behind it, which is exactly what the claim is about — one frame,
-    deterministic, instead of eight and a prayer.
-
-    CIRCLES ARE PART OF THE DRUG. Hiding only `polygon, ellipse` left a smooth
-    12–15% dip that looked exactly like the enzyme shrinking through the turn,
-    and it survived every attempt to tune the colour test — because a `Hex` is
-    a polygon PLUS six ink-outlined vertex dots, and the dots were still there.
-    Sampling the core pixel settled it: at page 0.85 it read rgb(39,39,52),
-    which is C.ink, not green. Half-hiding an occluder is worse than not hiding
-    it, because what is left is small enough to look like a property of the
-    thing behind it.
-  */
+  // The occluders are hidden, and that is the whole point of the check.
+  // The claim under test is "the enzyme drawing does not change across the turn". Drug molecules and red cells drift
+  // over it on a time clock that has nothing to do with scroll, so any screenshot measures the enzyme minus whatever
+  // happened to be in front of it at that millisecond. That is not the claim, and it is not stable either.
+  // Taking the largest of N frames was the previous answer and it does not hold now that the row spans most of the
+  // lumen: at eight frames this measured 7.6%, 6.7% and 10.2% on three consecutive runs against a 10% threshold, and
+  // then 10.1%, 6.9%, 9.5% on three more. A check that fails one run in three is not a check, it is a coin toss — and
+  // sampling harder was solving the wrong problem.
+  // So the drug and the red cells are hidden for the screenshot and restored straight after. What is left in the
+  // window is the enzyme and the lumen behind it, which is exactly what the claim is about — one frame,
+  // deterministic, instead of eight and a prayer.
+  // Circles are part of the drug. Hiding only `polygon, ellipse` left a smooth 12–15% dip that looked exactly like
+  // the enzyme shrinking through the turn, and it survived every attempt to tune the colour test — because a `Hex` is
+  // a polygon plus six ink-outlined vertex dots, and the dots were still there. Sampling the core pixel settled it:
+  // at page 0.85 it read rgb(39,39,52), which is C.ink, not green. Half-hiding an occluder is worse than not hiding
+  // it, because what is left is small enough to look like a property of the thing behind it.
   const HIDE = `(v) => {
     const svg = [...document.querySelectorAll("#why svg")]
       .find(s => s.getAttribute("viewBox") === "0 0 360 520");
@@ -168,16 +125,11 @@ for (const pp of STOPS) {
   );
 }
 
-/*
-  Compare only the stops where the enzyme is FULLY drawn.
-
-  `gap` fades the shape in over 0.24→0.32 local, which is intended, so the
-  stops inside that ramp are partial by design — one of them measured a single
-  pixel. Including them would compare the fade against the steady state and
-  report a 99% "change" that is really just the entrance. The claim under test
-  is that the enzyme does not change across the TURN, so the sample is every
-  stop where it is at least half drawn.
-*/
+// Compare only the stops where the enzyme is fully drawn.
+// `gap` fades the shape in over 0.24→0.32 local, which is intended, so the stops inside that ramp are partial by
+// design — one of them measured a single pixel. Including them would compare the fade against the steady state and
+// report a 99% "change" that is really just the entrance. The claim under test is that the enzyme does not change
+// across the turn, so the sample is every stop where it is at least half drawn.
 const peak = Math.max(...rows.map((r) => r.green));
 const live = rows.filter((r) => r.green > peak * 0.5);
 if (live.length < 2) {

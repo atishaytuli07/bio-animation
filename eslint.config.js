@@ -33,8 +33,19 @@ export default tseslint.config(
         },
       ],
       "react-refresh/only-export-components": ["warn", { allowConstantExport: true }],
-      "@typescript-eslint/no-unused-vars": "off",
+      // On, because the scaffold shipped it off and it was hiding real dead code: an orphaned component, two
+      // unused imports and a scroll value computed every frame that nothing read.
+      "@typescript-eslint/no-unused-vars": [
+        "error",
+        { argsIgnorePattern: "^_", varsIgnorePattern: "^_" },
+      ],
     },
+  },
+  {
+    // The harnesses in scripts/ were matched by no config block, so nothing linted them at all.
+    files: ["scripts/**/*.mjs"],
+    extends: [js.configs.recommended],
+    languageOptions: { globals: { ...globals.node, ...globals.browser } },
   },
   eslintPluginPrettier,
 );

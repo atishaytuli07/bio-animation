@@ -2,33 +2,16 @@ import { Cell, Enzyme, Molecule } from "@/components/hero/elements";
 import { C } from "@/components/hero/palette";
 import { track, usePageProgress } from "@/hooks/use-page-progress";
 
-/**
- * The world: one set of scientific objects that travels the whole story.
- *
- * Everything here moves by TRANSFORM, never by `top`. An earlier version set
- * `top` on all 42 elements each frame, which makes the browser lay out the
- * whole layer every frame — it measured 43fps and 106 layout shifts across a
- * scroll of the page. The container is fixed and viewport-sized, so a
- * percentage of it is exactly vh, and the identical motion composites for free.
- *
- * Each scene used to scatter its own array of cells and molecules, which meant
- * the objects vanished and a different set appeared at every boundary — part of
- * why the site read as separate stages rather than one journey. These are
- * declared once and drift continuously, so the same world carries the reader
- * from the gene to the bloodstream.
- *
- * They also drift UPWARD as the page scrolls down, at speeds set by depth. The
- * reader is descending past them, which is the same idea the whole story runs
- * on — the scroll is a microscope going deeper — and it means no screen is ever
- * completely still.
- *
- * DENSITY IS SCHEDULED, not constant. The client's note was that the DNA
- * section feels rich while later screens feel empty, and named the sequence
- * arrival sitting alone in a large purple space. So presence peaks exactly
- * where a scene is otherwise sparse and drops back where a scene is carrying
- * its own weight — detail where it is missing, restraint where it would
- * clutter.
- */
+// The world: one set of scientific objects that travels the whole story.
+// Everything moves by transform, never by `top`. Setting `top` on all 42 elements each frame lays out the whole
+// layer every frame: it measured 43fps and 106 layout shifts across a scroll of the page. The container is fixed
+// and viewport-sized, so a percentage of it is exactly vh and the identical motion composites for free.
+// Each scene used to scatter its own array, so the objects vanished and a different set appeared at every
+// boundary. These are declared once and drift continuously, from the gene to the bloodstream.
+// They drift upward as the page scrolls down, at speeds set by depth: the reader is descending past them.
+// Density is scheduled, not constant. The client's note was that the DNA section feels rich while later screens
+// feel empty, naming the sequence arrival alone in a large purple space, so presence peaks where a scene is
+// otherwise sparse and drops back where a scene carries its own weight.
 
 /** Presence across the story: high where a scene is sparse, low where it is busy. */
 const DENSITY = [
@@ -39,25 +22,19 @@ const DENSITY = [
   [0.24, 0.6], // the enzyme bridge: copy + diagram, so pull back
   [0.33, 0.4], // the two patients carry their own frame
   [0.46, 0.34],
-  // Act one of the bloodstream is the densest screen on the site: figure,
-  // vessel, molecules, a tag and a control. The client asked for the ambient
-  // elements to stop competing there, so this is the quietest the world gets.
+  // Act one of the bloodstream is the densest screen on the site: figure, vessel, molecules, a tag and a control. The
+  // client asked for the ambient elements to stop competing there, so this is the quietest the world gets.
   [0.6, 0.28],
   [0.86, 0.42], // after the turn the frame is calmer, so the world breathes
   [1.0, 0.46],
 ] as const;
 
-/**
- * x is a viewport percentage; depth drives both parallax speed and blur, so
- * the field has real front-to-back separation rather than being a flat sprinkle.
- * Everything sits outside the centre column, where the copy and figures live.
- *
- * That rule is right for every scene except the first. The hero is the only
- * screen whose copy is LEFT-aligned rather than centred, so objects at x=6..21
- * — safely outside a centre column — land squarely on its headline, paragraph
- * and buttons. `heroClear` below steps them back while the hero is on screen
- * and releases them once the descent begins.
- */
+// x is a viewport percentage. Depth drives both parallax speed and blur, so the field has real front-to-back
+// separation rather than being a flat sprinkle, and everything sits outside the centre column where the copy and
+// figures live.
+// That rule is right for every scene except the first. The hero is the only screen whose copy is left-aligned,
+// so objects at x=6..21, safely outside a centre column, land on its headline, paragraph and buttons.
+// `heroClear` steps them back while the hero is on screen and releases them once the descent begins.
 const OBJECTS = [
   { k: "cell", x: 6, s: 0.5, tone: C.pink, depth: 0.9, phase: 0.05, sm: true },
   { k: "mol", x: 13, s: 0.34, tone: C.coral, depth: 0.45, phase: 0.62, sm: false },
@@ -77,12 +54,9 @@ const OBJECTS = [
   { k: "cell", x: 92, s: 0.3, tone: C.pink, depth: 0.72, phase: 0.82, sm: false },
 ] as const;
 
-/**
- * Particles. Cheap, tiny, and they do the job the illustrated objects cannot:
- * fill the deep middle of a frame without putting anything there the reader
- * has to interpret. This is the "particles / depth" the client asked for, and
- * the reason the sequence arrival no longer reads as an object alone in a void.
- */
+// Particles. Cheap, tiny, and they fill the deep middle of a frame without putting anything there the reader
+// has to interpret. This is the particles and depth the client asked for, and the reason the sequence arrival no
+// longer reads as an object alone in a void.
 const MOTES = Array.from({ length: 26 }, (_, i) => ({
   x: (i * 37.4) % 100,
   phase: (i * 0.173) % 1,
@@ -99,23 +73,16 @@ export function World() {
   const p = usePageProgress();
   const density = num(p, DENSITY);
 
-  /*
-    1 while the hero fills the screen, 0 once the reader has scrolled past it.
-    Used to hold the left-hand objects back over the hero's copy column, which
-    is the one place in the story where content is not centred.
-  */
+  // 1 while the hero fills the screen, 0 once the reader has scrolled past it. Holds the left-hand objects back
+  // over the hero's copy column, the one place in the story where content is not centred.
   const overHero = Math.max(0, 1 - p / 0.085);
   /** How much an object at this x is suppressed while the hero is up. */
   const heroClear = (x: number) => (x < 44 ? 1 - overHero * 0.88 : 1);
 
-  /*
-    The header band. Objects drift through the top of the viewport, and one was
-    sitting directly behind the logo — this layer is behind the chrome, so it
-    read as a smudge under the mark rather than as depth. Faded by POSITION
-    rather than a mask on the container: a mask on a -z-10 layer did not take,
-    and fading each object as it enters the band means they dim on the way in
-    and brighten below it instead of popping.
-  */
+  // The header band. Objects drift through the top of the viewport and one sat directly behind the logo; this
+  // layer is behind the chrome, so it read as a smudge under the mark rather than as depth. Faded by position
+  // rather than by a mask on the container: a mask on a -z-10 layer did not take, and fading each object as it
+  // enters the band means they dim on the way in instead of popping.
   const headerClear = (topVh: number) => Math.min(1, Math.max(0, (topVh - 7) / 9));
 
   return (
@@ -150,11 +117,8 @@ export function World() {
       })}
 
       {OBJECTS.map((o, i) => {
-        /*
-          Travel wraps, so the supply never runs out over 13 screens of scroll.
-          Deeper objects move less, which is what reads as distance. The 1.3
-          span and the -15 offset keep the wrap point off-screen at both ends.
-        */
+        // Travel wraps, so the supply never runs out over 13 screens of scroll. Deeper objects move less, which is what
+        // reads as distance. The 1.3 span and the -15 offset keep the wrap point off-screen at both ends.
         const travel = 0.35 + o.depth * 1.15;
         const y = (((o.phase - p * travel) % 1) + 1) % 1;
         const top = -15 + y * 130;
@@ -174,14 +138,8 @@ export function World() {
                 Math.round(
                   edge * density * heroClear(o.x) * headerClear(top) * (0.62 + o.depth * 0.38) * 20,
                 ) / 20,
-              /*
-                Depth by blur, but far less of it. At 1.5px the far objects
-                stopped reading as cells and molecules and read as smudges on
-                the field — which is the opposite of the client's note about
-                the footer elements ("bigger, closer, full opacity"). The same
-                thing is true here: they are the illustrated world, not noise.
-                0.8px is still enough to sit them behind the subject.
-              */
+              // Depth by blur, but far less of it. At 1.5px the far objects stopped reading as cells and molecules and read
+              // as smudges on the field. 0.8px is still enough to sit them behind the subject.
               filter: o.depth > 0.7 ? undefined : `blur(${((1 - o.depth) * 0.8).toFixed(2)}px)`,
             }}
           >

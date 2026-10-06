@@ -1,11 +1,6 @@
-/**
- * One requestAnimationFrame loop for the whole page.
- *
- * Every chapter used to run its own rAF; a dozen chapters meant a dozen loops
- * competing each frame. They all share this one instead. The loop only exists
- * while something is subscribed, and it parks itself when the tab is hidden —
- * a backgrounded tab should not be integrating springs.
- */
+// One requestAnimationFrame loop for the whole page. Every chapter used to run its own rAF, so a dozen chapters
+// meant a dozen loops competing each frame. The loop only exists while something is subscribed, and it parks
+// itself when the tab is hidden: a backgrounded tab should not be integrating springs.
 type Tick = (dt: number, now: number) => void;
 
 const subscribers = new Set<Tick>();
@@ -13,12 +8,14 @@ let raf = 0;
 let last = 0;
 
 function frame(now: number) {
-  // Clamp dt so a stalled tab (or a breakpoint) can't fire one enormous step
-  // that flings every spring past its target.
+  // Clamp dt so a stalled tab (or a breakpoint) can't fire one enormous step that flings every spring past its
+  // target.
   const dt = Math.min(0.048, (now - last) / 1000);
   last = now;
   for (const cb of subscribers) cb(dt, now);
-  raf = requestAnimationFrame(frame);
+  // Re-arm only while something is listening. A subscriber that unsubscribes inside its own tick takes the set
+  // to empty after stop() has already run, and an unconditional re-arm left this loop running on an idle page.
+  raf = subscribers.size ? requestAnimationFrame(frame) : 0;
 }
 
 function start() {

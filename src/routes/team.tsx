@@ -1,42 +1,69 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 
-import { C, L, R } from "@/components/hero/palette";
-import { Awaiting, P, PageShell, Section } from "@/components/story/PageShell";
+import { asset, C, L, R } from "@/components/hero/palette";
+import { Awaiting, P, PageLink, PageShell, Section } from "@/components/story/PageShell";
 
-/**
- * Team.
- *
- * The one page on this wiki whose content nobody but the team can supply — not
- * even in outline. So it is built as a SHAPE waiting for data rather than as
- * prose: a roster grid that renders whatever it is given, and placeholder
- * cards that make the missing entries obvious rather than invisible.
- *
- * The cards are deliberately drawn even while empty. An unfinished page must
- * not be able to pass for a finished one, and a Team page with no visible slots
- * looks like a page nobody started; a Team page showing eight empty slots looks
- * like a page waiting for eight photographs, which is what it is.
- *
- * ROLES ARE THE PART THAT MATTERS, and teams routinely waste them. "Member"
- * against nine names tells a judge nothing; "designed the assay", "ran the
- * outreach", "built the wiki" tells them who to ask about what — and it is
- * also the evidence base for the Attributions page, which iGEM checks.
- */
+// Team. Only the team can write this page, so it is built as an empty shape: a roster grid that renders
+// whatever it is given, with visible placeholder cards so a missing entry cannot look like a finished page.
+// Roles matter more than names. "Member" tells a judge nothing; "designed the assay" tells them who to ask.
 
 const TITLE = "Team — ChemoGuard";
+const DESCRIPTION =
+  "The NIS Kazakhstan iGEM 2026 team behind ChemoGuard — students, advisors and supervisors, and who did what.";
 
 export const Route = createFileRoute("/team")({
   head: () => ({
     meta: [
       { title: TITLE },
-      {
-        name: "description",
-        content:
-          "The NIS Kazakhstan iGEM 2026 team behind ChemoGuard — students, advisors and supervisors, and who did what.",
-      },
+      { name: "description", content: DESCRIPTION },
+      { property: "og:title", content: TITLE },
+      { property: "og:description", content: DESCRIPTION },
+      { property: "og:type", content: "article" },
     ],
   }),
   component: Team,
 });
+
+// The team, photographed. Two group shots the team supplied, shown large because the point of them is finding
+// faces. Each is served at two widths, so a phone downloads 60-80 kB rather than the full frame, and both carry
+// their pixel size so the page does not jump when they arrive.
+// The captions say only what the pictures show. Who is who belongs to the roster below, and only the team can
+// write that.
+const PHOTOS = [
+  {
+    file: "team-steps",
+    alt: "The team standing together in three rows on the steps outside their school, all wearing white ChemoGuard T-shirts.",
+    caption: "The ChemoGuard team on the school steps.",
+  },
+  {
+    file: "team-hall",
+    alt: "Team members standing in a line in the school entrance hall, in white ChemoGuard T-shirts, in front of a wall sign reading NIS Shymkent.",
+    caption: "In the entrance hall, in front of the school's sign.",
+  },
+] as const;
+
+function TeamPhoto({ photo, lead }: { photo: (typeof PHOTOS)[number]; lead: boolean }) {
+  return (
+    <figure className="m-0">
+      <img
+        src={asset(`${photo.file}-1280.webp`)}
+        srcSet={`${asset(`${photo.file}-800.webp`)} 800w, ${asset(`${photo.file}-1280.webp`)} 1280w`}
+        sizes="(min-width: 1024px) 768px, 100vw"
+        width={1280}
+        height={960}
+        alt={photo.alt}
+        // the first is what the section opens on; the second is below it and can wait
+        loading={lead ? "eager" : "lazy"}
+        decoding="async"
+        className="block h-auto w-full"
+        style={{ border: `2.5px solid ${C.ink}`, borderRadius: R.md }}
+      />
+      <figcaption className="mt-2 text-[14px] leading-relaxed" style={{ color: C.inkNote }}>
+        {photo.caption}
+      </figcaption>
+    </figure>
+  );
+}
 
 /**
  * Placeholder roster slots.
@@ -65,11 +92,19 @@ function Team() {
       sections={SECTIONS}
     >
       <Section id="students" title="The team">
-        <P>
-          Each card takes a photograph, a name, and one line saying what that person actually worked
-          on. The line is the useful part: it tells a judge who to ask about the assay, the
-          modelling or the outreach, and it is where the Attributions page gets its evidence.
-        </P>
+        <div className="flex flex-col gap-8">
+          {PHOTOS.map((photo, i) => (
+            <TeamPhoto key={photo.file} photo={photo} lead={i === 0} />
+          ))}
+        </div>
+
+        <div className="mt-10">
+          <P>
+            Each card below takes a name and one line saying what that person actually worked on.
+            The line is the useful part: it tells a judge who to ask about the assay, the modelling
+            or the outreach, and it is where the Attributions page gets its evidence.
+          </P>
+        </div>
         <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 md:gap-4 lg:grid-cols-4">
           {SLOTS.map((i) => (
             <div
@@ -81,16 +116,15 @@ function Team() {
                 borderRadius: R.md,
               }}
             >
-              {/*
-                A 4:5 well where the photograph goes, sized now so that adding
-                the images later cannot reflow the page around them.
-              */}
+              {/* A 4:5 slot for the photo, sized now so adding the images later cannot reflow the page. */}
               <div
                 className="grid aspect-[4/5] place-items-center"
                 style={{ background: `${C.lavender}1a` }}
               >
-                <span className={L.note} style={{ color: C.inkNote, opacity: 0.7 }}>
-                  photo
+                {/* inkBody, and no second dimming: the note colour at 70% opacity measured 2.63:1 here against the
+                    4.5:1 an 11px label is held to. A placeholder still has to be readable to say it is one. */}
+                <span className={L.note} style={{ color: C.inkBody }}>
+                  portrait
                 </span>
               </div>
               <div className="px-3 py-3">
@@ -110,9 +144,10 @@ function Team() {
         </div>
         <div className="mt-5">
           <Awaiting what="Needs the team: the roster">
-            For each member: name as it should appear, a photograph, and one line on what they
-            worked on. Say how many members there are — the eight slots above are a placeholder, not
-            a count.
+            The group photographs are in. Still needed for each member: their name as it should
+            appear, one line on what they worked on, and a portrait if the team wants individual
+            cards. Say how many members there are — the eight slots above are a placeholder, not a
+            count.
           </Awaiting>
         </div>
       </Section>
@@ -158,32 +193,10 @@ function Team() {
       </Section>
 
       <div className="mt-14 flex flex-wrap gap-3 md:mt-20">
-        <Link
-          to="/attributions"
-          className="inline-block px-6 py-3 text-[15px] font-bold"
-          style={{
-            background: C.redDeep,
-            color: "#fff",
-            border: `2.5px solid ${C.ink}`,
-            borderRadius: R.sm,
-            boxShadow: `4px 4px 0 ${C.ink}`,
-          }}
-        >
-          Attributions
-        </Link>
-        <Link
-          to="/new"
-          className="inline-block px-6 py-3 text-[15px] font-bold"
-          style={{
-            background: C.paper,
-            color: C.ink,
-            border: `2.5px solid ${C.ink}`,
-            borderRadius: R.sm,
-            boxShadow: `4px 4px 0 ${C.ink}`,
-          }}
-        >
+        <PageLink to="/attributions">Attributions</PageLink>
+        <PageLink to="/" tone="quiet">
           See the project
-        </Link>
+        </PageLink>
       </div>
       <p className={`mt-6 ${L.note}`} style={{ color: C.inkNote }}>
         Every panel above marked &ldquo;needs the team&rdquo; is written by NIS Kazakhstan

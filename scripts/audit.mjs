@@ -1,26 +1,17 @@
-/**
- * The checks that caught things looking never did.
- *
- * These began as one-off scripts in a temp directory, which meant every fresh
- * session either rebuilt them or skipped them. They are here so they survive,
- * and so a claim like "contrast passes" can be reproduced rather than trusted.
- *
- *   node scripts/audit.mjs                 every check, every page
- *   node scripts/audit.mjs sweep           responsive: overflow, clipping, console
- *   node scripts/audit.mjs contrast        painted-pixel contrast
- *   node scripts/audit.mjs controls        buttons and links that do nothing
- *   node scripts/audit.mjs collisions      overlapping text on the story page
- *   node scripts/audit.mjs system          type and colour inventory
- *   node scripts/audit.mjs copy            generated-writing patterns
- *
- * Needs the dev server: `bun run dev` first. Override with --url=…
- *
- * WHY CONTRAST IS MEASURED ON PIXELS. The obvious method — read `color` and
- * walk up for `backgroundColor` — reports 1.00:1 when the background is a
- * linear-gradient, because `backgroundColor` is transparent all the way up. It
- * passed a hero nobody could read. These checks screenshot the element's box
- * and compare its darkest and lightest pixels instead.
- */
+// The checks that caught things looking never did. These began as one-off scripts in a temp directory, so every
+// fresh session either rebuilt them or skipped them. They are here so a claim like "contrast passes" can be
+// reproduced rather than trusted.
+//   node scripts/audit.mjs                 every check, every page
+//   node scripts/audit.mjs sweep           responsive: overflow, clipping, console
+//   node scripts/audit.mjs contrast        painted-pixel contrast
+//   node scripts/audit.mjs controls        buttons and links that do nothing
+//   node scripts/audit.mjs collisions      overlapping text on the story page
+//   node scripts/audit.mjs system          type and colour inventory
+//   node scripts/audit.mjs copy            generated-writing patterns
+// Needs the dev server: run `bun run dev` first, or override with --url=...
+// Contrast is measured on pixels. Reading `color` and walking up for `backgroundColor` reports 1.00:1 when the
+// background is a linear-gradient, because backgroundColor is transparent all the way up, and it passed a hero
+// nobody could read. These checks screenshot the element's box and compare its darkest and lightest pixels.
 import { chromium } from "playwright";
 import { readFileSync } from "node:fs";
 import { PNG } from "pngjs";
@@ -32,34 +23,14 @@ const arg = (k, d) => {
 const BASE = arg("url", "http://localhost:8080");
 const only = process.argv[2] && !process.argv[2].startsWith("--") ? process.argv[2] : null;
 
-/**
- * Every route, and it has to stay that way.
- *
- * This was a hand-written list of four while the site map already knew about
- * seven, so three routes could have shipped without a single sweep, contrast
- * reading or dead-control check run against them. A page that no harness looks
- * at is a page nobody has checked.
- *
- * Read from the site map rather than repeated here, so adding a route to the
- * wiki adds it to the audit in the same edit. That is the same rule the nav,
- * the footer and the static exporter already follow — and the two times it was
- * broken before, it was broken by a second list drifting from the first.
- */
+// Every route, and it has to stay that way. This was a hand-written list of four while the site map already
+// knew about seven, so three routes could have shipped without a single sweep, contrast reading or dead-control
+// check run against them. Read from the site map, so adding a route to the wiki adds it to the audit.
 const PAGES = (() => {
-  /*
-    AND IT IS READ, NOT IMPORTED, AND IT THROWS RATHER THAN FALLING BACK.
-
-    The first attempt at this was a dynamic `import()` of the .ts module with a
-    `.catch(() => null)` and the old array behind a `??`. Node cannot parse
-    TypeScript, so the import threw on every run, the catch swallowed it, and
-    the audit quietly went on auditing exactly the four pages it always had —
-    while printing nothing to say so. A fallback that hides its own failure is
-    worse than no fallback: the check reported "all passed" for a set of pages
-    it had never loaded.
-
-    So it parses the source text, and if it finds nothing it stops. An audit
-    that cannot determine what to audit has no business exiting zero.
-  */
+  // It is read, not imported, and it throws rather than falling back. The first attempt was a dynamic import() of
+  // the .ts module with a .catch(() => null) and the old array behind a ??. Node cannot parse TypeScript, so the
+  // import threw on every run, the catch swallowed it, and the audit went on auditing the same four pages while
+  // printing nothing to say so. An audit that cannot determine what to audit has no business exiting zero.
   const src = readFileSync(new URL("../src/components/story/site-map.ts", import.meta.url), "utf8");
   const routes = [...src.matchAll(/to:\s*"([^"]+)"[^}]*ready:\s*true/g)].map((m) => m[1]);
   if (!routes.length) {
@@ -96,7 +67,7 @@ const say = (ok, msg) => {
   console.log(`  ${ok ? "ok  " : "FAIL"}  ${msg}`);
 };
 
-/* ---------------------------------------------------------------- sweep */
+// sweep
 async function sweep(browser) {
   console.log("\n── responsive ────────────────────────────────────");
   for (const [w, h, tag] of WIDTHS) {
@@ -136,21 +107,20 @@ async function sweep(browser) {
   }
 }
 
-/* ------------------------------------------------------------- contrast */
+// contrast
 async function contrast(browser) {
   console.log("\n── contrast (painted pixels) ─────────────────────");
   const pg = await browser.newPage({ viewport: { width: 1440, height: 900 } });
   for (const p of PAGES) {
     await pg.goto(BASE + p, { waitUntil: "networkidle" });
     await pg.waitForTimeout(1600);
-    // A fraction of the STORY. See the note in measure-labels.mjs — the page
-    // no longer ends at the last scene, so `scrollHeight` would move every
-    // sampled position relative to what it was calibrated against.
+    // A fraction of the story. See the note in measure-labels.mjs — the page no longer ends at the last scene, so
+    // `scrollHeight` would move every sampled position relative to what it was calibrated against.
     const H = await pg.evaluate(() => {
       const e = document.getElementById("story-end");
       return (e ? e.offsetTop : document.documentElement.scrollHeight) - innerHeight;
     });
-    const stops = p === "/new" ? [0.05, 0.24, 0.36, 0.56, 0.86] : [0];
+    const stops = p === "/" ? [0.05, 0.24, 0.36, 0.56, 0.86] : [0];
     for (const f of stops) {
       await pg.evaluate((y) => window.scrollTo({ top: y, behavior: "instant" }), Math.round(H * f));
       await pg.waitForTimeout(1200);
@@ -205,16 +175,15 @@ async function contrast(browser) {
   await pg.close();
 }
 
-/* ------------------------------------------------------------- controls */
+// controls
 async function controls(browser) {
   console.log("\n── controls that do nothing ──────────────────────");
   const pg = await browser.newPage({ viewport: { width: 1440, height: 900 } });
   for (const p of PAGES) {
     await pg.goto(BASE + p, { waitUntil: "networkidle" });
     await pg.waitForTimeout(1600);
-    // A fraction of the STORY. See the note in measure-labels.mjs — the page
-    // no longer ends at the last scene, so `scrollHeight` would move every
-    // sampled position relative to what it was calibrated against.
+    // A fraction of the story. See the note in measure-labels.mjs — the page no longer ends at the last scene, so
+    // `scrollHeight` would move every sampled position relative to what it was calibrated against.
     const H = await pg.evaluate(() => {
       const e = document.getElementById("story-end");
       return (e ? e.offsetTop : document.documentElement.scrollHeight) - innerHeight;
@@ -234,12 +203,8 @@ async function controls(browser) {
               const b = e.getBoundingClientRect();
               return eff(e) > 0.3 && b.width > 10 && b.bottom > 0 && b.top < innerHeight;
             })
-            /*
-            `tagName` is UPPERCASE for HTML elements and case-preserved for SVG
-            ones, so an SVG <a> reports "a" and this read it as a button with no
-            handler. It flagged the four working links in the engineering cycle
-            diagram as dead controls. Compare case-insensitively.
-          */
+            // tagName is uppercase for HTML elements and case-preserved for SVG ones, so an SVG <a> reports "a" and this
+            // read it as a button with no handler, flagging the four working links in the engineering cycle as dead.
             .filter((e) =>
               e.tagName.toUpperCase() === "A"
                 ? !e.getAttribute("href")
@@ -266,15 +231,14 @@ async function controls(browser) {
   await pg.close();
 }
 
-/* ----------------------------------------------------------- collisions */
+// collisions
 async function collisions(browser) {
   console.log("\n── overlapping text (story page) ─────────────────");
   const pg = await browser.newPage({ viewport: { width: 1440, height: 900 } });
-  await pg.goto(BASE + "/new", { waitUntil: "networkidle" });
+  await pg.goto(BASE + "/", { waitUntil: "networkidle" });
   await pg.waitForTimeout(2400);
-  // A fraction of the STORY. See the note in measure-labels.mjs — the page
-  // no longer ends at the last scene, so `scrollHeight` would move every
-  // sampled position relative to what it was calibrated against.
+  // A fraction of the story. See the note in measure-labels.mjs — the page no longer ends at the last scene, so
+  // `scrollHeight` would move every sampled position relative to what it was calibrated against.
   const H = await pg.evaluate(() => {
     const e = document.getElementById("story-end");
     return (e ? e.offsetTop : document.documentElement.scrollHeight) - innerHeight;
@@ -327,7 +291,7 @@ async function collisions(browser) {
   await pg.close();
 }
 
-/* -------------------------------------------------------------- system */
+// system
 async function system(browser) {
   console.log("\n── type and colour inventory ─────────────────────");
   const pg = await browser.newPage({ viewport: { width: 1440, height: 900 } });
@@ -336,9 +300,8 @@ async function system(browser) {
   for (const p of PAGES) {
     await pg.goto(BASE + p, { waitUntil: "networkidle" });
     await pg.waitForTimeout(1600);
-    // A fraction of the STORY. See the note in measure-labels.mjs — the page
-    // no longer ends at the last scene, so `scrollHeight` would move every
-    // sampled position relative to what it was calibrated against.
+    // A fraction of the story. See the note in measure-labels.mjs — the page no longer ends at the last scene, so
+    // `scrollHeight` would move every sampled position relative to what it was calibrated against.
     const H = await pg.evaluate(() => {
       const e = document.getElementById("story-end");
       return (e ? e.offsetTop : document.documentElement.scrollHeight) - innerHeight;
@@ -389,7 +352,7 @@ async function system(browser) {
   await pg.close();
 }
 
-/* ---------------------------------------------------------------- copy */
+// copy
 const BANNED =
   /\b(seamless(ly)?|leverage|empower(ing)?|unlock|dive in(to)?|delve|robust|cutting[- ]edge|state[- ]of[- ]the[- ]art|game[- ]chang\w+|revolutioni[sz]\w+|harness(ing)?|elevate|transformative|holistic|synerg\w+|pivotal|realm|landscape|tapestry|testament|underscore)\b/gi;
 
@@ -459,7 +422,7 @@ async function copy(browser) {
   await pg.close();
 }
 
-/* ---------------------------------------------------------------- main */
+// main
 const TASKS = { sweep, contrast, controls, collisions, system, copy };
 
 // A stack trace from page.goto is a poor way to learn the server is not up.
@@ -475,13 +438,8 @@ try {
   process.exit(1);
 }
 
-/*
-  AN UNKNOWN CHECK NAME IS AN ERROR, not an empty run.
-
-  The argument names a check, not a page. `node scripts/audit.mjs description`
-  matched no check, ran nothing, and printed "All checks passed" — a green
-  result for an audit that never opened a browser tab.
-*/
+// An unknown check name is an error, not an empty run. The argument names a check, not a page:
+// `node scripts/audit.mjs description` matched no check, ran nothing, and printed "All checks passed".
 if (only && !(only in TASKS)) {
   console.error(`No check called "${only}". Checks: ${Object.keys(TASKS).join(", ")}.`);
   process.exit(2);

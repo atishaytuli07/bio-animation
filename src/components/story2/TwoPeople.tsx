@@ -12,82 +12,43 @@ import {
   useTime,
 } from "@/hooks/use-scroll-progress";
 
-/**
- * Stop two — "Two people".
- *
- * The descent ended on a letter. This is what that letter means for a person.
- * Two patients, the same drug, the same dose, at the same time — and for a
- * deliberately long stretch nothing separates them. Then one body clears the
- * drug and the other cannot, and only once the reader has watched that happen
- * does the sentence finish: "…doesn't mean the same outcome."
- *
- * The characters are illustrated plates (AI-generated, to be declared in
- * Attributions). Everything that moves is drawn in code on top: the IV
- * hardware, the dose travelling, and — the mechanic that carries the beat —
- * the drug visibly filling one body, using the plate's own alpha as a CSS
- * mask so the tint is inside the person rather than a rectangle over them.
- *
- * The room warms as B's load climbs. It does NOT go dark: the client rejected
- * near-black sections outright, and the brief's rule is that the emotional arc
- * is carried by saturation and hue, never by darkness. That warming is not done
- * here — it comes from <Ground />, whose keyframes at page 0.35 and 0.44 mix
- * coral and then red into the field while this scene is on screen. This file
- * used to compute its own `warm` value for it, which stopped being read when
- * the colour moved to the ground and sat here as dead code afterwards.
- *
- * The scattered ambient objects are not here either, for the same reason: they
- * belong to <World />, which travels the whole story. A local FIELD2 array
- * lingered here long after that move.
- */
+// Stop two, "Two people". The descent ended on a letter; this is what that letter means for a person. Two
+// patients, the same drug, the same dose, and for a deliberately long stretch nothing separates them. Then one
+// body clears the drug and the other cannot, and only then does the sentence finish.
+// The characters are illustrated plates, AI-generated and declared in Attributions. Everything that moves is
+// drawn in code on top: the IV hardware, the dose travelling, and the drug visibly filling one body, using the
+// plate's own alpha as a CSS mask so the tint is inside the person rather than a rectangle over them.
+// The room warms as B's load climbs, and it does not go dark: the client rejected near-black sections, and the
+// emotional arc is carried by saturation and hue. That warming comes from Ground, whose keyframes at page 0.35
+// and 0.44 mix coral and then red into the field while this scene is on screen.
+// The scattered ambient objects belong to World, which travels the whole story.
 
 const q = (v: number) => Math.round(v * 20) / 20;
 
-/**
- * The two ceilings the reader is asked to satisfy at once, and cannot.
- *
- * The slider gives ONE dose to BOTH people, which is what standard dosing
- * does — the dose comes from body surface area, not from how fast a particular
- * body clears the drug. She has normal DPD and needs the full dose for it to
- * be a treatment. He has reduced DPD and accumulates above a much lower one.
- *
- * THE TWO BANDS DO NOT OVERLAP, and that is the whole point. Anything that
- * treats her is too much for him; anything safe for him is not a treatment for
- * her. The reader is meant to hunt for a setting that satisfies both, fail,
- * and conclude that the dose has to be per person — three beats before the
- * story says so out loud.
- *
- * These are positions on a slider, not milligrams. No dose figure appears
- * anywhere on this wiki, deliberately: real numbers belong to guidance the
- * team has to cite. The claim the geometry makes — carriers need less, normal
- * metabolisers need the full dose — is the project's own premise, already
- * stated in words elsewhere on the page.
- */
+// The two ceilings the reader is asked to satisfy at once, and cannot. The slider gives one dose to both
+// people, which is what standard dosing does: the dose comes from body surface area, not from how fast a
+// particular body clears the drug. She has normal DPD and needs the full dose for it to be a treatment; he has
+// reduced DPD and accumulates above a much lower one.
+// The two bands do not overlap, and that is the point. Anything that treats her is too much for him, anything
+// safe for him is not a treatment for her, so the reader hunts for a setting that satisfies both, fails, and
+// concludes that the dose has to be per person, three beats before the story says so.
+// These are positions on a slider, not milligrams. No dose figure appears anywhere on this wiki: real numbers
+// belong to guidance the team has to cite. The claim the geometry makes is the project's own premise.
 const HER_MIN = 0.7;
 const HIS_MAX = 0.5;
 
 /** IV stand, bag, drip chamber and line — all SVG, so the dose can move. */
-/**
- * The drug in the bag is ALWAYS coral, on both stands, all the way through.
- * The whole point of the beat is that the treatment is identical — only the
- * body's response differs — so tinting one bag would quietly tell the wrong
- * story.
- */
-/**
- * The tube, as one cubic, used twice.
- *
- * The path that draws the line and the sampler that runs the dose along it
- * used to carry the same four control points as separate literals, so moving
- * the end of the tube meant editing two places and hoping they agreed. One
- * set of numbers now.
- *
- * THE END IS ON THE FOREARM, MEASURED. At (-30, 226) the cannula landed at
- * x 81.3% of patient A's plate and x 17.8% of patient B's — and at that height
- * A's near arm spans 87–97% and B's spans 5–16%. Both cannulas sat in the gap
- * BETWEEN the arm and the torso, at hip height, which is why the client saw
- * them as plugged into a pocket. Nine units toward the stand and nine units
- * up puts A's at ~90% and B's at ~9%, inside the arm on both plates, mid
- * forearm rather than level with the hip.
- */
+
+// The drug in the bag is always coral, on both stands, all the way through. The point of the beat is that the
+// treatment is identical and only the body's response differs, so tinting one bag would tell the wrong story.
+
+// The tube, as one cubic, used twice. The path that draws the line and the sampler that runs the dose along it
+// used to carry the same four control points as separate literals, so moving the end meant editing two places
+// and hoping they agreed.
+// The end is on the forearm, measured. At (-30, 226) the cannula landed at x 81.3% of patient A's plate and
+// 17.8% of patient B's, while at that height A's near arm spans 87 to 97% and B's spans 5 to 16%: both sat in
+// the gap between the arm and the torso, at hip height, which is why the client saw them plugged into a pocket.
+// Nine units toward the stand and nine up puts them at about 90% and 9%, inside the arm on both plates.
 const TUBE = { p0: [74, 162], p1: [74, 214], p2: [22, 250], p3: [-16, 217] } as const;
 /** The cannula, sitting on the tube's end. */
 const CANNULA = { x: -29, y: 212, w: 14, h: 6 } as const;
@@ -198,23 +159,13 @@ function IV({ dose, flow, flip }: { dose: number; flow: number; flip: boolean })
 }
 
 /** A patient: plate + the drug inside them, masked to their silhouette. */
-/**
- * A patient: plate, the drug inside them masked to their silhouette, and — the
- * part the client asked for — movement.
- *
- * Her note was that the figures read as static illustrations placed on top of
- * the experience rather than being part of it, next to a DNA section that
- * moves. Two things move here, and they are deliberately different in kind:
- *
- *   breathing  — a slow rise and fall, always on. This is what stops a plate
- *                looking like a sticker. It is tiny on purpose; at this scale
- *                anything larger reads as a bobbing animation.
- *   reacting   — the body responds to its own drug load. As it climbs, the
- *                figure settles: a little lower, tilted a little off vertical.
- *                So the one who clears the drug stays upright and the one who
- *                cannot visibly tires, without anything cartoonish and without
- *                a single word.
- */
+// A patient: plate, the drug inside them masked to their silhouette, and movement. The client's note was that
+// the figures read as static illustrations placed on top of the experience rather than part of it. Two things
+// move, and they are deliberately different in kind:
+//   breathing  a slow rise and fall, always on, which is what stops a plate looking like a sticker. Tiny on
+//              purpose; at this scale anything larger reads as a bobbing animation.
+//   reacting   the body responds to its own drug load. As it climbs the figure settles, a little lower and
+//              tilted off vertical, so the one who cannot clear the drug visibly tires without a word.
 function Patient({
   src,
   fill,
@@ -279,51 +230,31 @@ function Patient({
 
 export function TwoPeople() {
   const [ref, p, active] = useSmoothProgress<HTMLElement>(0.1);
-  // Dissolve out across the measured boundary at 0.658, as the bloodstream
-  // scene rises into the same frame.
+  // Dissolve out across the measured boundary at 0.513, as the bloodstream scene rises into the same frame.
   const pageP = usePageProgress();
   const handoff = range(pageP, 0.489, 0.526);
 
-  /* ---- beats ---------------------------------------------------------------
-     enter → the same treatment → IDENTICAL, held → one clears, one fills →
-     the sentence finishes. The hold is the point: the split only hurts if the
-     reader has had time to believe there was no difference.                 */
-  /*
-    THE BRIDGE, and it runs before anything else here.
-
-    The client identified a missing link: we showed the gene and the variant,
-    then jumped to two people having different outcomes, without ever showing
-    the thing in between. Her chain was DPYD variant → reduced DPD activity →
-    reduced drug breakdown → accumulation → toxicity risk, and she asked for it
-    as a short visual transformation rather than an explanation.
-
-    So the letter the reader just watched change now visibly decides how much
-    enzyme this body builds — five slots, two filled — and only then do the
-    patients arrive. Everything after runs on `pp`, the remaining progress
-    remapped to 0→1, so the two-patient beat is unchanged in shape and simply
-    starts later.
-  */
-  /*
-    THE BRIDGE WAITS FOR THE PREVIOUS SCENE TO FINISH LEAVING.
-
-    It used to open at local 0.02, which is page 0.209 — inside the descent's
-    handoff window of 0.196 → 0.231. So the enzyme diagram was arriving while
-    "About three billion letters. This one can make a standard dose too much." was still on
-    screen fading out: two unrelated pieces of information sharing a frame at
-    the one boundary that most needed to feel clean.
-
-    Opening at 0.13 puts it at page 0.243, which is after the descent has fully
-    dissolved at 0.231, with a short breath in between. The cost is that the
-    two-patient act loses about 64vh — it runs 377vh instead of 441vh — and that
-    is a fair price for a boundary that reads as one continuous move.
-  */
+  // The beats: enter, the same treatment, identical and held, one clears while one fills, the sentence finishes.
+  // The hold is the point, because the split only hurts if the reader has had time to believe there was no
+  // difference.
+  // The bridge, and it runs before anything else here. The client identified a missing link: we showed the gene
+  // and the variant, then jumped to two people with different outcomes without showing the thing in between. Her
+  // chain was variant, reduced DPD activity, reduced breakdown, accumulation, toxicity risk, and she asked for it
+  // as a short visual transformation rather than an explanation.
+  // So the letter the reader just watched change now decides how much enzyme this body builds, five slots and two
+  // filled, and only then do the patients arrive. Everything after runs on `pp`, the remaining progress remapped
+  // to 0 to 1, so the two-patient beat is unchanged in shape and simply starts later.
+  // The bridge waits for the previous scene to finish leaving. It used to open at local 0.02, page 0.209, inside
+  // the descent's handoff window of 0.196 to 0.231, so the enzyme diagram arrived while the previous closing line
+  // was still fading: two unrelated pieces of information sharing a frame at the boundary that most needed to feel
+  // clean. Opening at 0.13 puts it at page 0.243, after the descent has dissolved at 0.231. The cost is that the
+  // two-patient act runs 377vh instead of 441vh, which is a fair price for a boundary that reads as continuous.
   const bridge = beat(p, 0.13, 0.2, 0.3, 0.37);
   const slots = range(p, 0.19, 0.31);
   const pp = range(p, 0.35, 1);
 
-  // easeOut, not linear: a linear fade leaves the figures, stands and bags
-  // all half-transparent for about half a screen of scrolling, which reads as
-  // an unfinished render rather than an entrance.
+  // easeOut, not linear: a linear fade leaves the figures, stands and bags all half-transparent for about half a
+  // screen of scrolling, which reads as an unfinished render rather than an entrance.
   const enter = easeOut(range(pp, 0.01, 0.11));
   const title = beat(pp, 0.12, 0.2, 0.6, 0.68);
   const flow = band(pp, 0.2, 0.26, 0.88, 0.94);
@@ -334,27 +265,16 @@ export function TwoPeople() {
   const alarm = range(pp, 0.6, 0.82);
   const outcome = beat(pp, 0.8, 0.9, 1.2, 1.3);
 
-  /*
-    THE READER'S DOSE. It starts at 1 — the standard dose — so a reader who
-    never touches the slider sees exactly the scene that was here before it
-    existed, and every harness that only scrolls measures the same thing.
-  */
+  // The reader's dose. It starts at 1, the standard dose, so a reader who never touches the slider sees exactly
+  // the scene that was here before it existed, and every harness that only scrolls measures the same thing.
   const [chosen, setChosen] = useState(1);
   const [moved, setMoved] = useState(false);
 
-  /*
-    THE STORY TAKES THE DOSE BACK.
-
-    The slider is a sidebar inside the hold, not a fork in the story. If the
-    reader left it on "reduced", he would never accumulate — and then the
-    closing line, "doesn't mean the same outcome", would land over a picture in
-    which the outcome IS the same. So as the control fades out the dose eases
-    back to standard, and the divergence plays as written.
-
-    That is not a cheat; it is the point. Without a test, the standard dose is
-    what gets given. The reader has just discovered there is no dose that suits
-    both of them — and then watches the one that is used anyway.
-  */
+  // The story takes the dose back. The slider is a sidebar inside the hold, not a fork in the story: if the
+  // reader left it on "reduced" he would never accumulate, and the closing line would land over a picture in which
+  // the outcome is the same. So as the control fades out the dose eases back to standard.
+  // That is not a cheat, it is the point. Without a test, the standard dose is what gets given, and the reader has
+  // just discovered there is no dose that suits both of them.
   const resume = range(pp, 0.72, 0.8);
   const level = chosen + (1 - chosen) * resume;
 
@@ -364,12 +284,9 @@ export function TwoPeople() {
   const treated = level >= HER_MIN;
 
   const fillA = uptake * level * (1 - clearA);
-  /*
-    He holds what she holds, PLUS what his reduced DPD cannot clear — and the
-    slider governs only that second term. At or below his ceiling it is zero
-    and he behaves like her; at the standard dose it is the load the scene was
-    always showing.
-  */
+  // He holds what she holds, plus what his reduced DPD cannot clear, and the slider governs only that second
+  // term. At or below his ceiling it is zero and he behaves like her; at the standard dose it is the load the
+  // scene was always showing.
   const fillB = (uptake + 0.36 * buildB * over) * level;
   const alarmB = alarm * over;
 
@@ -386,49 +303,28 @@ export function TwoPeople() {
       data-active={String(active)}
     >
       <div
-        /*
-          `--feet` is where the figures stand. It was a bare 16vh at every
-          width, and on a phone the dose slider — which has to sit below them —
-          is taller than that gap: measured, the card ran 37px up into the
-          figures at 390 and 14px at 768.
-
-          THREE STEPS, NOT TWO. 768 is exactly Tailwind's `md`, so a two-step
-          rule handed the tablet the desktop value and the overlap there did
-          not move. Phones get 22vh, tablets 19vh, and desktop 17vh — one vh
-          above the approved 16, which is 8px on a 768-tall laptop and buys the
-          card 16px of clearance there instead of 8. Nobody will see the shift;
-          everybody would see the shoes touching the card.
-        */
+        // --feet is where the figures stand. It was a bare 16vh at every width, and on a phone the dose slider, which
+        // has to sit below them, is taller than that gap: the card ran 37px up into the figures at 390 and 14px at 768.
+        // Three steps, not two. 768 is exactly Tailwind's md, so a two-step rule handed the tablet the desktop value and
+        // the overlap there did not move. Phones get 22vh, tablets 19vh, desktop 17vh, one vh above the approved 16,
+        // which is 8px on a 768-tall laptop and buys the card 16px of clearance instead of 8.
         className="sticky top-0 h-screen overflow-hidden [--fig2:36vh] [--feet:22vh] md:[--fig2:min(52vh,600px)] md:[--feet:19vh] lg:[--feet:17vh]"
         style={{ opacity: 1 - q(handoff), visibility: handoff > 0.99 ? "hidden" : "visible" }}
       >
-        {/*
-          No background and no scattered field here any more; both moved to
-          <Ground /> and <World />. A scene that paints its own rectangle
-          cannot fade into the next one — at the seam this stage stops
-          existing and the following one starts — and that hard edge, cream to
-          purple to pink to cream, was the client's main note.
-        */}
+        {/* No background and no scattered field here any more; both moved to Ground and World. A scene that paints
+            its own rectangle cannot fade into the next one, and that hard edge was the client's main note. */}
         {/* The chapter label lives in the story rail now — see StoryProgress. */}
 
-        {/*
-          The bridge: one letter → how much enzyme this body builds. Drawn with
-          the vocabulary already established — the red variant badge from the
-          descent, and the green enzyme shape the next scene will find missing.
-        */}
+        {/* The bridge: one letter, and how much enzyme this body builds. Drawn with the vocabulary already
+            established, the red variant badge from the descent and the green enzyme the next scene will find missing. */}
         {bridge.o > 0.004 && (
           <div
             className="pointer-events-none absolute inset-x-0 top-1/2 z-20 flex -translate-y-1/2 flex-col items-center px-6"
             style={{ opacity: q(bridge.o), transform: `translateY(${bridge.y.toFixed(1)}px)` }}
           >
-            {/*
-              560px was 6.8% of a 1440x900 frame, and the headline beneath it
-              measured 10.9% — the words took more of the screen than the
-              picture at the exact moment the picture is supposed to be making
-              the argument. The brief's own diagnosis of what the client keeps
-              rejecting is "emptiness, not text", and the fix it names is to
-              fill the frame rather than strip the copy.
-            */}
+            {/* 560px was 6.8% of a 1440x900 frame and the headline beneath it measured 10.9%: the words took more of the
+                screen than the picture at the moment the picture is supposed to be making the argument. What the client
+                keeps rejecting is emptiness, not text, so the fix is to fill the frame rather than strip the copy. */}
             <svg viewBox="0 0 460 130" className="w-[min(92vw,860px)]" aria-hidden="true">
               {/* the letter, carried straight over from the sequence */}
               <g transform="translate(6 44)">
@@ -452,26 +348,17 @@ export function TwoPeople() {
               />
               <path d="M96 60 L 106 67 L 96 74 Z" fill={C.ink} />
 
-              {/*
-                Five slots, two filled. "Reduced, not absent" is the accurate
-                claim and the picture makes it without a sentence.
-              */}
+              {/* Five slots, two filled. "Reduced, not absent" is the accurate claim, and the picture makes it without a
+                  sentence. */}
               {[0, 1, 2, 3, 4].map((i) => {
                 const on = range(slots, i * 0.12, i * 0.12 + 0.3);
                 const made = i < 2;
                 return (
-                  /*
-                    THE SAME OBJECT THE BLOODSTREAM SCENE DRAWS. This used to be
-                    an inline rounded rectangle with a notch cut out of it — a
-                    second, older enzyme, which meant the reader was taught one
-                    silhouette here and shown another two scenes later. See
-                    ENZYME_PATH in palette.ts.
-
-                    0.64 puts the canonical path's 53-unit width back on the
-                    34 units this diagram was laid out around, so nothing else
-                    in the composition moves; the stroke is divided by the same
-                    factor to keep its painted weight.
-                  */
+                  // The same object the bloodstream scene draws. This used to be an inline rounded rectangle with a notch, a
+                  // second, older enzyme, so the reader was taught one silhouette here and shown another two scenes later. See
+                  // ENZYME_PATH in palette.ts.
+                  // 0.64 puts the canonical path's 53-unit width back on the 34 units this diagram was laid out around, so nothing
+                  // else in the composition moves; the stroke is divided by the same factor to keep its painted weight.
                   <g key={i} transform={`translate(${124 + i * 68 - 0.7} 39) scale(0.64)`}>
                     <path
                       d={ENZYME_PATH}
@@ -505,17 +392,10 @@ export function TwoPeople() {
           style={{
             bottom: "var(--feet)",
             opacity: q(enter),
-            /*
-              The camera is still moving when this scene starts, and it settles
-              here rather than cutting to rest.
-
-              The previous scene ends on a pull-back away from the DNA, so the
-              patients enter a fraction oversized and ease down to their resting
-              size — the read is a camera decelerating to a stop, not a new
-              composition being placed. Six percent is deliberately almost
-              nothing: enough that the boundary feels continuous, not enough to
-              register as the figures themselves moving.
-            */
+            // The camera is still moving when this scene starts, and it settles here rather than cutting to rest. The
+            // previous scene ends on a pull-back, so the patients enter a fraction oversized and ease down to their resting
+            // size: a camera decelerating to a stop, not a new composition being placed. Six percent is almost nothing,
+            // enough that the boundary feels continuous and not enough to register as the figures moving.
             transform: `translateY(${((1 - enter) * 30).toFixed(1)}px) scale(${(1 + (1 - enter) * 0.06).toFixed(4)})`,
             transformOrigin: "50% 100%",
           }}
@@ -529,13 +409,9 @@ export function TwoPeople() {
               animate={active}
               seed={0}
             />
-            {/*
-              Taller than the figure on purpose. At 92% the bag hung level with
-              the patient's chest, so the only place the line could reach was
-              their legs — which is exactly what the client saw. A real stand is
-              taller than the person, and once it is, the tube descends to the
-              forearm the way it does in a ward.
-            */}
+            {/* Taller than the figure on purpose. At 92% the bag hung level with the patient's chest, so the only place
+                the line could reach was their legs, which is what the client saw. A real stand is taller than the person,
+                and once it is, the tube descends to the forearm the way it does in a ward. */}
             <div className="h-[118%]">
               <IV dose={dose * level} flow={flow} flip={false} />
             </div>
@@ -555,29 +431,16 @@ export function TwoPeople() {
           </div>
         </div>
 
-        {/*
-          THE SLIDER: one dose, two people.
-
-          It arrives only after the two have visibly diverged. Before that, the
-          long identical uptake IS the beat — a control there would let the
-          reader break the one thing that beat exists to show. It leaves at
-          0.72 → 0.78, BEFORE the closing line arrives at 0.80, and the dose
-          eases back to standard over the same window (see `resume` above).
-
-          The two readouts are the mechanism. She needs the dose kept up to be
-          treated; he needs it brought down to be safe; they never both go
-          green. A reader who drags it end to end has run the project's whole
-          argument with their thumb.
-        */}
+        {/* The slider: one dose, two people. It arrives only after the two have visibly diverged, because before that
+            the long identical uptake is the beat and a control there would let the reader break it. It leaves at 0.72
+            to 0.78, before the closing line arrives at 0.80, and the dose eases back to standard over the same window.
+            The two readouts are the mechanism: she needs the dose kept up to be treated, he needs it brought down to be
+            safe, and they never both go green. A reader who drags it end to end has run the whole argument. */}
         <div
-          /*
-            THE CARD HAS TO FIT UNDER THE FIGURES AT EVERY HEIGHT, and stacked
-            it did not: 144px tall against a 13vh gap it ran 27px into them at
-            1440x900 and 48px at 1024x768 — measured only after phone and
-            tablet had been checked and passed, which is its own lesson. From
-            md the two readouts sit beside the slider, the card drops to about
-            95px, and it sits 2vh off the floor instead of 3.
-          */
+          // The card has to fit under the figures at every height, and stacked it did not: 144px tall against a 13vh gap,
+          // it ran 27px into them at 1440x900 and 48px at 1024x768, measured only after phone and tablet had been checked
+          // and passed. From md the two readouts sit beside the slider, the card drops to about 95px, and it sits 2vh off
+          // the floor instead of 3.
           className="absolute inset-x-0 bottom-[3vh] z-30 flex justify-center px-6 md:bottom-[2vh]"
           style={{
             opacity: q(easeOut(band(pp, 0.56, 0.62, 0.72, 0.78))),
@@ -585,7 +448,7 @@ export function TwoPeople() {
           }}
         >
           <div
-            className="w-full max-w-[420px] rounded-xl px-4 py-3 md:max-w-[640px] md:px-5 md:py-2.5"
+            className="w-full max-w-[420px] rounded-[10px] px-4 py-3 md:max-w-[640px] md:px-5 md:py-2.5"
             style={{
               background: C.paper,
               border: `2.5px solid ${C.ink}`,
@@ -624,7 +487,7 @@ export function TwoPeople() {
                 ].map((r) => (
                   <div
                     key={r.who}
-                    className="rounded-[8px] px-2.5 py-1.5"
+                    className="rounded-[6px] px-2.5 py-1.5"
                     style={{
                       background: r.ok ? `${C.green}1f` : `${C.red}14`,
                       border: `2px solid ${r.ok ? C.green : C.red}66`,

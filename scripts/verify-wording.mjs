@@ -1,25 +1,16 @@
-/**
- * The client's science review, checked against the RENDERED site.
- *
- * Adina's review of the Description page (September 2026) replaced specific
- * sentences and ruled out specific framings: a variant CAN do something, it
- * does not always; the test INFORMS a dose under clinical guidelines, it never
- * sets one. This checks both halves against what a reader receives — including
- * text drawn inside figures, CSS-capitalised labels and the <title> — not the
- * source, because the source can be right while a component renders something
- * else.
- *
- *   1. Every sentence she supplied is on the Description page.
- *   2. Every citation mark points at a listed source and lands below the header.
- *   3. No phrase she corrected survives on ANY page.
- *
- * THE STORY IS READ ACROSS ITS WHOLE LENGTH. It mounts some text only when its
- * scene is reached, so a single read of the document at the top misses it. The
- * first version of this check did exactly that and passed /new without ever
- * having seen the scene-one caption.
- *
- * Usage: node scripts/verify-wording.mjs [origin=http://localhost:8080]
- */
+// The client's science review, checked against the rendered site.
+// Adina's review of the Description page (September 2026) replaced specific sentences and ruled out specific
+// framings: a variant can do something, it does not always; the test informs a dose under clinical guidelines, it
+// never sets one. This checks both halves against what a reader receives — including text drawn inside figures,
+// CSS-capitalised labels and the <title> — not the source, because the source can be right while a component renders
+// something else.
+//   1. Every sentence she supplied is on the Description page.
+//   2. Every citation mark points at a listed source and lands below the header.
+//   3. No phrase she corrected survives on ANY page.
+// The story is read across its whole length. It mounts some text only when its scene is reached, so a single read of
+// the document at the top misses it. The first version of this check did exactly that and passed the story without ever
+// having seen the scene-one caption.
+// Usage: node scripts/verify-wording.mjs [origin=http://localhost:8080]
 import { readFileSync } from "node:fs";
 import { chromium } from "playwright";
 
@@ -41,10 +32,7 @@ const REQUIRED = [
   "Conceptual illustration, not a quantitative pharmacokinetic model.",
 ];
 
-/**
- * Framings that were corrected once and must not come back, anywhere.
- * Lower-case substrings of rendered text.
- */
+// Framings that were corrected once and must not come back, anywhere. Lower-case substrings of rendered text.
 const BANNED = [
   "not used to treat the tumour", // replaced by "a large proportion … broken down"
   "built from instructions", // "encoded by"
@@ -93,11 +81,9 @@ for (let y = 0; y <= h; y += 400) {
   await page.waitForTimeout(40);
 }
 await page.waitForTimeout(1000);
-/*
-  innerText, lower-cased: labels are capitalised by CSS and innerText returns
-  them that way. Citation numbers sit straight after punctuation in innerText
-  ("activity.4 Individual") and are stripped so a sentence still matches whole.
-*/
+// innerText, lower-cased: labels are capitalised by CSS and innerText returns them that way. Citation numbers sit
+// straight after punctuation in innerText ("activity.4 Individual") and are stripped so a sentence still matches
+// whole.
 const text = norm(await page.evaluate(() => document.body.innerText))
   .replace(/([.,)])\d+(?=\s|$)/g, "$1")
   .toLowerCase();
@@ -143,7 +129,7 @@ for (const route of routes) {
   const H = await p.evaluate(() => document.documentElement.scrollHeight);
   for (let y = 0; y <= H; y += 250) {
     await p.evaluate((y) => window.scrollTo(0, y), y);
-    await p.waitForTimeout(route === "/new" ? 60 : 5);
+    await p.waitForTimeout(route === "/" ? 60 : 5);
     seen += " " + (await p.evaluate(() => document.documentElement.textContent));
   }
   seen = norm(seen + " " + (await p.title())).toLowerCase();

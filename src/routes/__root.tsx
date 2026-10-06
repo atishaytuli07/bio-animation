@@ -1,38 +1,17 @@
-import {
-  Outlet,
-  Link,
-  createRootRoute,
-  useRouter,
-  HeadContent,
-  Scripts,
-} from "@tanstack/react-router";
+import { Outlet, createRootRoute, useRouter, HeadContent, Scripts } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 
-/*
-  Self-hosted typefaces, replacing a Google Fonts <link>. All three are OFL, so
-  redistributing them inside the wiki build is permitted.
-
-  Instrument Sans is the body face for the whole site. Archivo Black and
-  Newsreader went with the deleted direction — they were only ever used by its
-  poster and serif utilities.
-
-  The package publishes one stylesheet per axis rather than per subset, so its
-  Cyrillic, Greek and Vietnamese faces are declared too; each carries a
-  unicode-range, so a reader only downloads the subset the page actually sets.
-*/
+// Instrument Sans, self-hosted (OFL, so shipping it inside the wiki is allowed). The package publishes one
+// stylesheet per axis, and each face carries a unicode-range, so a reader downloads only the subset in use.
 import "@fontsource-variable/instrument-sans/wght.css";
 
-import { C, T } from "@/components/hero/palette";
-import { SiteFooter } from "@/components/story/PageShell";
+import { C, R, T } from "@/components/hero/palette";
+import { PageLink, SiteFooter } from "@/components/story/PageShell";
 import { SiteHeader } from "@/components/story/SiteHeader";
 
 import appCss from "../styles.css?url";
 
-/*
-  A missing page still gets the site's navigation, so a mistyped link leaves
-  the reader one click from anywhere rather than on a dead end. It was the
-  starter template's grey page, with nothing of the wiki in it.
-*/
+// A missing page still gets the site's navigation, so a mistyped link is one click from anywhere.
 function NotFoundComponent() {
   return (
     <div className="min-h-screen" style={{ background: C.paper, color: C.ink }}>
@@ -47,19 +26,7 @@ function NotFoundComponent() {
             the navigation above.
           </p>
           <div className="mt-8">
-            <Link
-              to="/new"
-              className="inline-block px-6 py-3 text-[15px] font-bold"
-              style={{
-                background: C.redDeep,
-                color: "#fff",
-                border: `2.5px solid ${C.ink}`,
-                borderRadius: 6,
-                boxShadow: `4px 4px 0 ${C.ink}`,
-              }}
-            >
-              Back to the story
-            </Link>
+            <PageLink to="/">Back to the story</PageLink>
           </div>
         </div>
       </div>
@@ -72,14 +39,11 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   console.error(error);
   const router = useRouter();
 
-  /*
-    In the site's own palette. It was the starter template's grey page, and it
-    was the last thing on the wiki using the template's colour theme — which is
-    why that theme could be deleted from styles.css.
-  */
+  // In the site's own palette. This was the last thing using the starter template's colour theme, which is
+  // why that theme could be deleted from styles.css.
   const button = {
     border: `2.5px solid ${C.ink}`,
-    borderRadius: 6,
+    borderRadius: R.sm,
     boxShadow: `4px 4px 0 ${C.ink}`,
   };
   return (
@@ -105,12 +69,9 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
           >
             Try again
           </button>
-          {/*
-            The wiki's own root, not the domain's. On 2026.igem.wiki a bare "/"
-            leaves the team's wiki for iGEM's index of every team. A plain
-            anchor rather than a router Link, because this renders when the
-            app itself has failed.
-          */}
+          {/* The wiki's own root, not the domain's: on 2026.igem.wiki a bare "/" leaves the team's wiki. A plain
+              anchor, not a router Link, because this renders when the app itself has failed. */}
+
           <a
             href={`${import.meta.env.BASE_URL}new/`}
             className="px-6 py-3 text-[15px] font-bold"
@@ -142,22 +103,10 @@ export const Route = createRootRoute({
       { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [
-      /*
-        NO EXTERNAL STYLESHEETS OR FONT CDNs.
+      // No external stylesheets or font CDNs: iGEM wikis must serve every asset themselves, and a request to
+      // fonts.googleapis.com both breaks that rule and timed out on competition infrastructure. The typeface is
+      // an npm package, so vite fingerprints the woff2 files into the build and they resolve locally.
 
-        iGEM wikis must serve every asset from the team's own wiki; a request to
-        fonts.googleapis.com is a rule violation and, on competition
-        infrastructure, a request that simply fails. It was failing here too —
-        a headless run of this page logged ERR_CONNECTION_TIMED_OUT against
-        that host, so the typography was already at the mercy of a network
-        call.
-
-        The typeface is now installed as a package and imported at the top of
-        this file. Vite fingerprints the woff2 files into the build
-        output, so they ship with the wiki and resolve locally. Swapping in the
-        team's own typeface later is a change of import and family name; the
-        mechanism does not change.
-      */
       {
         rel: "stylesheet",
         href: appCss,

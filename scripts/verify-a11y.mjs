@@ -1,22 +1,16 @@
-/**
- * Accessibility, on every page and on the story's controls.
- *
- * iGEM's own recommendations ask for alt text and readable contrast, and a
- * judge reading with a keyboard or a screen reader is not a hypothetical. This
- * checks three things the other harnesses cannot see:
- *
- *   1. axe-core on every route, failing on serious and critical violations.
- *      Contrast is left to audit.mjs, which measures PAINTED pixels — axe reads
- *      authored colours and reports nothing useful on a gradient.
- *   2. THE STORY IS OPERABLE BY KEYBOARD. Its two hold controls and its dose
- *      slider are the only interactive things on the site, and both holds were
- *      pointer-only once: focusable, and impossible to operate.
- *   3. REDUCED MOTION IS HONOURED. The story is scroll-driven, which is fine —
- *      scroll-linked motion is the reader's own — but nothing may animate on a
- *      clock of its own when the reader has asked for stillness.
- *
- * Usage: node scripts/verify-a11y.mjs [origin=http://localhost:8080]
- */
+// Accessibility, on every page and on the story's controls.
+// iGEM's own recommendations ask for alt text and readable contrast, and a judge reading with a keyboard or a screen
+// reader is not a hypothetical. This checks three things the other harnesses cannot see:
+//   1. axe-core on every route, failing on serious and critical violations.
+//   Contrast is left to audit.mjs, which measures painted pixels — axe reads
+//   authored colours and reports nothing useful on a gradient.
+//   2. The story is operable by keyboard. Its two hold controls and its dose
+//   slider are the only interactive things on the site, and both holds were
+//   pointer-only once: focusable, and impossible to operate.
+//   3. Reduced motion is honoured. The story is scroll-driven, which is fine —
+//   scroll-linked motion is the reader's own — but nothing may animate on a
+//   clock of its own when the reader has asked for stillness.
+// Usage: node scripts/verify-a11y.mjs [origin=http://localhost:8080]
 import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { chromium } from "playwright";
@@ -51,14 +45,14 @@ for (const route of routes) {
   const h = await page.evaluate(() => document.documentElement.scrollHeight);
   for (let y = 0; y <= h; y += 900) {
     await page.evaluate((y) => window.scrollTo(0, y), y);
-    await page.waitForTimeout(route === "/new" ? 120 : 30);
+    await page.waitForTimeout(route === "/" ? 120 : 30);
   }
   await page.evaluate(() => window.scrollTo(0, 0));
   await page.waitForTimeout(400);
   await page.addScriptTag({ path: AXE });
   const result = await page.evaluate(async () => {
-    // colour-contrast is audit.mjs's job: it reads painted pixels, axe reads
-    // authored values and cannot see a gradient or a semi-transparent scrim
+    // colour-contrast is audit.mjs's job: it reads painted pixels, axe reads authored values and cannot see a
+    // gradient or a semi-transparent scrim
     return await window.axe.run(document, {
       resultTypes: ["violations"],
       rules: { "color-contrast": { enabled: false } },
@@ -78,7 +72,7 @@ for (const route of routes) {
 console.log("\n\u2500\u2500 2 \u00b7 the story's controls work from the keyboard");
 {
   const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
-  await page.goto(BASE + "/new", { waitUntil: "networkidle" });
+  await page.goto(BASE + "/", { waitUntil: "networkidle" });
 
   /** Scroll to a fraction of the story, in steps, the way a reader would. */
   const at = async (f, from = 0) => {
@@ -92,15 +86,11 @@ console.log("\n\u2500\u2500 2 \u00b7 the story's controls work from the keyboard
     await page.waitForTimeout(700);
   };
 
-  /**
-   * WHERE A CONTROL IS ACTUALLY LIVE, found rather than hard-coded.
-   *
-   * Every control on this page arrives and leaves on its own scroll window,
-   * and the first version of this check tested the slider at 0.66 and a hold
-   * at 0.86 — numbers that read plausibly and were both wrong. It reported two
-   * failures against controls that work. A check that asserts a scene's timing
-   * from memory breaks every time a beat is retuned; this one looks.
-   */
+  // where a control is actually live, found rather than hard-coded.
+  // Every control on this page arrives and leaves on its own scroll window, and the first version of this check
+  // tested the slider at 0.66 and a hold at 0.86 — numbers that read plausibly and were both wrong. It reported two
+  // failures against controls that work. A check that asserts a scene's timing from memory breaks every time a beat
+  // is retuned; this one looks.
   const liveAt = async (selector, nth = 0) => {
     let from = 0;
     for (let f = 0.3; f <= 0.98; f += 0.01) {
@@ -141,11 +131,8 @@ console.log("\n\u2500\u2500 2 \u00b7 the story's controls work from the keyboard
     );
   }
 
-  /*
-    Both hold controls, not just the first: they are the only way to act in the
-    story, and both were pointer-only once — focusable, and impossible to
-    operate. Held, each says "Dosing…" itself, which is what is read back here.
-  */
+  // Both hold controls, not just the first: they are the only way to act in the story, and both were pointer-only
+  // once — focusable, and impossible to operate. Held, each says "Dosing…" itself, which is what is read back here.
   for (const nth of [0, 1]) {
     const holdAt = await liveAt("#why button", nth);
     if (holdAt === null) {

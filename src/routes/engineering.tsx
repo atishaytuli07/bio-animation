@@ -1,56 +1,35 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 
-import { C, L, R } from "@/components/hero/palette";
+import { C, L } from "@/components/hero/palette";
 import { PLATE } from "@/components/story/PageHero";
-import { Awaiting, P, PageShell, Section } from "@/components/story/PageShell";
+import { Awaiting, P, PageLink, PageShell, Section } from "@/components/story/PageShell";
 import { Figure } from "@/components/story/Figure";
 import { CycleFigure } from "@/components/story/diagrams";
 
-/**
- * Engineering.
- *
- * iGEM judges this page against the engineering cycle — Design, Build, Test,
- * Learn — and against whether the team went round it more than once. A single
- * pass with a good result scores less than two passes where the first one
- * failed and the team said why.
- *
- * So this page is STRUCTURED rather than written. The cycle is laid out with
- * its four phases named, because that structure is itself the thing being
- * judged and it is worth having in place before the content arrives. Every
- * phase is an Awaiting panel: none of it can be written from the literature,
- * and none of it is known to whoever writes this file.
- *
- * The prompts inside each panel are deliberately specific. "Describe your
- * design" produces a paragraph; "what did you expect to happen, and what
- * actually happened" produces the thing judges are looking for.
- */
+// Engineering. iGEM judges this against the design, build, test, learn cycle and against whether the team
+// went round it more than once: one clean pass scores less than two where the first failed and the team said why.
+// The page is structured rather than written. Every phase is an Awaiting panel with a specific prompt, because
+// "describe your design" produces a paragraph while "what did you expect, and what happened" produces evidence.
 
 const TITLE = "Engineering — ChemoGuard";
+const DESCRIPTION =
+  "How ChemoGuard was designed, built, tested and revised — the engineering cycle behind the project.";
 
 export const Route = createFileRoute("/engineering")({
   head: () => ({
     meta: [
       { title: TITLE },
-      {
-        name: "description",
-        content:
-          "How ChemoGuard was designed, built, tested and revised — the engineering cycle behind the project.",
-      },
+      { name: "description", content: DESCRIPTION },
+      { property: "og:title", content: TITLE },
+      { property: "og:description", content: DESCRIPTION },
+      { property: "og:type", content: "article" },
     ],
   }),
   component: Engineering,
 });
 
-/*
-  The four phases, with the question each has to answer.
-
-  These all began "What was decided…", "What was actually made…", "What was
-  expected…", "What changed…" — four identical grammatical shapes in a row,
-  which is the parallel-construction tic that makes writing read as generated.
-  Parallelism is a legitimate choice for a set of like things, but four in
-  sequence stops signalling "these are the same kind of thing" and starts
-  signalling that nobody read them aloud.
-*/
+// The four phases, with the question each has to answer. Keep the four prompts worded differently from each
+// other: four identical sentence shapes in a row read as filled-in template text.
 const CYCLE = [
   {
     phase: "Design",
@@ -101,12 +80,8 @@ function Engineering() {
           build, test and learn changes what the next pass attempts — and the passes that failed are
           the ones that explain why the final design looks the way it does.
         </P>
-        {/*
-          The paragraph above says the work is not a straight line. Until this
-          figure existed the page then drew one: four identical panels in a
-          column. A claim and a picture that contradict each other is worse than
-          either alone, and this is the page iGEM judges against the loop.
-        */}
+        {/* The paragraph above says the work is not a straight line, so the figure has to be a loop. It used
+            to be four identical panels in a column, which contradicted the sentence next to it. */}
         <Figure
           label="Figure 1 · the engineering cycle"
           caption="Each phase feeds the next, and the last feeds the first. The return from Learn to Design is the part the criterion rewards — a second pass that exists because the first one taught something. Select a phase to jump to it."
@@ -159,32 +134,10 @@ function Engineering() {
       </Section>
 
       <div className="mt-14 md:mt-20 flex flex-wrap gap-3">
-        <Link
-          to="/description"
-          className="inline-block px-6 py-3 text-[15px] font-bold"
-          style={{
-            background: C.redDeep,
-            color: "#fff",
-            border: `2.5px solid ${C.ink}`,
-            borderRadius: R.sm,
-            boxShadow: `4px 4px 0 ${C.ink}`,
-          }}
-        >
-          What the project is
-        </Link>
-        <Link
-          to="/new"
-          className="inline-block px-6 py-3 text-[15px] font-bold"
-          style={{
-            background: C.paper,
-            color: C.ink,
-            border: `2.5px solid ${C.ink}`,
-            borderRadius: R.sm,
-            boxShadow: `4px 4px 0 ${C.ink}`,
-          }}
-        >
+        <PageLink to="/description">What the project is</PageLink>
+        <PageLink to="/" tone="quiet">
           See it happen
-        </Link>
+        </PageLink>
       </div>
     </PageShell>
   );

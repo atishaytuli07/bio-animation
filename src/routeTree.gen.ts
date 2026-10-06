@@ -15,8 +15,8 @@ import { Route as ContributionRouteImport } from './routes/contribution'
 import { Route as DescriptionRouteImport } from './routes/description'
 import { Route as EngineeringRouteImport } from './routes/engineering'
 import { Route as HumanPracticesRouteImport } from './routes/human-practices'
-import { Route as NewRouteImport } from './routes/new'
-import { Route as SafetyRouteImport } from './routes/safety'
+import { Route as PlaygroundRouteImport } from './routes/playground'
+import { Route as SafetyAndSecurityRouteImport } from './routes/safety-and-security'
 import { Route as TeamRouteImport } from './routes/team'
 
 const IndexRoute = IndexRouteImport.update({
@@ -49,14 +49,14 @@ const HumanPracticesRoute = HumanPracticesRouteImport.update({
   path: '/human-practices',
   getParentRoute: () => rootRouteImport,
 } as any)
-const NewRoute = NewRouteImport.update({
-  id: '/new',
-  path: '/new',
+const PlaygroundRoute = PlaygroundRouteImport.update({
+  id: '/playground',
+  path: '/playground',
   getParentRoute: () => rootRouteImport,
 } as any)
-const SafetyRoute = SafetyRouteImport.update({
-  id: '/safety',
-  path: '/safety',
+const SafetyAndSecurityRoute = SafetyAndSecurityRouteImport.update({
+  id: '/safety-and-security',
+  path: '/safety-and-security',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TeamRoute = TeamRouteImport.update({
@@ -72,8 +72,8 @@ export interface FileRoutesByFullPath {
   '/description': typeof DescriptionRoute
   '/engineering': typeof EngineeringRoute
   '/human-practices': typeof HumanPracticesRoute
-  '/new': typeof NewRoute
-  '/safety': typeof SafetyRoute
+  '/playground': typeof PlaygroundRoute
+  '/safety-and-security': typeof SafetyAndSecurityRoute
   '/team': typeof TeamRoute
 }
 export interface FileRoutesByTo {
@@ -83,8 +83,8 @@ export interface FileRoutesByTo {
   '/description': typeof DescriptionRoute
   '/engineering': typeof EngineeringRoute
   '/human-practices': typeof HumanPracticesRoute
-  '/new': typeof NewRoute
-  '/safety': typeof SafetyRoute
+  '/playground': typeof PlaygroundRoute
+  '/safety-and-security': typeof SafetyAndSecurityRoute
   '/team': typeof TeamRoute
 }
 export interface FileRoutesById {
@@ -95,8 +95,8 @@ export interface FileRoutesById {
   '/description': typeof DescriptionRoute
   '/engineering': typeof EngineeringRoute
   '/human-practices': typeof HumanPracticesRoute
-  '/new': typeof NewRoute
-  '/safety': typeof SafetyRoute
+  '/playground': typeof PlaygroundRoute
+  '/safety-and-security': typeof SafetyAndSecurityRoute
   '/team': typeof TeamRoute
 }
 export interface FileRouteTypes {
@@ -108,8 +108,8 @@ export interface FileRouteTypes {
     | '/description'
     | '/engineering'
     | '/human-practices'
-    | '/new'
-    | '/safety'
+    | '/playground'
+    | '/safety-and-security'
     | '/team'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -119,8 +119,8 @@ export interface FileRouteTypes {
     | '/description'
     | '/engineering'
     | '/human-practices'
-    | '/new'
-    | '/safety'
+    | '/playground'
+    | '/safety-and-security'
     | '/team'
   id:
     | '__root__'
@@ -130,8 +130,8 @@ export interface FileRouteTypes {
     | '/description'
     | '/engineering'
     | '/human-practices'
-    | '/new'
-    | '/safety'
+    | '/playground'
+    | '/safety-and-security'
     | '/team'
   fileRoutesById: FileRoutesById
 }
@@ -142,8 +142,8 @@ export interface RootRouteChildren {
   DescriptionRoute: typeof DescriptionRoute
   EngineeringRoute: typeof EngineeringRoute
   HumanPracticesRoute: typeof HumanPracticesRoute
-  NewRoute: typeof NewRoute
-  SafetyRoute: typeof SafetyRoute
+  PlaygroundRoute: typeof PlaygroundRoute
+  SafetyAndSecurityRoute: typeof SafetyAndSecurityRoute
   TeamRoute: typeof TeamRoute
 }
 
@@ -191,18 +191,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof HumanPracticesRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/new': {
-      id: '/new'
-      path: '/new'
-      fullPath: '/new'
-      preLoaderRoute: typeof NewRouteImport
+    '/playground': {
+      id: '/playground'
+      path: '/playground'
+      fullPath: '/playground'
+      preLoaderRoute: typeof PlaygroundRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/safety': {
-      id: '/safety'
-      path: '/safety'
-      fullPath: '/safety'
-      preLoaderRoute: typeof SafetyRouteImport
+    '/safety-and-security': {
+      id: '/safety-and-security'
+      path: '/safety-and-security'
+      fullPath: '/safety-and-security'
+      preLoaderRoute: typeof SafetyAndSecurityRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/team': {
@@ -216,25 +216,4 @@ declare module '@tanstack/react-router' {
 }
 
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
-  AttributionsRoute: AttributionsRoute,
-  ContributionRoute: ContributionRoute,
-  DescriptionRoute: DescriptionRoute,
-  EngineeringRoute: EngineeringRoute,
-  HumanPracticesRoute: HumanPracticesRoute,
-  NewRoute: NewRoute,
-  SafetyRoute: SafetyRoute,
-  TeamRoute: TeamRoute,
-}
-export const routeTree = rootRouteImport
-  ._addFileChildren(rootRouteChildren)
-  ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-  }
-}
+  IndexRoute: 

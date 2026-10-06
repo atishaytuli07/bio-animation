@@ -1,30 +1,23 @@
-/**
- * The shared header on the story, where it has the most to get wrong.
- *
- * The story's header is `fixed` over a page whose every beat is timed against
- * scroll, and it carries the progress rail on its seam. Three things broke or
- * nearly broke when it was built, and none of them showed up in any other check:
- *
- *   1. THE PHONE MENU WAS PAINTED OVER. The rail and the chapter label lived in
- *      a fixed layer above the header, so opening the menu showed "03 · Two
- *      people" as faint text between its first two rows. This compares painted
- *      pixels: the open menu is captured, the rail and label layers are hidden,
- *      and it is captured again. Anything that changed was painting over it.
- *      (A hit-test cannot see this — both layers are pointer-events: none.)
- *
- *   2. THE RAIL MUST SIT ON THE SEAM at both header heights: its fill covers the
- *      header's bottom border and the knob is centred on the fill. The first
- *      version was 2px high on phones because it assumed the header's height
- *      instead of measuring it.
- *
- *   3. NOTHING RESTS UNDER THE BAR. Headlines, figures and controls that are
- *      substantially visible (opacity ≥ 0.6) must not intersect the header band
- *      at any sampled point of the story. Fainter frames are transitions — a
- *      headline fading in or out through the band for one sample — and are
- *      reported, not failed.
- *
- * Usage: node scripts/verify-header.mjs [origin=http://localhost:8080]
- */
+// The shared header on the story, where it has the most to get wrong.
+// The story's header is `fixed` over a page whose every beat is timed against scroll, and it carries the progress
+// rail on its seam. Three things broke or nearly broke when it was built, and none of them showed up in any other
+// check:
+//   1. The phone menu was painted over. The rail and the chapter label lived in
+//   a fixed layer above the header, so opening the menu showed "03 · Two
+//   people" as faint text between its first two rows. This compares painted
+//   pixels: the open menu is captured, the rail and label layers are hidden,
+//   and it is captured again. Anything that changed was painting over it.
+//   (A hit-test cannot see this — both layers are pointer-events: none.)
+//   2. The rail must sit on the seam at both header heights: its fill covers the
+//   header's bottom border and the knob is centred on the fill. The first
+//   version was 2px high on phones because it assumed the header's height
+//   instead of measuring it.
+//   3. Nothing rests under the bar. Headlines, figures and controls that are
+//   substantially visible (opacity ≥ 0.6) must not intersect the header band
+//   at any sampled point of the story. Fainter frames are transitions — a
+//   headline fading in or out through the band for one sample — and are
+//   reported, not failed.
+// Usage: node scripts/verify-header.mjs [origin=http://localhost:8080]
 import { PNG } from "pngjs";
 import { chromium } from "playwright";
 
@@ -56,7 +49,7 @@ async function storyAt(page, f) {
 console.log("\n── 1 · nothing paints over the open phone menu");
 for (const f of [0.05, 0.4, 0.9]) {
   const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
-  await page.goto(BASE + "/new", { waitUntil: "networkidle" });
+  await page.goto(BASE + "/", { waitUntil: "networkidle" });
   await storyAt(page, f);
   await page.click("header button[aria-label='Menu']");
   await page.waitForTimeout(400);
@@ -73,13 +66,9 @@ for (const f of [0.05, 0.4, 0.9]) {
       radius: parseFloat(getComputedStyle(menu).borderTopLeftRadius) || 0,
     };
   });
-  /*
-    ONLY PIXELS INSIDE THE MENU'S OWN SHAPE, border included. Its box is a
-    rectangle but the menu is not: outside each rounded corner the rail line
-    correctly shows through, and the first run of this check counted that as
-    painting over the menu. The border stays in, because a knob sitting on the
-    border was part of the original fault.
-  */
+  // Only pixels inside the menu'S own shape, border included. Its box is a rectangle but the menu is not: outside
+  // each rounded corner the rail line correctly shows through, and the first run of this check counted that as
+  // painting over the menu. The border stays in, because a knob sitting on the border was part of the original fault.
   const inside = (x, y) => {
     const w = clip.width;
     const h = clip.height;
@@ -89,8 +78,8 @@ for (const f of [0.05, 0.4, 0.9]) {
   };
   const shot = async () => PNG.sync.read(await page.screenshot({ clip, animations: "disabled" }));
   const withLayers = await shot();
-  // hide the two layers that sit near the menu: the rail inside the header,
-  // and the fixed chapter-label layer outside it
+  // hide the two layers that sit near the menu: the rail inside the header, and the fixed chapter-label layer outside
+  // it
   await page.addStyleTag({
     content: `header [aria-hidden="true"].pointer-events-none, body .fixed.inset-x-0.top-0:not(header) { visibility: hidden !important; }`,
   });
@@ -121,7 +110,7 @@ for (const [w, h] of [
   [1440, 900],
 ]) {
   const page = await browser.newPage({ viewport: { width: w, height: h } });
-  await page.goto(BASE + "/new", { waitUntil: "networkidle" });
+  await page.goto(BASE + "/", { waitUntil: "networkidle" });
   await storyAt(page, 0.3);
   const r = await page.evaluate(() => {
     const hd = document.querySelector("header");
@@ -166,7 +155,7 @@ for (const [w, h] of [
   [390, 844],
 ]) {
   const page = await browser.newPage({ viewport: { width: w, height: h } });
-  await page.goto(BASE + "/new", { waitUntil: "networkidle" });
+  await page.goto(BASE + "/", { waitUntil: "networkidle" });
   const band = await page.evaluate(
     () => document.querySelector("header").getBoundingClientRect().bottom,
   );

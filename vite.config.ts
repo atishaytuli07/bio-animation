@@ -5,17 +5,10 @@ import { nitro } from "nitro/vite";
 import { defineConfig } from "vite";
 import tsConfigPaths from "vite-tsconfig-paths";
 
-/*
-  The build, written out plugin by plugin.
-
-  This used to be a one-line call to @lovable.dev/vite-tanstack-config, which
-  assembled the same plugins behind the scenes and added Lovable's editor
-  tooling on top: TanStack devtools injected in development, SSR and
-  server-function error loggers wired to its preview, an HMR gate, an asset
-  proxy to lovable.app, and a Cloudflare default deploy target. None of that is
-  used by a wiki built on iGEM's GitLab, so the wrapper is gone and what the
-  site actually needs is listed here, in the order the wrapper applied it.
-*/
+// The build, written out plugin by plugin. This was a one-line call to a scaffold's wrapper config, which
+// assembled the same plugins and added editor tooling on top: devtools in development, error loggers wired to
+// its own preview, an HMR gate, an asset proxy and a Cloudflare deploy target. A wiki on iGEM's GitLab uses none
+// of it, so the wrapper is gone and what the site needs is listed here.
 export default defineConfig(({ command }) => ({
   /*
     The wiki's base path, for iGEM. An iGEM wiki is served from

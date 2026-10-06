@@ -7,33 +7,17 @@ export const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
 /** Maps p from [start,end] onto 0→1. */
 export const range = (p: number, start: number, end: number) =>
   clamp01((p - start) / (end - start));
-/**
- * Ease-out cubic, for anything the reader has to READ.
- *
- * A linear opacity ramp spends most of its length half-transparent, so a
- * headline sitting anywhere in the middle of its own entrance looks disabled
- * rather than arriving — the client's exact words were that she thought the
- * text was an unfinished element. This reaches 0.88 by the time the ramp is
- * a third done and 0.99 by two thirds, so copy is legible almost immediately
- * and only the last sliver of the fade is faint.
- *
- * Applied to a band it also slows the exit, which is the right asymmetry:
- * arrive fast, linger, leave gently.
- */
+// Ease-out cubic, for anything the reader has to read. A linear opacity ramp spends most of its length
+// half-transparent, so a headline in the middle of its own entrance looks disabled rather than arriving: the
+// client's words were that she thought the text was an unfinished element. This reaches 0.88 a third of the way
+// through and 0.99 by two thirds.
+// Applied to a band it also slows the exit, which is the right asymmetry: arrive fast, linger, leave gently.
 export const easeOut = (t: number) => 1 - Math.pow(1 - t, 3);
 
-/**
- * A line of copy with DIRECTIONAL motion: it arrives from below and leaves
- * upward, rather than fading in and back out along the same path.
- *
- * `band` alone cannot express this, because it collapses entry and exit into
- * one number and the caller can no longer tell which is happening. The result
- * was copy that sank back down as it left, which reads as un-arriving — a
- * line that never quite made it — and is part of why the client thought a
- * faded headline was an unfinished element rather than one on its way out.
- *
- * Returns opacity and a y offset in pixels.
- */
+// A line of copy with directional motion: it arrives from below and leaves upward, rather than fading in and
+// back out along the same path. `band` alone cannot express this, because it collapses entry and exit into one
+// number, and the result was copy that sank back down as it left, which reads as un-arriving.
+// Returns opacity and a y offset in pixels.
 export function beat(p: number, a: number, b: number, c: number, d: number) {
   const inn = easeOut(range(p, a, b));
   const out = range(p, c, d);
@@ -47,16 +31,11 @@ export const band = (p: number, a: number, b: number, c: number, d: number) =>
 const REDUCED =
   typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
 
-/**
- * Progress (0 → 1) of a tall scroll-driven section, driven by a real spring
- * (stiffness + damping, integrated per frame) so values carry momentum and
- * settle with a whisper of overshoot instead of exponentially crawling in.
- *
- * The section subscribes to the shared ticker only while it is near the
- * viewport — an IntersectionObserver decides that, so an off-screen chapter
- * costs literally nothing per frame. The returned `active` flag lets a chapter
- * switch off its own ambient animation for the same reason.
- */
+// Progress through a tall scroll-driven section, 0 to 1, driven by a real spring (stiffness and damping,
+// integrated per frame) so values carry momentum and settle with a whisper of overshoot.
+// The section subscribes to the shared ticker only while it is near the viewport, decided by an
+// IntersectionObserver, so an off-screen chapter costs nothing per frame. The `active` flag lets a chapter
+// switch off its own ambient animation for the same reason.
 export function useSmoothProgress<T extends HTMLElement>(
   damping = 0.11,
 ): [RefObject<T | null>, number, boolean] {
@@ -66,8 +45,7 @@ export function useSmoothProgress<T extends HTMLElement>(
   const [value, setValue] = useState(0);
   const [active, setActive] = useState(false);
 
-  // One viewport's margin either side, so the spring is already settled by the
-  // time the section scrolls into view.
+  // One viewport's margin either side, so the spring is already settled by the time the section scrolls into view.
   useEffect(() => {
     const el = ref.current;
     if (!el) return;

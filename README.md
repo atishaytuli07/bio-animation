@@ -13,7 +13,7 @@ Where generative AI was used is declared on the wiki's Attributions page.
 
 ## What is in it
 
-- **`/new`** — the story: a scroll-driven explanation in nine beats, from the
+- **`/`** — the story: a scroll-driven explanation in nine beats, from the
   gene to a dose adjusted before treatment.
 - **Documentation pages** — Description, Engineering, Human Practices, Safety,
   Team, Contribution and Attributions. Anything only the team can write is shown

@@ -3,28 +3,17 @@ import type { ReactNode } from "react";
 import { C } from "@/components/hero/palette";
 import { Awaiting } from "@/components/story/PageShell";
 
-/**
- * Numbered inline citations, and the list they point at.
- *
- * The client asked for superscript numbers in the text rather than a reference
- * list that floats free of the claims it supports. A judge checking a sentence
- * should be one click from its source.
- *
- * A SOURCE THE TEAM HAS NOT SUPPLIED IS SHOWN AS MISSING, never filled in. The
- * list names what each source has to support, under one notice saying how many
- * are still needed. Writing a plausible-looking reference here would be the one
- * thing worse than having none: iGEM requires that nothing on a wiki be
- * unverifiable.
- *
- * THE MISSING STATE LIVES IN THE LIST, NOT IN THE MARK. The first version drew
- * pending marks with a dotted underline, and at superscript size that is a
- * smudge beside a number rather than a signal. The mark looks the same either
- * way; its accessible name says whether the source exists.
- *
- * Numbers come from the order of the list, which is the order of first use in
- * the text — so the list is written in reading order, and citing a source twice
- * repeats its number rather than taking a new one.
- */
+// Numbered inline citations, and the list they point at. The client asked for superscript numbers in the text
+// rather than a reference list that floats free of the claims it supports: a judge checking a sentence should be
+// one click from its source.
+// A source the team has not supplied is shown as missing, never filled in. The list names what each source has
+// to support, under one notice saying how many are still needed. Writing a plausible-looking reference would be
+// worse than having none, since iGEM requires that nothing on a wiki be unverifiable.
+// The missing state lives in the list, not in the mark: a dotted underline at superscript size is a smudge
+// beside a number rather than a signal. The mark looks the same either way, and its accessible name says
+// whether the source exists.
+// Numbers come from the order of the list, which is the order of first use, so citing a source twice repeats its
+// number rather than taking a new one.
 
 export type Source = {
   id: string;
@@ -79,7 +68,7 @@ export function SourceList({ sources }: { sources: readonly Source[] }) {
             ) : (
               <span style={{ color: C.inkNote }}>
                 <span
-                  className="mr-2 inline-block rounded-[4px] px-1.5 text-[10px] font-bold uppercase leading-[1.6] tracking-[0.14em]"
+                  className="mr-2 inline-block rounded-[6px] px-1.5 text-[10px] font-bold uppercase leading-[1.6] tracking-[0.14em]"
                   style={{ color: C.redDeep, border: `1.5px dashed ${C.red}88` }}
                 >
                   needed

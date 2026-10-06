@@ -1,23 +1,11 @@
 import { C } from "@/components/hero/palette";
 
-/**
- * A hand-drawn underline, the signature detail of Wuxi's navigation.
- *
- * The point is that it is NOT a straight rule. Each one is a slightly
- * different squiggle — the control points are derived from the item's index so
- * no two match — which is what makes it read as drawn by a person rather than
- * generated. It also overshoots the word at both ends, the way a marker stroke
- * does.
- *
- * IT LIVES HERE BECAUSE TWO HEADERS NEED IT. It was defined inside the story
- * route, so the documentation pages — which are the ones a reader actually
- * navigates between — had no way to say which page they were on. The site had
- * a "you are here" mark on the one page that does not need it and none on the
- * five that do.
- *
- * The parent must be `relative` and leave room below the text (`pb-2`), since
- * this is absolutely positioned against it.
- */
+// A hand-drawn underline, the signature detail of Wuxi's navigation. The point is that it is not a straight
+// rule: the control points are derived from the item's index so no two squiggles match, and it overshoots the
+// word at both ends the way a marker stroke does.
+// It lives here because two headers need it. Defined inside the story route, the documentation pages, which are
+// the ones a reader actually navigates between, had no way to say which page they were on.
+// The parent must be relative and leave room below the text (pb-2), since this is absolutely positioned.
 export function Underline({ index, active = false }: { index: number; active?: boolean }) {
   const wob = ((index * 37) % 7) - 3; // −3…3, deterministic per item
   const lift = ((index * 23) % 5) - 2;

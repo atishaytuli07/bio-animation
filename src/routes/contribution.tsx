@@ -1,39 +1,23 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 
-import { C, R } from "@/components/hero/palette";
-import { Awaiting, P, PageShell, Section } from "@/components/story/PageShell";
+import { Awaiting, P, PageLink, PageShell, Section } from "@/components/story/PageShell";
 
-/**
- * Contribution — Bronze medal criterion #3.
- *
- * iGEM's wording: "Make a useful contribution for future iGEM teams", with
- * `/contribution` as the Required Standard URL. The page has to exist at
- * exactly that path whatever it ends up containing, which is why it is built
- * now and not when the content arrives: a judge following the standard URL to
- * a 404 is a medal criterion failed on a technicality.
- *
- * What counts, in iGEM's own examples (official React template,
- * src/contents/contribution.tsx): a new or significantly improved BioBrick
- * part in the Registry; software, tools or resources that considerably help
- * future teams; optimised protocols, techniques or methods; or any other
- * contribution with a clear benefit to future teams. The page must also
- * explain WHY the effort is a contribution — that is half of the criterion.
- *
- * As everywhere on this wiki, nothing is written on the team's behalf. What
- * the contribution is can only come from the work they did.
- */
+// Contribution, Bronze medal criterion 3. The URL must be exactly /contribution: a judge following the
+// standard link to a 404 fails the criterion on a technicality, so the page exists before its content does.
+// It has to say what the contribution is and why it helps future teams. Only the team can write that.
 
 const TITLE = "Contribution — ChemoGuard";
+const DESCRIPTION =
+  "What ChemoGuard leaves behind for future iGEM teams, and why it is useful to them.";
 
 export const Route = createFileRoute("/contribution")({
   head: () => ({
     meta: [
       { title: TITLE },
-      {
-        name: "description",
-        content:
-          "What ChemoGuard leaves behind for future iGEM teams, and why it is useful to them.",
-      },
+      { name: "description", content: DESCRIPTION },
+      { property: "og:title", content: TITLE },
+      { property: "og:description", content: DESCRIPTION },
+      { property: "og:type", content: "article" },
     ],
   }),
   component: Contribution,
@@ -92,19 +76,7 @@ function Contribution() {
       </Section>
 
       <div className="mt-14 md:mt-20">
-        <Link
-          to="/engineering"
-          className="inline-block px-6 py-3 text-[15px] font-bold"
-          style={{
-            background: C.redDeep,
-            color: "#fff",
-            border: `2.5px solid ${C.ink}`,
-            borderRadius: R.sm,
-            boxShadow: `4px 4px 0 ${C.ink}`,
-          }}
-        >
-          How it was built
-        </Link>
+        <PageLink to="/engineering">How it was built</PageLink>
       </div>
     </PageShell>
   );

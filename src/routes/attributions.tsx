@@ -4,37 +4,22 @@ import { C, L, T } from "@/components/hero/palette";
 import { SiteFooter } from "@/components/story/PageShell";
 import { SiteHeader } from "@/components/story/SiteHeader";
 
-/**
- * Attributions.
- *
- * iGEM requires this page, and requires it to be honest: every team must say
- * what was done by the team, what was done by others, and — new for 2026 —
- * where generative AI was used and how. A wiki that quietly omits AI use is
- * risking more than a lost medal criterion.
- *
- * So this page names the AI use plainly, including the parts that are
- * uncomfortable to name: the character illustrations are generated images, and
- * the site's code and interaction design were written with an AI assistant.
- * Saying so costs nothing. Being found out would cost the medal.
- *
- * THE TEAM MUST STILL COMPLETE THIS PAGE. Everything under "Still to be
- * completed" is a placeholder that only the team can fill — who did the lab
- * work, who supervised, which external groups helped. Those blocks are visible
- * on the page ON PURPOSE, so that an unfinished attributions page cannot be
- * mistaken for a finished one during a review.
- */
+// Attributions. iGEM requires this page and requires it to be honest: what the team did, what others did, and
+// where generative AI was used. Saying so costs nothing; being found out would cost the medal.
+// Everything under "Still to be completed" can only be written by the people who did the work.
 
 const TITLE = "Attributions — ChemoGuard";
+const DESCRIPTION =
+  "Who built what on the ChemoGuard wiki, which work came from outside the team, and where generative AI was used.";
 
 export const Route = createFileRoute("/attributions")({
   head: () => ({
     meta: [
       { title: TITLE },
-      {
-        name: "description",
-        content:
-          "Who built what on the ChemoGuard wiki, which work came from outside the team, and where generative AI was used.",
-      },
+      { name: "description", content: DESCRIPTION },
+      { property: "og:title", content: TITLE },
+      { property: "og:description", content: DESCRIPTION },
+      { property: "og:type", content: "article" },
     ],
   }),
   component: Attributions,
@@ -42,6 +27,21 @@ export const Route = createFileRoute("/attributions")({
 
 /** A declared item: what it is, and who or what made it. */
 type Entry = { what: string; who: string; note?: string };
+
+// The team's own work comes first on this page. The AI declaration below is about tools; this is about who
+// decided what the wiki says.
+const TEAM_WORK: Entry[] = [
+  {
+    what: "The project, and the argument this wiki makes",
+    who: "Adina — NIS Kazakhstan",
+    note: "ChemoGuard's subject, the case the wiki argues and the order it argues it in are the team's own. The story was built to that brief: follow one gene to one letter, then to two people given the same dose, and end before the first dose rather than after it.",
+  },
+  {
+    what: "Scientific review and content direction",
+    who: "Adina — NIS Kazakhstan",
+    note: "Every scientific statement in the story and on the Description page was read and corrected in the team's own review — what the variant does to the splice site, what reduced DPD activity means, and the line between what a test reports and what a clinician decides. Those corrections are the wording that shipped: “may” and “can” rather than “does”, and a dose that is informed by a result under clinical guidelines rather than set by it.",
+  },
+];
 
 const AI_USE: Entry[] = [
   {
@@ -59,20 +59,12 @@ const AI_USE: Entry[] = [
     who: "Written with Claude (Anthropic), an AI coding assistant, directed and reviewed by the team",
     note: "The scroll engine, the SVG illustrations drawn in code, the animation timing, the layout and the build pipeline were produced in an assisted workflow: the team set the direction, reviewed the changes and is responsible for what ships.",
   },
-  /*
-    STATED AS IT HAPPENED. This entry used to say that no scientific claim on
-    the wiki was authored by the model, and that every statement was checked
-    against the cited literature before publication. Neither was true: the
-    explanatory science wording was drafted in the assisted workflow and then
-    corrected in the team's scientific review, and five sources are still
-    marked "Source needed". iGEM 2026 treats AI disclosure as a rule, and a
-    declaration that overstates the team's checking is worse than an
-    incomplete one. Keep this entry true as the wording is replaced and the
-    sources arrive — update it, do not delete it.
-  */
+  // Keep this entry true as the wording is replaced and the sources arrive. It once claimed no scientific claim
+  // was AI-authored and that every statement was checked against the literature; neither was true at the time.
+
   {
     what: "Copywriting and explanatory science text",
-    who: "Drafted with AI assistance; scientific wording corrected in the team's scientific review",
+    who: "Drafted with AI assistance to the team's brief; scientific wording corrected in the team's review",
     note: "Headlines, captions and the plain-language explanations of DPYD, DPD and fluoropyrimidine toxicity on the Description page and in the story were drafted in the same workflow. The scientific wording was then reviewed and corrected by the team's scientific reviewer. Claims that still show a \u201cSource needed\u201d marker on the Description page have not yet been verified against the literature.",
   },
 ];
@@ -92,6 +84,7 @@ const THIRD_PARTY: Entry[] = [
 /** Blocks only the team can fill. Rendered visibly so they cannot be missed. */
 const TODO = [
   "AI use (iGEM 2026 requirement): for each use above, the model name and version, what it was used for, and the team member who reviewed the output and signed off.",
+  "Full names for everyone credited above, as they should appear for judging, and the rest of the team beside them.",
   "Wet-lab work: who performed which experiments, and under whose supervision.",
   "Dry-lab and modelling: who built the model, and on whose prior work it builds.",
   "Principal investigators, advisors and instructors, named individually.",
@@ -139,18 +132,14 @@ function Section({ title, entries }: { title: string; entries: Entry[] }) {
 
 function Attributions() {
   return (
-    /*
-      THE SHARED HEADER, which this page did not have. It was built before the
-      page shell and rendered only a "Back to the story" link, so the one page
-      iGEM requires every team to publish had no navigation — against the
-      client's "one navigation on every page". The top padding drops by the
-      header's height so the title sits where it did.
-    */
+    // The shared header, which this page did not have: it rendered only a "Back to the story" link. The top
+    // padding drops by the header's height so the title sits where it did.
+
     <div className="min-h-screen" style={{ background: C.paper }}>
       <SiteHeader />
       <main className="px-6 pb-24 pt-12 md:px-10 md:pt-16">
         <div className="mx-auto max-w-3xl">
-          <Link to="/new" className={L.labelType} style={{ color: C.redDeep }}>
+          <Link to="/" className={L.labelType} style={{ color: C.redDeep }}>
             <span className="block h-0.5 w-7" style={{ background: C.red }} />
             Back to the story
           </Link>
@@ -167,6 +156,7 @@ function Attributions() {
             guessing.
           </p>
 
+          <Section title="The team's own work" entries={TEAM_WORK} />
           <Section title="Where generative AI was used" entries={AI_USE} />
           <Section title="Third-party work" entries={THIRD_PARTY} />
 

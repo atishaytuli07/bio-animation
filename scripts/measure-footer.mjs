@@ -1,23 +1,16 @@
-/**
- * The closing band and the site footer, as painted.
- *
- * Everything here is read off SCREENSHOT PIXELS rather than computed style, and
- * both halves of that matter:
- *
- *   CONTRAST — the band is a gradient and its type is set in 8-digit hex over
- *   it, so getComputedStyle reports the authored colour on the authored
- *   background and neither is what the eye receives. The wordmark that this
- *   check was written for measured 1.29:1 that way and looked like a bug in the
- *   renderer; sampled properly it was simply set at 12% alpha.
- *
- *   CLEARANCE — the two edge figures are WebPs with transparent margins, so
- *   their bounding boxes overlap the sign-off on a phone by 24px while their
- *   painted silhouettes clear it by 13. A box test fails a layout that is fine.
- *   This walks each row of the text band inward from both edges until the pixel
- *   matches the ground, which is where the figure actually ends.
- *
- *   node scripts/measure-footer.mjs      # needs `bun run dev`
- */
+// The closing band and the site footer, as painted.
+// Everything here is read off screenshot pixels rather than computed style, and both halves of that matter:
+//   Contrast — the band is a gradient and its type is set in 8-digit hex over
+//   it, so getComputedStyle reports the authored colour on the authored
+//   background and neither is what the eye receives. The wordmark that this
+//   check was written for measured 1.29:1 that way and looked like a bug in the
+//   renderer; sampled properly it was simply set at 12% alpha.
+//   Clearance — the two edge figures are WebPs with transparent margins, so
+//   their bounding boxes overlap the sign-off on a phone by 24px while their
+//   painted silhouettes clear it by 13. A box test fails a layout that is fine.
+//   This walks each row of the text band inward from both edges until the pixel
+//   matches the ground, which is where the figure actually ends.
+//   node scripts/measure-footer.mjs      # needs `bun run dev`
 import { chromium } from "playwright";
 import { PNG } from "pngjs";
 
@@ -59,12 +52,9 @@ for (const width of [1900, 1440, 768, 390]) {
       bandTeam: box(find(band, "NIS Kazakhstan · iGEM 2026")),
       footTeam: box(find(foot, "NIS Kazakhstan · iGEM 2026")),
       footGuard: box(find(foot, "Guard")),
-      /*
-        The two lines iGEM requires in every footer — the licence and the
-        repository. Matched by how they START: each carries a link, so its
-        text is split across nodes and an exact match on the whole would miss
-        it, which is how this check crashed when the old one-line notice went.
-      */
+      // The two lines iGEM requires in every footer — the licence and the repository. Matched by how they start: each
+      // carries a link, so its text is split across nodes and an exact match on the whole would miss it, which is how
+      // this check crashed when the old one-line notice went.
       license: box(
         [...foot.querySelectorAll("p")].find((e) =>
           e.textContent.trim().startsWith("Team-authored content on this wiki is licensed under"),
@@ -82,8 +72,8 @@ for (const width of [1900, 1440, 768, 390]) {
     };
   });
 
-  // The sign-off is hidden for the clearance pass, so the band's mid-column is
-  // pure ground and can serve as the per-row reference colour.
+  // The sign-off is hidden for the clearance pass, so the band's mid-column is pure ground and can serve as the
+  // per-row reference colour.
   await page.evaluate(() => {
     document.querySelector("section[aria-hidden='true'] div.relative.z-10").style.visibility =
       "hidden";
@@ -175,10 +165,8 @@ for (const width of [1900, 1440, 768, 390]) {
     say(r >= 4.5, `${label} clears 4.5:1 (AA, small text)`, `${r.toFixed(2)}:1`);
   }
 
-  /*
-    The footer's "Guard" is the brand red, not the pale on-field tint, and it
-    has to stay legible at that weight: 20px/800 is large text by WCAG, so 3:1.
-  */
+  // The footer's "Guard" is the brand red, not the pale on-field tint, and it has to stay legible at that weight:
+  // 20px/800 is large text by WCAG, so 3:1.
   const guard = read(geo.footGuard, false);
   say(
     guard.ratio >= 3 && Math.abs(guard.ink[0] - 224) < 26 && guard.ink[1] < 110,

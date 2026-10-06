@@ -1,55 +1,32 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 
-import { C, L, R } from "@/components/hero/palette";
+import { C, L } from "@/components/hero/palette";
 import { CiteMark, SourceList, type Source } from "@/components/story/Cite";
-import { Awaiting, P, PageShell, Section } from "@/components/story/PageShell";
+import { Awaiting, P, PageLink, PageShell, Section } from "@/components/story/PageShell";
 
-/**
- * Human Practices.
- *
- * The heaviest of the three remaining pages, and the one most often written
- * badly. iGEM's criterion is not "did you do outreach" — it is whether the
- * work is responsible and good for the world, and whether what the team
- * learned outside the lab CHANGED the project. A page that lists talks given
- * and posts published scores nothing; a page that says "we believed X, a
- * clinician told us Y, so we did Z instead" scores the medal.
- *
- * So the structure below is built around that arc rather than around
- * activities, and the section that matters most is "What changed because of
- * it". Every prompt asks for a decision with a cause, not a description.
- *
- * NOTHING HERE IS WRITTEN FOR THE TEAM. This project has already had to undo
- * one invented claim, and Human Practices is the page where invention would be
- * least recoverable — the people, the conversations and the changes are facts
- * about what a specific group of students actually did. The prose on this page
- * describes what each section is for; every claim is an Awaiting panel.
- */
+// Human Practices. The criterion is not "did you do outreach": it is whether what the team learned outside
+// the lab changed the project. A page listing talks scores nothing; "we believed X, a clinician told us Y,
+// so we did Z" scores the medal. The sections follow that arc, and every prompt asks for a decision with a cause.
 
 const TITLE = "Human Practices — ChemoGuard";
+const DESCRIPTION =
+  "Who ChemoGuard is for, who the team spoke to about it, and what changed in the project as a result.";
 
 export const Route = createFileRoute("/human-practices")({
   head: () => ({
     meta: [
       { title: TITLE },
-      {
-        name: "description",
-        content:
-          "Who ChemoGuard is for, who the team spoke to about it, and what changed in the project as a result.",
-      },
+      { name: "description", content: DESCRIPTION },
+      { property: "og:title", content: TITLE },
+      { property: "og:description", content: DESCRIPTION },
+      { property: "og:type", content: "article" },
     ],
   }),
   component: HumanPractices,
 });
 
-/**
- * The people a DPYD test touches, and what each of them needs from it.
- *
- * This list is the one piece of content on the page that can be written from
- * the project's own premise rather than from the team's work: if a test is
- * meant to run before a first dose of fluoropyrimidine chemotherapy, then
- * these are the people it has to fit around. The team still has to say who
- * they actually spoke to, which is the Awaiting panel underneath.
- */
+// The people a DPYD test touches. This is the one part of the page that follows from the project's premise
+// rather than from the team's work; who they actually spoke to is the Awaiting panel underneath.
 const STAKEHOLDERS = [
   {
     who: "Patients about to start treatment",
@@ -73,18 +50,8 @@ const STAKEHOLDERS = [
   },
 ];
 
-/** The index rail; ids match the sections below. */
-/**
- * Sources, in the order they are first cited.
- *
- * The client's instruction on references applies here too: the team supplies
- * them, and we name no guideline or figure on their behalf. Until then each
- * claim is listed by what its source has to establish, and the mark in the
- * text shows a reader that it is not yet backed.
- *
- * Only claims about the world outside this project are cited. The rest of this
- * page is what the team heard and what it decided, which is its own evidence.
- */
+// Sources, in the order they are first cited. The team supplies them: we name no guideline or figure for them.
+// Only claims about the world outside this project are cited; the rest of the page is what the team heard.
 const SOURCES = [
   {
     id: "use",
@@ -110,6 +77,7 @@ function Cite({ id }: { id: SourceId }) {
   return <CiteMark sources={SOURCES} id={id} />;
 }
 
+/** The index rail; ids match the sections below. */
 const SECTIONS = [
   { id: "why", label: "Why this matters" },
   { id: "who", label: "Who it affects" },
@@ -204,13 +172,9 @@ function HumanPractices() {
       </Section>
 
       <Section id="changed" title="What changed because of it">
-        {/*
-          The section the medal actually turns on, and the one teams leave
-          thinnest. It is deliberately placed after "what we heard" so the cause
-          sits directly above the effect, and its prompt asks for the shape of
-          an answer — believed X, learned Y, did Z — rather than for a
-          description.
-        */}
+        {/* The section the medal turns on, and the one teams leave thinnest. It sits after "what we heard" so
+            the cause is directly above the effect, and the prompt asks for believed X, learned Y, did Z. */}
+
         <P>
           This is the part the criterion rewards, and the part most often missing. Integrated Human
           Practices means the project is different because of what was learned outside the lab — not
@@ -261,32 +225,10 @@ function HumanPractices() {
       </Section>
 
       <div className="mt-14 flex flex-wrap gap-3 md:mt-20">
-        <Link
-          to="/description"
-          className="inline-block px-6 py-3 text-[15px] font-bold"
-          style={{
-            background: C.redDeep,
-            color: "#fff",
-            border: `2.5px solid ${C.ink}`,
-            borderRadius: R.sm,
-            boxShadow: `4px 4px 0 ${C.ink}`,
-          }}
-        >
-          What the project is
-        </Link>
-        <Link
-          to="/safety"
-          className="inline-block px-6 py-3 text-[15px] font-bold"
-          style={{
-            background: C.paper,
-            color: C.ink,
-            border: `2.5px solid ${C.ink}`,
-            borderRadius: R.sm,
-            boxShadow: `4px 4px 0 ${C.ink}`,
-          }}
-        >
+        <PageLink to="/description">What the project is</PageLink>
+        <PageLink to="/safety-and-security" tone="quiet">
           How we work safely
-        </Link>
+        </PageLink>
       </div>
       <p className={`mt-6 ${L.note}`} style={{ color: C.inkNote }}>
         Every panel above marked &ldquo;needs the team&rdquo; is written by NIS Kazakhstan

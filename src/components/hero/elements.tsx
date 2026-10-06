@@ -1,13 +1,7 @@
 import { C, ENZYME_PATH } from "./palette";
 
-/**
- * Shared props.
- *
- * `line` exists because these are drawn with ink outlines, and ink outlines are
- * invisible on the ink-coloured footer. The site's own rule is that a mark
- * follows its ground — paper on the deep field, ink on cream — and these obey it
- * now instead of being ink everywhere and disappearing where the ground is dark.
- */
+// Shared props. `line` exists because these are drawn with ink outlines, and ink outlines are invisible on the
+// ink-coloured footer. The site's rule is that a mark follows its ground: paper on the deep field, ink on cream.
 type Props = {
   s?: number;
   tone?: string;
@@ -15,19 +9,16 @@ type Props = {
   line?: string;
 };
 
-/**
- * The illustrated scientific elements — one set, shared by every stop, so the
- * whole site is one world rather than a different vocabulary per section.
- * Ink outlines, solid fills, stipple and hatching: drawn, not generated.
- */
+// The illustrated scientific elements: one set, shared by every stop, so the whole site is one world rather
+// than a different vocabulary per section. Ink outlines, solid fills, stipple and hatching: drawn, not
+// generated.
 
 /** A cell: membrane, cytoplasm, nucleus. Reads at 40px and at 200px. */
 export function Cell({ s = 1, tone = C.pink, line = C.ink }: Props) {
   return (
     <svg viewBox="0 0 100 100" style={{ width: 100 * s, height: 100 * s }} aria-hidden="true">
       <circle cx="50" cy="50" r="42" fill={tone} />
-      {/* stipple: the texture that makes an illustration look drawn rather
-          than generated. Wuxi's kidney is covered in it. */}
+      {/* stipple: the texture that makes an illustration look drawn rather than generated. */}
       {[
         [36, 32],
         [64, 30],
@@ -59,12 +50,9 @@ export function Cell({ s = 1, tone = C.pink, line = C.ink }: Props) {
   );
 }
 
-/**
- * The drug: a pyrimidine ring. 5-FU is a fluorinated uracil — the same family
- * of molecule as the letters of the genome, which is exactly why the enzyme
- * that clears nucleic-acid bases is the one that clears it. Drawn as a
- * hexagon so it reads as "molecule" instantly.
- */
+// The drug: a pyrimidine ring. 5-FU is a fluorinated uracil, the same family of molecule as the letters of the
+// genome, which is why the enzyme that clears nucleic-acid bases is the one that clears it. Drawn as a hexagon
+// so it reads as "molecule" instantly.
 export function Molecule({ s = 1, tone = C.coral, line = C.ink }: Props) {
   const pts = Array.from({ length: 6 }, (_, i) => {
     const a = (i / 6) * Math.PI * 2 - Math.PI / 2;
@@ -100,18 +88,11 @@ export function Molecule({ s = 1, tone = C.coral, line = C.ink }: Props) {
 
 /** The enzyme that clears the drug — a notched shape, so it reads as a lock. */
 export function Enzyme({ s = 1, tone = C.green, line = C.ink }: Props) {
-  /*
-    The same silhouette the scenes draw, not a third copy of it.
-
-    This was its own rounded rectangle with a notch — the shape the client read
-    as a container — at yet another scale. The ambient elements and the footer
-    drift are where a reader meets the enzyme most often, so a mark that does
-    not match the one the story teaches is the version most people end up with.
-
-    1.21 fits the canonical path's 53x59 box into the 64x80 this element was
-    drawn at, and the offset re-centres it; the stroke is divided by the same
-    factor so its painted weight is unchanged.
-  */
+  // The same silhouette the scenes draw, not a third copy of it. This was its own rounded rectangle with a notch,
+  // the shape the client read as a container, at yet another scale. The ambient elements and the footer drift are
+  // where a reader meets the enzyme most often.
+  // 1.21 fits the canonical path's 53x59 box into the 64x80 this element was drawn at, and the offset re-centres
+  // it; the stroke is divided by the same factor so its painted weight is unchanged.
   return (
     <svg viewBox="0 0 100 100" style={{ width: 100 * s, height: 100 * s }} aria-hidden="true">
       <g transform="translate(2.2 3.8) scale(1.21)">

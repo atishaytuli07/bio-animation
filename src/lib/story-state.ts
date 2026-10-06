@@ -1,18 +1,11 @@
 import { useSyncExternalStore } from "react";
 
-/**
- * What the reader did, remembered across the story.
- *
- * Scene three hands the reader the dose twice — once with nothing to go on and
- * once with the result in hand — and the closing section replays their own
- * decisions back to them with their own numbers. That needs one place both can
- * reach that survives the scene unmounting. A module-level store rather than a
- * context, because there is exactly one story per page and the two ends of it
- * are not in the same tree.
- *
- * Nothing here is science. It is a record of presses and molecule counts on
- * screen, and the closing section says so.
- */
+// What the reader did, remembered across the story. Scene three hands the reader the dose twice, once with
+// nothing to go on and once with the result in hand, and the closing section replays their own decisions with
+// their own numbers. That needs one place both can reach that survives the scene unmounting: a module-level
+// store rather than a context, because there is one story per page and the two ends are not in the same tree.
+// Nothing here is science. It is a record of presses and molecule counts on screen, and the closing section
+// says so.
 type StoryState = {
   /** The reader held the first control and gave the standard dose. */
   standardGiven: boolean;
@@ -35,14 +28,11 @@ let state: StoryState = {
 };
 const listeners = new Set<() => void>();
 
-/** Merge a partial update; identical values are ignored so callers can write freely. */
-/**
- * `exactOptionalPropertyTypes` is on, so `Partial<StoryState>` refuses an
- * explicit `undefined` — and callers want to pass exactly that for "no change
- * this time", which is what the loop below already ignores.
- */
+// exactOptionalPropertyTypes is on, so Partial<StoryState> refuses an explicit undefined, and callers want to
+// pass exactly that for "no change this time", which the loop below already ignores.
 type StoryPatch = { [K in keyof StoryState]?: StoryState[K] | undefined };
 
+/** Merge a partial update; identical values are ignored so callers can write freely. */
 export function recordStory(patch: StoryPatch) {
   let changed = false;
   for (const k of Object.keys(patch) as (keyof StoryState)[]) {

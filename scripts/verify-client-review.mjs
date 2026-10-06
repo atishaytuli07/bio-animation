@@ -1,13 +1,8 @@
-/**
- * Adina's review of 2026-09-01, checked point by point against the running page.
- *
- * Every item here is something a person spotted by looking, which no other
- * harness in this repo can see: they measure text overlap, contrast and pixel
- * counts, and none of them asks whether a picture says the right thing. This
- * one encodes the specific claims so they cannot quietly regress.
- *
- *   node scripts/verify-client-review.mjs      # needs `bun run dev`
- */
+// Adina's review of 2026-09-01, checked point by point against the running page.
+// Every item here is something a person spotted by looking, which no other harness in this repo can see: they measure
+// text overlap, contrast and pixel counts, and none of them asks whether a picture says the right thing. This one
+// encodes the specific claims so they cannot quietly regress.
+//   node scripts/verify-client-review.mjs      # needs `bun run dev`
 import { chromium } from "playwright";
 import { PNG } from "pngjs";
 
@@ -22,16 +17,11 @@ const say = (ok, label, detail) => {
 /** Scroll to a page fraction and let the spring settle. */
 async function at(page, f, ms = 1500) {
   await page.evaluate((v) => {
-    /*
-      A fraction of the STORY, not of the document.
-
-      Every window in this file was calibrated when the page ended at the last
-      scene. It does not any more — a closing section follows it — so dividing
-      by `scrollHeight` would silently point each of these numbers at a
-      different moment than the one it was written for. The page marks where
-      the story ends; `usePageProgress` divides by the same marker, so the
-      harness and the page agree by construction rather than by coincidence.
-    */
+    // A fraction of the story, not of the document.
+    // Every window in this file was calibrated when the page ended at the last scene. It does not any more — a
+    // closing section follows it — so dividing by `scrollHeight` would silently point each of these numbers at a
+    // different moment than the one it was written for. The page marks where the story ends; `usePageProgress`
+    // divides by the same marker, so the harness and the page agree by construction rather than by coincidence.
     const e = document.getElementById("story-end");
     const m = (e ? e.offsetTop : document.documentElement.scrollHeight) - innerHeight;
     window.scrollTo(0, m * v);
@@ -39,13 +29,9 @@ async function at(page, f, ms = 1500) {
   await page.waitForTimeout(ms);
 }
 
-/**
- * Drug molecules in the vessel: hexagons, with their centre y in viewBox units.
- *
- * Invoke it as `page.evaluate(\`(${MOLECULES})()\`)`. Passing the bare string
- * makes Playwright evaluate it as an EXPRESSION, which yields the function
- * itself and not its result — the call then reads `undefined.filter` and dies.
- */
+// Drug molecules in the vessel: hexagons, with their centre y in viewBox units.
+// Invoke it as `page.evaluate(\`(${molecules})()\`)`. Passing the bare string makes Playwright evaluate it as an
+// expression, which yields the function itself and not its result — the call then reads `undefined.filter` and dies.
 const MOLECULES = `() => {
   const svg = [...document.querySelectorAll("#why svg")].find(s => s.getAttribute("viewBox") === "0 0 360 520");
   if (!svg) return null;
@@ -63,21 +49,17 @@ const MOLECULES = `() => {
 }`;
 
 const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
-await page.goto(BASE + "/new", { waitUntil: "networkidle" });
+await page.goto(BASE + "/", { waitUntil: "networkidle" });
 await page.waitForTimeout(1800);
 
 console.log("\n── 1 · the transition into the body ──────────────────────");
 await at(page, 0.72);
 {
-  /*
-    ALL the figure's svgs, not the first one.
-
-    The drip line was moved into its own svg behind the <img> so the body
-    occludes it, which made two svgs share this viewBox. `find` returned the
-    tube layer — no rect, no dashed paths — and this reported the cannula and
-    both guides missing while they were plainly on screen. A selector that
-    assumes "one element matches" is a claim about the DOM, and the DOM changed.
-  */
+  // all the figure's svgs, not the first one.
+  // The drip line was moved into its own svg behind the <img> so the body occludes it, which made two svgs share this
+  // viewBox. `find` returned the tube layer — no rect, no dashed paths — and this reported the cannula and both
+  // guides missing while they were plainly on screen. A selector that assumes "one element matches" is a claim about
+  // the DOM, and the DOM changed.
   const r = await page.evaluate(`(() => {
     const svgs = [...document.querySelectorAll("#why svg")].filter(s => s.getAttribute("viewBox") === "0 0 415 1415");
     if (!svgs.length) return { found:false };
@@ -162,25 +144,16 @@ console.log("\n── 4 · the enzyme reads as protein, not a container ──�
   say(!r.usesClip, "no fill-level clip — a flat top edge is what read as a bowl");
 }
 {
-  /*
-    AND SITE-WIDE, not scene-scoped.
-
-    The check above looks only inside #why, because that is the scene the
-    redraw touched. It passed for weeks while the two-patient scene and the
-    ambient element still drew the OLD rounded rectangle with a notch — the
-    exact silhouette the client described as a container. A check scoped to the
-    place you just edited cannot tell you the edit was incomplete.
-
-    It fails on any enzyme-sized closed shape built from the quadratic-and-line
-    grammar those old copies used.
-
-    AND IT HAS TO SWEEP. The first version of this wider check was itself a
-    false pass: it ran at whatever scroll position the previous test left, and
-    the two-patient scene's diagram only mounts inside its own beat, so there
-    was nothing in the DOM to find. Re-introducing the old shape on purpose
-    still gave a PASS. Every scene has to be brought on screen before it can be
-    audited — the same mistake one level up.
-  */
+  // And site-wide, not scene-scoped.
+  // The check above looks only inside #why, because that is the scene the redraw touched. It passed for weeks while
+  // the two-patient scene and the ambient element still drew the old rounded rectangle with a notch — the exact
+  // silhouette the client described as a container. A check scoped to the place you just edited cannot tell you the
+  // edit was incomplete.
+  // It fails on any enzyme-sized closed shape built from the quadratic-and-line grammar those old copies used.
+  // And it has to sweep. The first version of this wider check was itself a false pass: it ran at whatever scroll
+  // position the previous test left, and the two-patient scene's diagram only mounts inside its own beat, so there
+  // was nothing in the DOM to find. Re-introducing the old shape on purpose still gave a pass. Every scene has to be
+  // brought on screen before it can be audited — the same mistake one level up.
   const SCAN = `() => {
     const out = [];
     for (const el of document.querySelectorAll("path")) {
@@ -207,15 +180,11 @@ console.log("\n── 4 · the enzyme reads as protein, not a container ──�
 
 console.log("\n── 5 · the ending keeps a tint ───────────────────────────");
 {
-  /*
-    PAINTED PIXELS, not getComputedStyle.
-
-    The ground's colour is authored with color-mix, so the computed value comes
-    back as `oklab(0.90 0.0019 0.0014)`. Pulling numbers out of that string and
-    treating them as RGB yields rgb(1, 0, 0) and a spread of 1 — a confident,
-    meaningless failure that looked exactly like a real one. Same rule as the
-    contrast check: sample what was actually drawn.
-  */
+  // Painted pixels, not getComputedStyle.
+  // The ground's colour is authored with color-mix, so the computed value comes back as `oklab(0.90 0.0019 0.0014)`.
+  // Pulling numbers out of that string and treating them as rgb yields rgb(1, 0, 0) and a spread of 1 — a confident,
+  // meaningless failure that looked exactly like a real one. Same rule as the contrast check: sample what was
+  // actually drawn.
   const rows = [];
   for (const f of [0.9, 0.94, 0.97]) {
     await at(page, f, 1200);
@@ -309,15 +278,11 @@ console.log("\n── 8 · the documentation nav stays put ───────
 
 console.log("\n── 9 · the story nav stays too, and it is the cream one ───");
 {
-  /*
-    The client's review: one cream, full-width navigation that stays while
-    scrolling, on every page INCLUDING the story. The story's header used to live
-    inside scene one's pinned stage and scrolled away with it, so from the second
-    scene on there was no navigation at all — this reads it deep into the story,
-    where that failure showed.
-  */
+  // The client's review: one cream, full-width navigation that stays while scrolling, on every page including the
+  // story. The story's header used to live inside scene one's pinned stage and scrolled away with it, so from the
+  // second scene on there was no navigation at all — this reads it deep into the story, where that failure showed.
   const story = await browser.newPage({ viewport: { width: 1280, height: 800 } });
-  await story.goto(BASE + "/new", { waitUntil: "networkidle" });
+  await story.goto(BASE + "/", { waitUntil: "networkidle" });
   await story.waitForTimeout(1200);
   const rows = [];
   for (const f of [0, 0.4, 0.9]) {
@@ -354,14 +319,10 @@ console.log("\n── 9 · the story nav stays too, and it is the cream one ─�
 
 console.log("\n── 10 · every page has it, including the ones outside the shell ─");
 {
-  /*
-    Check 9 read the story and check 8 read Description, and both passed while
-    Attributions had no header at all — it was built before the page shell and
-    rendered only a "Back to the story" link. A check that reads two pages
-    cannot say "every page". Routes come from the site map, read as text for
-    the same reason audit.mjs does; a 404 is added because a mistyped link is a
-    page a reader can land on too.
-  */
+  // Check 9 read the story and check 8 read Description, and both passed while Attributions had no header at all — it
+  // was built before the page shell and rendered only a "Back to the story" link. A check that reads two pages cannot
+  // say "every page". Routes come from the site map, read as text for the same reason audit.mjs does; a 404 is added
+  // because a mistyped link is a page a reader can land on too.
   const { readFileSync } = await import("node:fs");
   const map = readFileSync(new URL("../src/components/story/site-map.ts", import.meta.url), "utf8");
   const routes = [...new Set([...map.matchAll(/to:\s*"(\/[^"]*)"/g)].map((m) => m[1]))];
@@ -384,10 +345,8 @@ console.log("\n── 10 · every page has it, including the ones outside the sh
         if (!h) return { count: 0 };
         const cs = getComputedStyle(h);
         const r = h.getBoundingClientRect();
-        /*
-          And the footer iGEM requires on every page: the CC BY 4.0 licence
-          link and the team's GitLab repository link.
-        */
+        // And the footer iGEM requires on every page: the CC BY 4.0 licence link and the team's GitLab repository
+        // link.
         const foot = document.querySelector("footer");
         return {
           count: hs.length,

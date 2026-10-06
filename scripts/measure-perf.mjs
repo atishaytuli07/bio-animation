@@ -1,34 +1,21 @@
-/**
- * What the story costs to scroll, on hardware that is not a developer's laptop.
- *
- * The page is one long scroll-driven animation and iGEM's judges will not all
- * be on fast machines, so the number that matters is frame time WHILE
- * SCROLLING, with the CPU throttled — not a Lighthouse score on an idle page.
- *
- * Measured per scene, because the cost is not evenly spread: the descent runs a
- * helix, the bloodstream runs a few hundred drawn molecules.
- *
- *   - frames are counted with requestAnimationFrame while the page is scrolled
- *     at a steady rate, and reported as the median and worst frame in ms
- *   - long tasks (over 50ms) are collected from PerformanceObserver
- *   - transferred bytes are summed per page, since the wiki has a 5 MB budget
- *
- * THREE SAMPLES PER SCENE, AND THE BEST ONE COUNTS. Frame times here quantise
- * to the display's 16.7ms, and in a headless browser with no GPU any scene
- * lands on every-other-frame some of the time: measured five times, one scene
- * read 16.7, 33.4, 16.7, 16.7, 16.7. A single run cannot tell 30fps from 60,
- * so a single run must not be allowed to fail the build. The spread is printed
- * with every result.
- *
- * AND IT MUST RUN AGAINST THE BUILT EXPORT, not the dev server. Unminified,
- * with React in development mode, the same scenes measured 3-8fps and 6.6 MB
- * of script — a number about the dev server, not about the wiki.
- *
- *   node scripts/build-static.mjs
- *   node scripts/measure-perf.mjs http://localhost:8099   # serving dist-static
- *
- * Usage: node scripts/measure-perf.mjs [origin] [cpu-throttle=4]
- */
+// What the story costs to scroll, on hardware that is not a developer's laptop.
+// The page is one long scroll-driven animation and iGEM's judges will not all be on fast machines, so the number that
+// matters is frame time while scrolling, with the CPU throttled — not a Lighthouse score on an idle page.
+// Measured per scene, because the cost is not evenly spread: the descent runs a helix, the bloodstream runs a few
+// hundred drawn molecules.
+//   - frames are counted with requestAnimationFrame while the page is scrolled at a steady rate, and reported as the
+//     median and worst frame in ms
+//   - long tasks (over 50ms) are collected from PerformanceObserver
+//   - transferred bytes are summed per page, since the wiki has a 5 MB budget
+// Three samples per scene, and the best one counts. Frame times here quantise to the display's 16.7ms, and in a
+// headless browser with no GPU any scene lands on every-other-frame some of the time: measured five times, one scene
+// read 16.7, 33.4, 16.7, 16.7, 16.7. A single run cannot tell 30fps from 60, so a single run must not be allowed to
+// fail the build. The spread is printed with every result.
+// And it must run against the built export, not the dev server. Unminified, with React in development mode, the same
+// scenes measured 3-8fps and 6.6 MB of script — a number about the dev server, not about the wiki.
+//   node scripts/build-static.mjs
+//   node scripts/measure-perf.mjs http://localhost:8099   # serving dist-static
+// Usage: node scripts/measure-perf.mjs [origin] [cpu-throttle=4]
 import { chromium } from "playwright";
 
 const BASE = process.argv[2] ?? "http://localhost:8080";
@@ -58,7 +45,7 @@ console.log(`\n── scrolling the story at ${THROTTLE}× CPU throttle (1280×9
   const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
   const cdp = await page.context().newCDPSession(page);
   await cdp.send("Emulation.setCPUThrottlingRate", { rate: THROTTLE });
-  await page.goto(BASE + "/new/", { waitUntil: "networkidle" });
+  await page.goto(BASE + "/", { waitUntil: "networkidle" });
   await page.waitForTimeout(800);
 
   for (const [name, from, to] of SCENES) {
@@ -130,7 +117,7 @@ console.log(`\n── scrolling the story at ${THROTTLE}× CPU throttle (1280×9
 
 console.log("\n── what each page weighs");
 {
-  const routes = ["/new/", "/description/", "/team/"];
+  const routes = ["/", "/description/", "/team/"];
   for (const route of routes) {
     const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
     let bytes = 0;

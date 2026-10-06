@@ -1,35 +1,23 @@
-/**
- * Hero objects never touch the character or the copy.
- *
- * PAINTED PIXELS, not boxes. A character plate is a cutout whose box is mostly
- * transparent, so a box test reports everything as overlapping. The plate is
- * drawn into a canvas and its alpha is read under each object's own drawing,
- * grown by MARGIN on every side — enough for the drift (objects ±7px, the plate
- * ±4px) plus a gap a reader can see.
- *
- * Checked on every page with a plate, from xl up (below it the objects are not
- * rendered — that is asserted too, because that rule is what keeps them off the
- * copy at tablet width): Engineering's scattered objects, and Description's
- * docked DPD + 5-FU pair, including its labels.
- *
- * Found, when first run: Engineering's small enzyme sat on the character's hand
- * and the test device at 1280 (2651 px within 14px) and 1366 (970 px) — he holds
- * the device out in front of him, so he reaches further left than `lead` says.
- *
- * Usage: node scripts/verify-hero-art.mjs [origin=http://localhost:8080]
- */
+// Hero objects never touch the character or the copy.
+// Painted pixels, not boxes. A character plate is a cutout whose box is mostly transparent, so a box test reports
+// everything as overlapping. The plate is drawn into a canvas and its alpha is read under each object's own drawing,
+// grown by margin on every side — enough for the drift (objects ±7px, the plate ±4px) plus a gap a reader can see.
+// Checked on every page with a plate, from xl up (below it the objects are not rendered — that is asserted too,
+// because that rule is what keeps them off the copy at tablet width): Engineering's scattered objects, and
+// Description's docked DPD + 5-fu pair, including its labels.
+// Found, when first run: Engineering's small enzyme sat on the character's hand and the test device at 1280 (2651 px
+// within 14px) and 1366 (970 px) — he holds the device out in front of him, so he reaches further left than `lead`
+// says.
+// Usage: node scripts/verify-hero-art.mjs [origin=http://localhost:8080]
 import { chromium } from "playwright";
 
 const BASE = process.argv[2] ?? "http://localhost:8080";
 const MARGIN = 14;
 /** Pages whose hero carries a character plate. */
 const PAGES = ["/description", "/engineering"];
-/**
- * Pages with no character: the piece sits in the empty band instead, from lg.
- * Each is a different object on purpose — the client asked for fewer, larger,
- * meaningful elements but NOT four identical heroes.
- */
-const PIECE_ONLY = ["/human-practices", "/safety", "/team"];
+// Pages with no character: the piece sits in the empty band instead, from lg. Each is a different object on purpose —
+// the client asked for fewer, larger, meaningful elements but not four identical heroes.
+const PIECE_ONLY = ["/human-practices", "/safety-and-security", "/team"];
 
 let fails = 0;
 const say = (ok, what, detail = "") => {
@@ -52,7 +40,7 @@ for (const route of PAGES) {
         ...[...hero.querySelectorAll("div[aria-hidden='true']")].filter((d) =>
           d.className.includes("w-[42%]"),
         ),
-        ...hero.querySelectorAll("[data-dock]"),
+        ...hero.querySelectorAll("[data-piece]"),
       ];
       return els.filter((e) => {
         const r = e.getBoundingClientRect();
@@ -95,12 +83,9 @@ for (const route of PAGES) {
           const s = el.querySelector("svg");
           if (s) targets.push({ name: `object #${i}`, box: s.getBoundingClientRect() });
         });
-      /*
-        WHATEVER PIECE THE PAGE CARRIES, not Description's dock by name. This
-        block used to look for [data-dock]; the day Engineering swapped its
-        scatter for its own piece, the check found nothing and said so — which
-        is the only reason it did not quietly stop testing that page.
-      */
+      // Whatever piece the page carries, not Description's dock by name. This block used to look for the dock
+      // alone; the day Engineering swapped its scatter for its own piece, the check found nothing and said so,
+      // which is the only reason it did not quietly stop testing that page.
       const piece = hero.querySelector("[data-piece]");
       if (piece) {
         piece
@@ -109,7 +94,7 @@ for (const route of PAGES) {
             targets.push({ name: `piece part ${i + 1}`, box: el.getBoundingClientRect() }),
           );
         piece
-          .querySelectorAll("[data-piece-label], [data-dock-label]")
+          .querySelectorAll("[data-piece-label]")
           .forEach((l) =>
             targets.push({ name: `label "${l.textContent}"`, box: l.getBoundingClientRect() }),
           );
@@ -159,12 +144,9 @@ for (const route of PIECE_ONLY) {
     await page.waitForTimeout(400);
     const r = await page.evaluate(() => {
       const hero = document.querySelector("section");
-      /*
-        THE ONE ON SCREEN. Both arrangements are in the DOM — beside the copy
-        from lg, in the corner below it under lg — and the other is display:
-        none. Taking the first match reported "no piece rendered" at 768 while
-        the phone one was sitting there perfectly.
-      */
+      // The one on screen. Both arrangements are in the DOM — beside the copy from lg, in the corner below it under
+      // lg — and the other is display: none. Taking the first match reported "no piece rendered" at 768 while the
+      // phone one was sitting there perfectly.
       const piece = [...hero.querySelectorAll("[data-piece]")].find((el) => {
         const b = el.getBoundingClientRect();
         return b.width > 0 && b.height > 0;
@@ -185,11 +167,8 @@ for (const route of PIECE_ONLY) {
         labels: hero.querySelectorAll("[data-piece-label]").length,
       };
     });
-    /*
-      Below lg the copy column is the full width, so the piece stands in the
-      corner UNDER it instead of beside it — the same arrangement the character
-      plates use on a phone. It still has to clear the copy, just downwards.
-    */
+    // Below lg the copy column is the full width, so the piece stands in the corner under it instead of beside it —
+    // the same arrangement the character plates use on a phone. It still has to clear the copy, just downwards.
     if (w < 1024) {
       say(
         r.shown && r.below >= 8 && r.bottom >= 0,
@@ -211,11 +190,8 @@ for (const route of PIECE_ONLY) {
   }
 }
 
-/*
-  AND NO TWO HEROES ARE THE SAME PICTURE. Human Practices, Safety and Team
-  carried an identical four-icon scatter before this, which is what the client
-  objected to: "I don't want every hero to look identical."
-*/
+// And NO two heroes are the same picture. Human Practices, Safety and Team carried an identical four-icon scatter
+// before this, which is what the client objected to: "I don't want every hero to look identical."
 {
   console.log("\n\u2500\u2500 each hero is its own");
   const seen = new Map();
@@ -228,7 +204,7 @@ for (const route of PIECE_ONLY) {
       if (!p) return "none";
       // what it is made of and what it says, not where it sits
       const kinds = [...p.querySelectorAll("svg, img, span")].map((e) => e.tagName).join(",");
-      const text = [...p.querySelectorAll("[data-piece-label], [data-dock-label]")]
+      const text = [...p.querySelectorAll("[data-piece-label]")]
         .map((e) => e.textContent)
         .join("|");
       return `${kinds}::${text}`;

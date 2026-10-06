@@ -13,42 +13,24 @@ import {
   useTime,
 } from "@/hooks/use-scroll-progress";
 
-/**
- * Stop three — "Look closer".
- *
- * This section used to be two vessels side by side, which made it the second
- * A/B split in a row: stop two already ran "same drug, two people, watch them
- * separate", and repeating that move one scale down taught nothing new. The
- * camera went in (the gene) → out (two people) → out again.
- *
- * It now goes IN → OUT → BACK IN. The reader already knows which of the two is
- * in trouble; this stop enters his bloodstream and finds the reason. One
- * vessel, not two — the comparison has already happened.
- *
- * The payoff is the site's own vocabulary closing a loop. The red A the reader
- * pulled out of the helix in stop one comes back, drops a hairline down the
- * frame, and lands on the shortfall where a full complement of enzyme should
- * have been. Gene → enzyme → drug, drawn as one line, in one image.
- *
- * ACCURACY, and it is load-bearing rather than a disclaimer: DPYD variants
- * REDUCE enzyme activity, they do not abolish it. Two things encode that here
- * rather than a caption walking it back. One molecule in four is still broken
- * down while the pile is building. And the enzyme is drawn as a LEVEL — a
- * dashed full outline with about two fifths of it filled — which never changes
- * for the whole section, because nothing the reader does changes how much DPD
- * this body makes. Scene two says the same thing with five slots and two
- * filled; the two must agree, and an earlier version of this file did not.
- *
- * An earlier draft said the enzyme "is never built", which was wrong. The
- * version after it filled the shape solid green at the turn, which was wrong in
- * the opposite direction: it told the reader that lowering the dose restored
- * the enzyme.
- *
- * PLACEHOLDER SCIENCE: the mechanism is textbook (DPD catabolises
- * fluoropyrimidines; DPYD variants reduce DPD activity), but the wording needs
- * the team's confirmation before this ships. iGEM requires that nothing on a
- * wiki be unverifiable.
- */
+// Stop three, "Look closer". This section used to be two vessels side by side, which made it the second A/B
+// split in a row: stop two already ran "same drug, two people, watch them separate", and repeating that move one
+// scale down taught nothing new.
+// It now goes in, out, back in. The reader already knows which of the two is in trouble; this stop enters his
+// bloodstream and finds the reason. One vessel, not two, because the comparison has already happened.
+// The payoff is the site's own vocabulary closing a loop: the red A the reader pulled out of the helix in stop
+// one comes back, drops a hairline down the frame, and lands on the shortfall where a full complement of enzyme
+// should have been. Gene, enzyme, drug, drawn as one line in one image.
+// Accuracy here is load-bearing. DPYD variants reduce enzyme activity, they do not abolish it, and two things
+// encode that rather than a caption walking it back: one molecule in four is still broken down while the pile is
+// building, and the enzyme is drawn as a level, a dashed full outline with about two fifths filled, which never
+// changes, because nothing the reader does changes how much DPD this body makes. Scene two says the same thing
+// with five slots and two filled, and the two must agree.
+// An earlier draft said the enzyme "is never built", which was wrong; the version after it filled the shape
+// solid green at the turn, which was wrong the other way, telling the reader that lowering the dose restored the
+// enzyme.
+// Placeholder science: the mechanism is textbook, but the wording needs the team's confirmation before this
+// ships, since iGEM requires that nothing on a wiki be unverifiable.
 
 const q = (v: number) => Math.round(v * 20) / 20;
 
@@ -56,13 +38,9 @@ const q = (v: number) => Math.round(v * 20) / 20;
 const IN_FLIGHT = 9;
 const CLEARED_EVERY = 4;
 
-/**
- * A small annotation pinned over the vessel, with a leader dot.
- *
- * Deliberately integrated rather than floating in the margin — the client
- * asked for "a small integrated label", and a caption parked at the edge of
- * the screen does not tell you which thing it is naming.
- */
+// A small annotation pinned over the vessel, with a leader dot. Integrated rather than floating in the margin:
+// the client asked for a small integrated label, and a caption parked at the edge of the screen does not tell
+// you which thing it is naming.
 function Tag({
   on,
   x,
@@ -81,13 +59,9 @@ function Tag({
   if (on <= 0.004) return null;
   return (
     <div
-      /*
-        The anchor is a CSS variable rather than an inline `left` so that a
-        media query can override it: on a phone the vessel is centred and
-        narrow, and a tag pointing right from 62% ran off the screen. Below md
-        it flips — anchored to the right edge with the row reversed, so the box
-        sits inboard and the leader points back at the thing it names.
-      */
+      // The anchor is a CSS variable rather than an inline `left`, so a media query can override it: on a phone the
+      // vessel is centred and narrow, and a tag pointing right from 62% ran off the screen. Below md it flips, with
+      // the row reversed, so the box sits inboard and the leader points back at the thing it names.
       className="pointer-events-none absolute flex items-center gap-2 left-[var(--tx)] max-md:left-auto max-md:right-[1%] max-md:flex-row-reverse"
       style={{
         ["--tx" as string]: `${x}%`,
@@ -102,7 +76,7 @@ function Tag({
       />
       <span className="block h-px w-4 shrink-0" style={{ background: `${C.ink}55` }} />
       <span
-        className="whitespace-nowrap rounded-md px-2.5 py-1.5"
+        className="whitespace-nowrap rounded-[6px] px-2.5 py-1.5"
         style={{
           background: C.paper,
           border: `2px solid ${C.ink}`,
@@ -125,25 +99,17 @@ export function Why() {
   const pageP = usePageProgress();
   const [hot, setHot] = useState(false);
   /**
-   * THE SECOND PRESS. The reader gives the dose twice in this scene: once with
-   * nothing to go on, and once with the result in hand. `hot` is the first;
-   * this is the second. Same gesture, different information — which is the
-   * whole argument, felt rather than read.
+   * The second press. The reader gives the dose twice in this scene: once with nothing to go on, and once with
+   * the result in hand. `hot` is the first and this is the second. Same gesture, different information.
    */
   const [hot2, setHot2] = useState(false);
 
-  /* ---- ONE SCENE, TWO ACTS --------------------------------------------------
-     This used to be two sections that crossfaded into each other, and the
-     client caught it immediately: they show the SAME picture — the same man,
-     the same lens, the same vessel — so dissolving between them stacked two
-     figures and two headlines through each other for a whole screen of scroll.
-
-     Nothing about the picture should change at the turn. What changes is its
-     STATE. The drug piles up under a standard dose; then the variant is known,
-     the dose comes down, the pile drains away and the enzyme fills in. One
-     vessel, one figure, one continuous scroll — the story turns, the scene
-     does not restart. It is also the client's own note about scenes
-     transforming into each other rather than being swapped.               */
+  // One scene, two acts. This used to be two sections that crossfaded, and the client caught it immediately: they
+  // show the same picture, the same man, the same lens, the same vessel, so dissolving between them stacked two
+  // figures and two headlines for a whole screen of scroll.
+  // Nothing about the picture changes at the turn. What changes is its state: the drug piles up under a standard
+  // dose, then the variant is known, the dose comes down, the pile drains and the enzyme fills in. One vessel, one
+  // figure, one continuous scroll, so the story turns and the scene does not restart.
 
   /* act one — what a standard dose does */
   const enter = easeOut(range(p, 0.01, 0.06));
@@ -156,25 +122,15 @@ export function Why() {
   const build = range(p, 0.38, 0.56);
   const alarm = range(p, 0.44, 0.58);
   const enzymeLabel = band(p, 0.46, 0.52, 0.57, 0.62);
-  /*
-    lineB's exit and lineC's entrance MUST NOT overlap, and getting that right
-    is not as simple as making the windows not touch.
-
-    `beat` eases the entrance but leaves the exit linear — deliberately, so copy
-    arrives fast and leaves gently. The consequence is that the two ramps are
-    not symmetric: an entrance is already at 0.88 a third of the way through,
-    while an exit is still at 0.55 at the same fraction. With the old windows
-    (out 0.67→0.72, in 0.68→0.74) both lines sat above half opacity between
-    p 0.6909 and 0.6975 — two headlines dissolving through each other at the
-    same coordinates, at the turn.
-
-    The audit's collision check found it, but only sometimes: the window is
-    0.0066 of local progress and the check samples 60 scroll positions, so it
-    landed inside about one run in five. It passed twice before it failed.
-
-    These windows leave a gap of 0.031 between lineB dropping below 0.45 and
-    lineC reaching it. Recompute both crossings if either window moves.
-  */
+  // lineB's exit and lineC's entrance must not overlap, and getting that right is not as simple as making the
+  // windows not touch. `beat` eases the entrance but leaves the exit linear, so copy arrives fast and leaves
+  // gently, and the two ramps are not symmetric: an entrance is at 0.88 a third of the way through while an exit
+  // is still at 0.55. With the old windows (out 0.67 to 0.72, in 0.68 to 0.74) both lines sat above half opacity
+  // between p 0.6909 and 0.6975, two headlines dissolving through each other at the turn.
+  // The audit's collision check found it, but only sometimes: the window is 0.0066 of local progress and the check
+  // samples 60 scroll positions, so it landed inside about one run in five. It passed twice before it failed.
+  // These windows leave a gap of 0.031 between lineB dropping below 0.45 and lineC reaching it. Recompute both
+  // crossings if either window moves.
   const lineB = beat(p, 0.56, 0.62, 0.655, 0.7);
 
   /* the turn — and everything after it undoes what act one built */
@@ -183,73 +139,39 @@ export function Why() {
   /** 9 molecules of standard dose come down to 4. */
   const trim = range(p, 0.76, 0.85);
   /** What had accumulated drains away — the payoff of the whole section. */
-  /*
-    THE DRAIN WAITS FOR THE READER, then goes anyway.
-
-    It ran 0.79 → 0.89, and the second control fades in over 0.78 → 0.84 — so
-    by the moment the button was legible the vessel was already half empty on
-    its own, and by 0.89 it was done. Measured, holding it at that point moved
-    the count by one molecule inside its own noise. A control that cannot
-    change what happens is a prop.
-
-    Moving it to 0.84 → 0.94 opens p 0.79 → 0.84 — about 43vh of scroll — where
-    the control is fully up and NOTHING else is clearing the vessel. Press and
-    it empties under your thumb; scroll past and the drain does it for you a
-    moment later, so a reader who never touches it still gets the resolution
-    and every harness that only scrolls still measures the same ending.
-  */
+  // The drain waits for the reader, then goes anyway. It ran 0.79 to 0.89 while the second control fades in over
+  // 0.78 to 0.84, so by the time the button was legible the vessel was already half empty, and holding it moved
+  // the count by one molecule, inside its own noise. A control that cannot change what happens is a prop.
+  // At 0.84 to 0.94 there are about 43vh of scroll where the control is fully up and nothing else is clearing the
+  // vessel. Press and it empties under your thumb; scroll past and the drain does it a moment later, so a reader
+  // who never touches it still gets the resolution.
   const drain = range(p, 0.84, 0.94);
   /**
-   * The dose comes down to meet the enzyme this person actually has.
-   *
-   * This used to be called `heal`, and it filled the enzyme shape in solid —
-   * which told the reader that reducing the dose RESTORED enzyme activity. It
-   * does not. A DPYD variant carrier makes less DPD before the test and exactly
-   * the same amount after it; the only thing that changes is how much drug
-   * arrives. Scene two already draws this correctly — five slots, two filled —
-   * so scene three was contradicting it two screens later.
-   *
-   * Nothing about the enzyme moves on this beat now. What moves is the load.
+   * The dose comes down to meet the enzyme this person actually has. This used to be called `heal`, and it
+   * filled the enzyme shape in solid, which told the reader that reducing the dose restored enzyme activity. A
+   * carrier makes less DPD before the test and exactly the same amount after it; the only thing that changes is
+   * how much drug arrives. Scene two already draws this correctly, so scene three was contradicting it.
+   * Nothing about the enzyme moves on this beat. What moves is the load.
    */
   const adjusted = range(p, 0.81, 0.9);
-  /*
-    "A safer starting dose." — and it LEAVES, which it did not before.
-
-    Two separate faults were fixed here, and the second was caused by the first.
-
-    1. Its out-window was 1.2 → 1.3, past anything progress can reach, so it
-       never retired. At the end of the page it scrolled up under the story rail
-       still at full opacity: 64% over "05 · Before the first dose" on a 430px
-       phone, 65% measured while actually wheel-scrolling at 1024.
-
-    2. Moving it earlier to make room for the scene's exit put it INSIDE lineC's
-       departure — the same mistake, and the same rule, as lineB/lineC above.
-       lineC clears 12% opacity at 0.844; at an entrance of 0.82 this crossed it
-       at 0.822, and "What if we knew first?" sat under "A safer starting dose." at up
-       to 65%. Entering at 0.86 crosses at 0.862, a clear 0.018 after lineC has
-       gone.
-
-    Full by roughly 0.88, which leaves a hold of about 45vh before the stage
-    begins to fade at local 0.933.
-  */
+  // "A safer starting dose.", and it leaves, which it did not before. Two faults, the second caused by the first.
+  // Its out-window was 1.2 to 1.3, past anything progress can reach, so it never retired: at the end of the page
+  // it scrolled up under the story rail at full opacity, 64% over "05 - Before the first dose" on a 430px phone
+  // and 65% measured while wheel-scrolling at 1024.
+  // Moving it earlier to make room for the scene's exit put it inside lineC's departure, the same mistake as
+  // lineB and lineC above. lineC clears 12% opacity at 0.844; at an entrance of 0.82 this crossed it at 0.822 and
+  // the two lines sat over each other at up to 65%. Entering at 0.86 crosses at 0.862, a clear 0.018 after lineC
+  // has gone. Full by roughly 0.88, which leaves a hold of about 45vh before the stage fades at local 0.933.
   const lineD = beat(p, 0.86, 0.91, 0.96, 0.99);
   /**
-   * The scene leaves as a whole — driven by REAL SCROLL, not by the spring.
-   *
-   * The other two stops dissolve into the one after them; this is the last, so
-   * it had no exit at all and simply scrolled out from under the rail with
-   * every element at full opacity. At the end of the page that put the result
-   * card over "05 · Before the first dose" at 65%.
-   *
-   * The first attempt used the section's own `p`, and it did not work. `p` is
-   * spring-smoothed: it LAGS a real scroll by a fair fraction of a second, so
-   * by the time it reached the fade window the stage had already unpinned and
-   * travelled up under the rail. Measured with a continuous wheel rather than a
-   * jump, the overlap was still 65%.
-   *
-   * `usePageProgress` reads the document position directly, so the fade happens
-   * where the reader actually is. Anything anchored to the moment a section
-   * leaves the viewport belongs on page progress, not on section progress.
+   * The scene leaves as a whole, driven by real scroll rather than by the spring. The other two stops dissolve
+   * into the one after them; this is the last, so it had no exit at all and scrolled out from under the rail
+   * with every element at full opacity, putting the result card over the chapter label at 65%.
+   * The first attempt used the section's own `p`, which is spring-smoothed and lags a real scroll by a fair
+   * fraction of a second, so by the time it reached the fade window the stage had already unpinned: measured
+   * with a continuous wheel rather than a jump, the overlap was still 65%.
+   * usePageProgress reads the document position directly. Anything anchored to the moment a section leaves the
+   * viewport belongs on page progress, not on section progress.
    */
   const exit = range(pageP, 0.955, 0.99);
   /** The in-vessel letter hands over to the report card at the turn. */
@@ -257,46 +179,33 @@ export function Why() {
 
   const t = useTime(flow > 0.01);
 
-  /*
-    Phase is accumulated per frame rather than computed as t × speed: changing
-    the speed of a t × speed term teleports every molecule at once. Guarding on
-    t also makes this idempotent, so React's development double-render cannot
-    advance the animation twice in one frame.
-  */
+  // Phase is accumulated per frame rather than computed as t x speed: changing the speed of a t x speed term
+  // teleports every molecule at once. Guarding on t also makes this idempotent, so React's development
+  // double-render cannot advance the animation twice in one frame.
   const phase = useRef(0);
   const lastT = useRef(t);
   const speed = useRef(1);
   const extra = useRef(0);
   /**
-   * How much of the clearing the reader's own press has done.
-   *
-   * The drain is scroll-driven and COMPLETE on its own — a reader who never
-   * touches the control still gets the resolution, and every harness that
-   * scrolls without pressing still holds. What the press does is bring the
-   * clearing forward under the reader's thumb, so the vessel visibly empties
-   * because they gave the adjusted dose rather than because they kept
-   * scrolling. It can only ever add to the drain, never take it past the
-   * same 78%: "reduced, not absent" is a science rule, not a UI one.
+   * How much of the clearing the reader's own press has done. The drain is scroll-driven and complete on its
+   * own, so a reader who never touches the control still gets the resolution. What the press does is bring the
+   * clearing forward under the reader's thumb, so the vessel empties because they gave the adjusted dose rather
+   * than because they kept scrolling. It can only add to the drain, never take it past the same 78%: "reduced,
+   * not absent" is a science rule, not a UI one.
    */
   const cleared = useRef(0);
   if (t !== lastT.current) {
     const dt = t - lastT.current;
-    /*
-      ONLY THE FIRST PRESS SPEEDS THE INFUSION. Letting the second inherit the
-      2.4x boost was backwards, and measured: holding the adjusted dose took the
-      held count from 8 down to 4 in 1.2s, then the faster inflow refilled it
-      to 8 while the thumb was still down. The reader's clearing press was
-      visibly undoing itself. An adjusted dose is LESS arriving, not more.
-    */
+    // Only the first press speeds the infusion. Letting the second inherit the 2.4x boost was backwards, and
+    // measured: holding the adjusted dose took the held count from 8 down to 4 in 1.2s, then the faster inflow
+    // refilled it to 8 while the thumb was still down. An adjusted dose is less arriving, not more.
     speed.current += ((hot ? 2.4 : 1) - speed.current) * 0.15;
     phase.current += dt * speed.current;
-    // Holding keeps the infusion running, so the load climbs faster. Ridden on
-    // the same clock as everything else — this used to be its own setInterval,
-    // which only happened to work because useTime re-renders every frame.
+    // Holding keeps the infusion running, so the load climbs faster. Ridden on the same clock as everything else —
+    // this used to be its own setInterval, which only happened to work because useTime re-renders every frame.
     if (hot) extra.current = Math.min(0.4, extra.current + dt * 0.22);
-    // Only once the result is actually on screen. The control is faded out
-    // before that, but a faded control is still a control: an invisible button
-    // that accepted the pointer drained the vessel before the test existed.
+    // Only once the result is actually on screen. The control is faded out before that, but a faded control is still
+    // a control: an invisible button that accepted the pointer drained the vessel before the test existed.
     if (hot2 && result > 0.5) cleared.current = Math.min(1, cleared.current + dt * 0.55);
     lastT.current = t;
   }
@@ -305,53 +214,30 @@ export function Why() {
   // Red while it is accumulating; back to coral once it is clearing again.
   const drugTone = alarm > 0.5 && drain < 0.5 ? C.red : C.coral;
 
-  /*
-    WHAT DOES NOT GET CLEARED — SUSPENDED, NOT SETTLED.
-
-    These used to stack in rows on the floor of the vessel, and the client read
-    exactly what that draws: a drug that physically sinks. It does not. What
-    happens when DPD activity is reduced is that the CONCENTRATION in the blood
-    stays high — the same molecules, more of them, still circulating.
-
-    So they are distributed through the whole column now and they drift with the
-    flow, at a slower rate than the ones arriving. The reader still sees the
-    load climb, because the count still climbs; they no longer see sediment.
-
-    Positions are deterministic per index — a hash of `i`, not Math.random — so
-    a molecule keeps its lane between frames instead of teleporting when the
-    count changes.
-  */
-  /*
-    A RESIDUAL SURVIVES THE TURN — about a fifth, not none.
-
-    `1 - drain` emptied the vessel completely, which draws "no drug". The
-    treatment does not stop when the dose is adjusted; it is still 5-FU, still
-    circulating, just at an exposure the person's own DPD can keep up with. So
-    the drain takes 78% and leaves the rest, and the tone returns to coral
-    rather than red — lower concentration, not absence.
-  */
+  // A residual survives the turn, about a fifth rather than none. `1 - drain` emptied the vessel completely,
+  // which draws "no drug". The treatment does not stop when the dose is adjusted: it is still 5-FU, still
+  // circulating, at an exposure the person's own DPD can keep up with. The drain takes 78% and the tone returns to
+  // coral rather than red, lower concentration rather than absence.
   const draining = Math.min(1, drain + cleared.current);
-  /*
-    HE CARRIES THE LOAD, and sheds it when the reader does.
-
-    In scene two he sags and tints as the drug builds; here he stood beside
-    the vessel as a still picture, so the second press emptied a tube and not
-    a person. These are the same quantities the vessel is drawn from — `build`
-    and `alarm` on the way up, `draining` on the way down — so the man and the
-    column can never disagree, and a press that clears one visibly clears the
-    other. Under the reader's thumb he straightens up.
-  */
+  // He carries the load, and sheds it when the reader does. In scene two he sags and tints as the drug builds;
+  // here he stood beside the vessel as a still picture, so the second press emptied a tube and not a person.
+  // These are the same quantities the vessel is drawn from, `build` and `alarm` on the way up and `draining` on
+  // the way down, so the man and the column can never disagree.
   const load = alarm * (1 - draining);
-  /*
-    A LEVEL, NOT A RECOLOUR. `build` reaches 1, so an uncapped level filled him
-    to the crown and he stopped reading as the man from the scene before — he
-    read as a different, darker character. Scene two's own fill tops out near
-    0.70 of the figure; 0.62 here keeps him recognisably himself with the load
-    plainly rising up him.
-  */
+  // A level, not a recolour. `build` reaches 1, so an uncapped level filled him to the crown and he read as a
+  // different, darker character rather than the man from the scene before. Scene two's own fill tops out near
+  // 0.70 of the figure; 0.62 here keeps him recognisably himself with the load plainly rising up him.
   const carried = 0.62 * build * (1 - draining * 0.78);
   const bodyTint =
     load > 0.01 ? `color-mix(in oklab, ${C.red} ${(load * 100).toFixed(0)}%, ${C.coral})` : C.coral;
+  // What does not get cleared, suspended rather than settled. These used to stack in rows on the floor of the
+  // vessel, and the client read exactly what that draws: a drug that physically sinks. What happens when DPD
+  // activity is reduced is that the concentration in the blood stays high, the same molecules, more of them,
+  // still circulating.
+  // So they are distributed through the whole column and drift with the flow, more slowly than the ones arriving.
+  // The load still climbs, because the count still climbs; there is no sediment.
+  // Positions are deterministic per index, a hash of `i` rather than Math.random, so a molecule keeps its lane
+  // between frames instead of teleporting when the count changes.
   const heldN = Math.min(22, Math.round((build + extra.current) * 18 * (1 - draining * 0.78)));
   const held = Array.from({ length: heldN }, (_, i) => {
     const lane = ((i * 67) % 100) / 100;
@@ -363,12 +249,9 @@ export function Why() {
     };
   });
 
-  /*
-    Remember what the reader did, for the closing section. Peak is taken before
-    the turn so the second press cannot lower it; the final count is whatever
-    is left once the drain has resolved. The store ignores identical values, so
-    writing on every change is cheap.
-  */
+  // Remember what the reader did, for the closing section. Peak is taken before the turn so the second press
+  // cannot lower it, and the final count is whatever is left once the drain has resolved. The store ignores
+  // identical values, so writing on every change is cheap.
   const peak = useRef(0);
   if (drain < 0.01 && heldN > peak.current) peak.current = heldN;
   useEffect(() => {
@@ -408,15 +291,10 @@ export function Why() {
       style={{ height: "860vh", marginTop: "-100vh" }}
       className="relative"
     >
-      {/*
-        --fig3 exists because the figure USED TO BE `hidden md:block`, and that
-        quietly broke the story on phones: this scene's whole premise is that we
-        are inside the body of the man the reader watched accumulate the drug in
-        the previous scene. Without him, a mobile reader gets a tube floating on
-        a colour — a generic biology lesson, which is the one thing this scene
-        was rebuilt to stop being. The composition may simplify on a small
-        screen; the character and the causal link may not disappear.
-      */}
+      {/* --fig3 exists because the figure used to be hidden md:block, which quietly broke the story on phones: this
+          scene's premise is that we are inside the body of the man the reader watched accumulate the drug. Without
+          him, a mobile reader gets a tube floating on a colour. The composition may simplify on a small screen; the
+          character and the causal link may not disappear. */}
       <div
         className="sticky top-0 h-screen overflow-hidden [--fig3:27vh] [--vessel:38vh] md:[--fig3:46vh] md:[--vessel:min(56vh,520px)]"
         style={{ opacity: 1 - q(exit), visibility: exit > 0.99 ? "hidden" : "visible" }}
@@ -438,25 +316,15 @@ export function Why() {
           </div>
         ))}
 
-        {/*
-          The figure and the magnified vessel, side by side. Without him this
-          was a tube floating on a colour and the reader had no reason to
-          believe it was anyone's bloodstream.
-        */}
+        {/* The figure and the magnified vessel, side by side. Without him this was a tube floating on a colour and
+            the reader had no reason to believe it was anyone's bloodstream. */}
         <div
-          /*
-            MIRRORED: the vessel on the left, the man on the right.
-
-            Two faults had one cause. The cannula was on his RIGHT arm here
-            and on his LEFT in the scene before — his stand was on his left,
-            so the drip had to reach that arm — and the pair sat with all its
-            weight on the left of the frame, the result card beside it, and
-            nothing at all in the right third. Flipping the row puts the
-            cannula back on the arm the reader just watched it go into, brings
-            the tube in from the side his stand was on, sends the guides a
-            short way left to the vessel instead of across his body, and hands
-            the right third to the man and the card.
-          */
+          // Mirrored: the vessel on the left, the man on the right. Two faults had one cause. The cannula was on his
+          // right arm here and on his left in the scene before, since his stand was on his left, and the pair sat with all
+          // its weight on the left of the frame with nothing in the right third. Flipping the row puts the cannula back on
+          // the arm the reader just watched it go into, brings the tube in from the side his stand was on, sends the
+          // guides a short way left to the vessel instead of across his body, and hands the right third to the man and
+          // the card.
           className="absolute inset-x-0 flex flex-row-reverse items-end justify-center gap-[2vw] md:gap-[4vw]"
           style={{
             bottom: "8vh",
@@ -468,36 +336,23 @@ export function Why() {
             className="relative block shrink-0"
             style={{
               height: "var(--fig3)",
-              // The same settle-and-tilt scene two uses, on the whole block so
-              // the cannula and guides move with the wrist they are drawn on.
+              // The same settle-and-tilt scene two uses, on the whole block so the cannula and guides move with the
+              // wrist they are drawn on.
               transform: `translateY(${(load * 7).toFixed(2)}px) rotate(${(load * 1.1).toFixed(2)}deg)`,
               transformOrigin: "50% 100%",
               transition: "transform 180ms ease-out",
             }}
           >
-            {/*
-              THE DRIP LINE, BEHIND HIM.
-
-              It used to be drawn over the figure, sweeping in from far off the
-              top-left corner and across his chest to the wrist — and beside it
-              a second, purple stroke ran down the forearm to suggest the vein
-              underneath. The client's reading was exact: two lines, one of them
-              going nowhere. The purple one is gone; a stroke laid over a raster
-              figure does not read as anatomy, it reads as a stroke.
-
-              The tube now hangs from above, just left of him, and passes BEHIND
-              the body — this svg sits before the <img> in the DOM — so it is
-              visible where it descends, disappears behind the torso, and the
-              cannula on the wrist (drawn in front) is where it arrives. That is
-              how an IV line looks on a person: it does not cross their chest in
-              front of them.
-
-              DOM ORDER IS NOT ENOUGH. This svg is absolutely positioned and the
-              <img> is static, and a positioned box paints above every static
-              sibling whatever the source order says — so on the first pass the
-              tube was still drawn across his shirt. The three layers carry
-              explicit z-indexes: tube 0, figure 1, cannula and guides 2.
-            */}
+            {/* The drip line, behind him. It used to be drawn over the figure, sweeping in from off the top-left corner
+                and across his chest to the wrist, with a second purple stroke down the forearm to suggest the vein. The
+                client's reading was exact: two lines, one of them going nowhere. A stroke laid over a raster figure does
+                not read as anatomy, it reads as a stroke.
+                The tube now hangs from above, just left of him, and passes behind the body, since this svg sits before the
+                img in the DOM: visible where it descends, hidden behind the torso, and the cannula on the wrist is where it
+                arrives. That is how an IV line looks on a person.
+                DOM order is not enough. This svg is absolutely positioned and the img is static, and a positioned box
+                paints above every static sibling whatever the source order says, so on the first pass the tube was still
+                drawn across his shirt. The three layers carry explicit z-indexes: tube 0, figure 1, cannula and guides 2. */}
             <svg
               viewBox="0 0 415 1415"
               className="pointer-events-none absolute inset-0 z-0 h-full w-full overflow-visible"
@@ -535,36 +390,21 @@ export function Why() {
                 }}
               />
             )}
-            {/*
-              THE ENTRY POINT — AND THERE IS NO LENS.
-
-              There was a dashed circle here, and it was moved twice trying to
-              get it onto the arm. It was on the arm: centred at x=373, and the
-              near arm at that height measures 358–399. The circle was simply
-              TOO BIG. At r=104 on a 415-wide plate it spanned x 269–477, so
-              most of its area lay over the torso and the hip and the rest hung
-              off the edge of the figure. The client read it, twice, as zooming
-              into his pocket — and she was right both times.
-
-              No amount of repositioning fixes a marker wider than the thing it
-              marks, so it is gone. The transition now follows the tube, which
-              is what it should always have done: the drip line arrives from the
-              scene before, meets the cannula on the forearm, and two guides
-              open from that exact point out to the magnified vessel. Same
-              grammar as any anatomical inset — the "this, enlarged" is carried
-              by the guides rather than by a ring drawn over a hip.
-
-              THE LEFT ARM NOW — the one the drip went into in the scene before.
-              From the plate's alpha channel, in viewBox units, it spans x 12→70
-              at 42–46% down; the cannula sits at x 18→64, y 628→648.
-
-              Anatomy of this plate, from its alpha channel, in viewBox units:
-                38% down   torso and near arm merged   97–398
-                42% down   arm separates               341–399
-                46% down   forearm, beside the hip     358–399
-                56% down   the legs begin to divide
-              The cannula sits at y 628–648, which is 44–46% — the forearm.
-            */}
+            {/* The entry point, and there is no lens. There was a dashed circle here, moved twice trying to get it onto
+                the arm. It was on the arm, centred at x=373 with the near arm at that height measuring 358 to 399: the
+                circle was simply too big. At r=104 on a 415-wide plate it spanned x 269 to 477, so most of its area lay
+                over the torso and the hip. The client read it, twice, as zooming into his pocket.
+                No amount of repositioning fixes a marker wider than the thing it marks, so it is gone. The transition
+                follows the tube instead: the drip line arrives from the scene before, meets the cannula on the forearm, and
+                two guides open from that point out to the magnified vessel.
+                The left arm now, the one the drip went into in the scene before. From the plate's alpha channel, in viewBox
+                units, it spans x 12 to 70 at 42 to 46% down, and the cannula sits at x 18 to 64, y 628 to 648.
+                Anatomy of this plate, from its alpha channel, in viewBox units:
+                  38% down   torso and near arm merged   97 to 398
+                  42% down   arm separates               341 to 399
+                  46% down   forearm, beside the hip     358 to 399
+                  56% down   the legs begin to divide
+                The cannula sits at y 628 to 648, which is 44 to 46%, the forearm. */}
             <svg
               viewBox="0 0 415 1415"
               className="pointer-events-none absolute inset-0 z-[2] h-full w-full overflow-visible"
@@ -580,13 +420,9 @@ export function Why() {
                 stroke={C.ink}
                 strokeWidth="9"
               />
-              {/*
-                The two guides. They start at the cannula — not around it — and
-                open outward to meet the vessel's top and bottom, so the eye is
-                carried from the point of entry to the magnified view along the
-                same path the drug takes. Drawn faintly and unclosed, because
-                they are a camera move, not an object in the scene.
-              */}
+              {/* The two guides. They start at the cannula, not around it, and open outward to meet the vessel's top and
+                  bottom, so the eye is carried from the point of entry to the magnified view along the path the drug takes.
+                  Faint and unclosed, because they are a camera move rather than an object in the scene. */}
               <path
                 d="M18 632 L -484 300"
                 fill="none"
@@ -612,52 +448,26 @@ export function Why() {
             <svg viewBox={`0 0 ${W} ${H}`} className="h-full w-auto select-none" aria-hidden="true">
               <VesselShell id="wy" lit={hot || hot2} flow={flow} phase={ph} />
 
-              {/*
-                THE ENZYME — FIVE PLACES, TWO FILLED. AND IT NEVER CHANGES.
-
-                This was one large shape filled to a horizontal line, and the
-                client read it as a bowl. Two attempts at a more protein-like
-                OUTLINE did not fix that, because the outline was never the
-                problem: a shape filled to a flat top edge is exactly how liquid
-                in a container is drawn, whatever silhouette you put around it.
-
-                So the quantity is carried by COUNT instead, which cannot read
-                as a fill level — and it is the grammar scene two already uses
-                for the same fact, five slots with two filled. The two scenes
-                now state "reduced, not absent" the same way, which is what
-                makes them agree rather than merely not contradict.
-
-                Each glyph is the same globular protein with a cleft on its
-                right; the two that exist are solid, the three that are not made
-                are dashed outlines. NOTHING HERE CHANGES ACROSS THE TURN. The
-                variant is still there afterwards and DPD is still reduced; what
-                changes is how much drug arrives. The payoff belongs to the
-                molecules, not to the enzyme.
-              */}
+              {/* The enzyme: five places, two filled, and it never changes. This was one large shape filled to a horizontal
+                  line and the client read it as a bowl. Two attempts at a more protein-like outline did not fix that, because
+                  the outline was never the problem: a shape filled to a flat top edge is how liquid in a container is drawn,
+                  whatever silhouette you put around it.
+                  So the quantity is carried by count, which cannot read as a fill level, and it is the grammar scene two
+                  already uses for the same fact. The two scenes now state "reduced, not absent" the same way.
+                  Each glyph is the same globular protein with a cleft on its right; the two that exist are solid and the
+                  three that are not made are dashed. Nothing here changes across the turn: the variant is still there
+                  afterwards and DPD is still reduced. The payoff belongs to the molecules, not to the enzyme. */}
               <g opacity={q(gap) * 0.95}>
                 {[0, 1, 2, 3, 4].map((i) => {
                   const made = i < 2;
-                  /*
-                    BIGGER, AND ACTUALLY CENTRED.
-
-                    At scale 0.66 with a 52 pitch the row spanned x 84.6→327.6
-                    against a lumen of 32→328 — centred on 206 where the vessel
-                    centres on 180, so it sat 26 units right and the fifth glyph
-                    touched the wall while the first left a 50-unit margin. The
-                    old numbers were an offset from W/2 that had stopped being
-                    true when the count changed.
-
-                    Derived rather than nudged: a glyph occupies [13s, 66s] from
-                    its translate point, so at s=0.80 it is 42.4 wide; five of
-                    them at a 55 pitch span 262.4, which centres on 180 by
-                    starting the drawn edge at 48.8 — 16.8 units of margin at
-                    both walls. Vertically it centres on EY the same way.
-
-                    Size matters here beyond composition: this row is the thing
-                    the reader has to see NOT changing across the turn, and it
-                    was small enough to be lost behind the drug molecules
-                    drifting over it.
-                  */
+                  // Bigger, and actually centred. At scale 0.66 with a 52 pitch the row spanned x 84.6 to 327.6 against a lumen
+                  // of 32 to 328, centred on 206 where the vessel centres on 180, so it sat 26 units right and the fifth glyph
+                  // touched the wall while the first left a 50-unit margin.
+                  // Derived rather than nudged: a glyph occupies [13s, 66s] from its translate point, so at s=0.80 it is 42.4
+                  // wide, and five at a 55 pitch span 262.4, which centres on 180 by starting the drawn edge at 48.8, leaving
+                  // 16.8 units of margin at both walls. Vertically it centres on EY the same way.
+                  // Size matters beyond composition here: this row is the thing the reader has to see not changing across the
+                  // turn, and it was small enough to be lost behind the drug molecules drifting over it.
                   const s = 0.8;
                   const x = 38.4 + i * 55;
                   return (
@@ -680,19 +490,11 @@ export function Why() {
                 })}
               </g>
 
-              {/*
-                The causal line: the variant the reader pulled out of the helix
-                in stop one returns, drops a hairline down the frame, and lands
-                on the shortfall between the dashed outline and the green.
-
-                It RETIRES at the turn, and it is worth being exact about why,
-                because the reason changed. It is NOT that the shortfall goes
-                away — it does not, and the enzyme below is deliberately drawn
-                the same before and after. It is that the letter stops being an
-                unexplained thing in the blood: at the turn it moves into the
-                report card, where it is a known result that a dose was chosen
-                from. Same letter, different status.
-              */}
+              {/* The causal line: the variant the reader pulled out of the helix in stop one returns, drops a hairline down
+                  the frame, and lands on the shortfall between the dashed outline and the green.
+                  It retires at the turn, and not because the shortfall goes away, since the enzyme below is deliberately
+                  drawn the same before and after. It is that the letter stops being an unexplained thing in the blood: at the
+                  turn it moves into the report card, where it is a known result that a dose was chosen from. */}
               <path
                 d={`M${W / 2} 76 L ${W / 2} ${EY - 30}`}
                 fill="none"
@@ -724,12 +526,8 @@ export function Why() {
               {flow > 0.01 &&
                 Array.from({ length: Math.max(4, Math.round(IN_FLIGHT - trim * 5)) }, (_, i) => {
                   const s = (((ph * 0.14 + i / IN_FLIGHT) % 1) + 1) % 1;
-                  /*
-                    One in four is cleared under a standard dose — the enzyme is
-                    reduced, not absent. Once the dose is adjusted, all of them
-                    are: not because there is more enzyme, but because there is
-                    less drug for the same enzyme to get through.
-                  */
+                  // One in four is cleared under a standard dose: the enzyme is reduced, not absent. Once the dose is adjusted
+                  // all of them are, not because there is more enzyme but because there is less drug for the same enzyme.
                   const cleared = adjusted > 0.5 || i % CLEARED_EVERY === 0;
                   const x = W / 2 + Math.sin(s * 8 + i * 1.7) * 96;
 
@@ -759,36 +557,24 @@ export function Why() {
                     );
                   }
                   if (!cleared && s > 0.985) return null;
-                  /*
-                    An uncleared molecule now runs the FULL length of the
-                    vessel and carries on out of frame. It used to stop short at
-                    the top of a pile on the floor, which is what made the drug
-                    look like sediment. Nothing settles; it keeps circulating,
-                    and that is the whole point of the beat.
-                  */
+                  // An uncleared molecule runs the full length of the vessel and carries on out of frame. It used to stop short
+                  // at the top of a pile on the floor, which is what made the drug look like sediment. Nothing settles.
                   const endY = cleared ? EY : BOT;
                   const y = TOP + s * (endY - TOP);
                   return <Hex key={i} x={x} y={y} r={12} tone={drugTone} o={flow} />;
                 })}
 
-              {/*
-                What has not been cleared — held in suspension across the whole
-                column rather than stacked on the floor. See `held` above.
-              */}
+              {/* What has not been cleared, held in suspension across the whole column rather than stacked on the floor.
+                  See `held` above. */}
               {held.map((m, i) => (
                 <Hex key={`h${i}`} x={m.x} y={m.y} r={12} tone={drugTone} o={0.92} />
               ))}
             </svg>
 
-            {/*
-              ANNOTATIONS. The drug label arrives with the first molecules and
-              retires before a single one has settled — the client's requirement
-              was that the viewer must know what these are BEFORE the
-              accumulation begins, because otherwise the pile is just red
-              shapes. The other two answer both halves of her question about
-              the A: not only why a letter appeared, but how it is causing what
-              happens below.
-            */}
+            {/* Annotations. The drug label arrives with the first molecules and retires before a single one has settled:
+                the client's requirement was that the viewer must know what these are before the accumulation begins,
+                because otherwise the pile is just red shapes. The other two answer both halves of her question about the A,
+                not only why a letter appeared but how it is causing what happens below. */}
             <Tag
               on={drugLabel}
               x={62}
@@ -816,41 +602,25 @@ export function Why() {
           </div>
         </div>
 
-        {/*
-          THE RESULT, and the dose that follows from it. It arrives at the turn
-          and stays for the rest of the scene, so the reader can see WHY the
-          pile below it is draining. Drawn only in vocabulary already owned:
-          the red A badge from the descent, and the drug molecules from this
-          same vessel. The dose is something you can see — nine, four kept,
-          five fading — so "reduced" is a picture, not just a word. It is a
-          SCHEMATIC count, not a dose: the label says the reduction follows
-          clinical guidelines, because the client's review is explicit that the
-          test informs a dose and does not set one.
-        */}
-        {/*
-          On a wide screen the card sits in the left third, beside the figure.
-
-          Centred at the top it collided with the headline above it and with
-          the vessel's own badge below it, while the left and right thirds of
-          the frame sat empty — so it was overlapping content AND leaving a
-          hole. Below md there is only one column, so it stays above the scene.
-        */}
+        {/* The result, and the dose that follows from it. It arrives at the turn and stays for the rest of the scene,
+            so the reader can see why the pile below is draining. Drawn only in vocabulary already owned: the red A
+            badge from the descent, and the drug molecules from this same vessel. The dose is something you can see,
+            nine with four kept and five fading, so "reduced" is a picture rather than a word. It is a schematic count,
+            not a dose: the label says the reduction follows clinical guidelines, because the client's review is
+            explicit that the test informs a dose and does not set one. */}
+        {/* On a wide screen the card sits in the left third, beside the figure. Centred at the top it collided with
+            the headline above it and the vessel's badge below it while the left and right thirds sat empty: overlapping
+            content and leaving a hole at once. Below md there is one column, so it stays above the scene. */}
         <div
-          /*
-            On a phone this sits BELOW the headline, and the floor is in pixels
-            for the same reason the headline's is: 23vh was 170px on a 740px
-            phone, and once the headline gained its own floor at 140px its two
-            wrapped lines ran to about 236px — the card and "What if we knew
-            first?" measured 100% overlap at 320 and 360.
-
-            248px clears the headline's deepest wrap. On md and up the card
-            moves out of the centre column entirely, so this does not apply.
-          */
+          // On a phone this sits below the headline, and the floor is in pixels for the same reason the headline's is:
+          // 23vh was 170px on a 740px phone, and once the headline gained its own floor at 140px its two wrapped lines ran
+          // to about 236px, so the card and the headline measured 100% overlap at 320 and 360. 248px clears the deepest
+          // wrap. On md and up the card moves out of the centre column entirely.
           className="pointer-events-none absolute inset-x-0 top-[max(248px,33vh)] z-20 flex justify-center px-6 md:inset-x-auto md:right-[3vw] md:top-[184px] md:block md:px-0 lg:right-[6vw]"
           style={{ opacity: q(easeOut(result)) }}
         >
           <div
-            className="rounded-xl px-4 py-3 md:max-w-[330px] md:px-5 md:py-4"
+            className="rounded-[10px] px-4 py-3 md:max-w-[330px] md:px-5 md:py-4"
             style={{
               background: C.paper,
               border: `2.5px solid ${C.ink}`,
@@ -914,18 +684,13 @@ export function Why() {
           </div>
         </div>
 
-        {/*
-          THE CONTROL. This used to be a line of small caps saying "hold to
-          keep the standard dose running", with the whole SVG as an invisible
-          hit target — the client liked the idea but could not tell what she was
-          supposed to hold. It is a button now, in the same paper/ink/offset
-          language as every other pressable thing here, and it fills while held
-          so the reader can see their own input doing something.
-        */}
+        {/* The control. This used to be a line of small caps saying "hold to keep the standard dose running", with
+            the whole SVG as an invisible hit target: the client liked the idea but could not tell what she was supposed
+            to hold. It is a button now, in the same paper, ink and offset language as every other pressable thing, and
+            it fills while held so the reader can see their own input doing something. */}
         <div
           className="absolute inset-x-0 bottom-[3vh] z-20 flex justify-center px-6"
-          // the hold belongs to act one; once the test arrives it is not the
-          // reader's dose to give any more
+          // the hold belongs to act one; once the test arrives it is not the reader's dose to give any more
           style={{
             opacity: q(easeOut(flow)) * (1 - q(range(p, 0.64, 0.7))),
             // A control at opacity 0 still takes the pointer. Off means off.
@@ -950,11 +715,8 @@ export function Why() {
               onPointerUp={() => setHot(false)}
               onPointerCancel={() => setHot(false)}
               onPointerLeave={() => setHot(false)}
-              /*
-                Keyboard: hold Space or Enter. Without this the control could
-                be focused and not operated, which is worse than not being
-                focusable at all.
-              */
+              // Keyboard: hold Space or Enter. Without this the control could be focused and not operated, which is worse
+              // than not being focusable at all.
               onKeyDown={(e) => {
                 if ((e.key === " " || e.key === "Enter") && !e.repeat) {
                   e.preventDefault();
@@ -966,12 +728,8 @@ export function Why() {
               }}
               onBlur={() => setHot(false)}
             >
-              {/*
-                A hairline along the base, not a wash across the face. Filling
-                the whole button turned it into a loading bar — a progress toy
-                rather than a control, and cheap beside everything around it.
-                This says the same thing and stays out of the way.
-              */}
+              {/* A hairline along the base, not a wash across the face. Filling the whole button turned it into a loading
+                  bar, a progress toy rather than a control. This says the same thing and stays out of the way. */}
               <span
                 aria-hidden="true"
                 className="absolute inset-x-0 bottom-0 h-[3px]"
@@ -987,20 +745,12 @@ export function Why() {
           </span>
         </div>
 
-        {/*
-          THE SECOND CONTROL, and the reason the first one exists.
-
-          The first press was made with nothing to go on — the man looked fine,
-          the reader gave the standard dose, and it accumulated. That press was
-          the mistake, and it was not the reader's fault; it is exactly the
-          position a clinician is in without a test. Now the result is on
-          screen, and the same gesture is offered again. Holding it clears the
-          vessel under the reader's thumb.
-
-          It arrives with the result card — the card is full at 0.78 and this
-          is legible by 0.79 — and it leaves with the scene. It never shares the
-          frame with the first control: that one is gone by 0.70.
-        */}
+        {/* The second control, and the reason the first one exists. The first press was made with nothing to go on:
+            the man looked fine, the reader gave the standard dose, and it accumulated. That press was the mistake, and
+            it was not the reader's fault, since it is the position a clinician is in without a test. Now the result is
+            on screen and the same gesture is offered again.
+            It arrives with the result card, which is full at 0.78 and legible by 0.79, and it leaves with the scene. It
+            never shares the frame with the first control, which is gone by 0.70. */}
         <div
           className="absolute inset-x-0 bottom-[3vh] z-20 flex justify-center px-6"
           style={{

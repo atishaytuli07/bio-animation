@@ -1,33 +1,21 @@
-/**
- * The exported wiki, checked the way iGEM will serve it.
- *
- * Every other harness reads the dev server at the domain root. The wiki does
- * not live there: it is a folder of static files served under /<team-slug>/,
- * with no server to run a redirect or render a route. A path that works on
- * localhost:8080 and escapes the base path on the real host is invisible to
- * every other check in this folder — and on a shared wiki domain an escaped
- * "/favicon.svg" is not a 404, it is a request to someone else's site.
- *
- * So this serves dist-static/ under the base path from a deliberately strict
- * server — it refuses anything outside the base — and then, for every route
- * in the site map, at phone and desktop width:
- *
- *   - loads it by its deep link, the way a judge's bookmark would
- *   - scrolls the whole page, so late-loaded images and scenes are requested
- *   - records every request that failed, every request outside the base, and
- *     every console error or uncaught exception
- *   - checks the page rendered its header and its own <h1> or story
- *
- * Then it clicks through the header's nav from the story, so client-side
- * navigation is covered as well as deep links, and loads the root to check the
- * redirect document.
- *
- * Usage (build first, with the same slug):
- *   node scripts/build-static.mjs --base=nis-kazakhstan
- *   node scripts/verify-static.mjs --base=nis-kazakhstan
- *
- * Without --base it checks a root-served export.
- */
+// The exported wiki, checked the way iGEM will serve it.
+// Every other harness reads the dev server at the domain root. The wiki does not live there: it is a folder of static
+// files served under /<team-slug>/, with no server to run a redirect or render a route. A path that works on
+// localhost:8080 and escapes the base path on the real host is invisible to every other check in this folder — and on
+// a shared wiki domain an escaped "/favicon.svg" is not a 404, it is a request to someone else's site.
+// So this serves dist-static/ under the base path from a deliberately strict server — it refuses anything outside the
+// base — and then, for every route in the site map, at phone and desktop width:
+//   - loads it by its deep link, the way a judge's bookmark would
+//   - scrolls the whole page, so late-loaded images and scenes are requested
+//   - records every request that failed, every request outside the base, and every console error or uncaught
+//     exception
+//   - checks the page rendered its header and its own <h1> or story
+// Then it clicks through the header's nav from the story, so client-side navigation is covered as well as deep links,
+// and loads the root to check the redirect document.
+// Usage (build first, with the same slug):
+//   node scripts/build-static.mjs --base=nis-kazakhstan
+//   node scripts/verify-static.mjs --base=nis-kazakhstan
+// Without --base it checks a root-served export.
 import { createServer } from "node:http";
 import { readFile, stat } from "node:fs/promises";
 import { readFileSync } from "node:fs";
@@ -63,7 +51,7 @@ try {
 }
 // An export built for a different base is a wrong answer, not a slow one.
 {
-  const html = readFileSync(join(OUT, "new", "index.html"), "utf8");
+  const html = readFileSync(join(OUT, "index.html"), "utf8");
   const built = html.match(/<script[^>]+src="([^"]*?)assets\//)?.[1] ?? "";
   if (built !== BASE) {
     console.error(
@@ -182,12 +170,9 @@ console.log("\n── client-side navigation from the story, through the header"
   const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
   const log = watch(page);
   await page.goto(`${ORIGIN}${BASE}new/`, { waitUntil: "networkidle" });
-  /*
-    THE LINKS THE HEADER ACTUALLY SHOWS, read from the page. This was the site
-    map minus two hand-listed exceptions, and it timed out the day a page was
-    added to the footer instead of the header — a check that restates a design
-    decision breaks when the decision changes.
-  */
+  // The links the header actually shows, read from the page. This was the site map minus two hand-listed exceptions,
+  // and it timed out the day a page was added to the footer instead of the header — a check that restates a design
+  // decision breaks when the decision changes.
   const navRoutes = await page.$$eval("header nav a", (as) =>
     as.map((a) => new URL(a.href).pathname.replace(/\/$/, "").split("/").pop()),
   );
@@ -207,12 +192,9 @@ console.log("\n── client-side navigation from the story, through the header"
       `→ ${route}`,
       `${at}  h1 "${heading}"${fresh.length ? "\n        " + fresh.join("\n        ") : ""}`,
     );
-    /*
-      AND RELOAD IT. Client-side navigation leaves the address bar at
-      /<base>/description with no trailing slash, which is exactly the URL a
-      reader copies or refreshes — and the one a static host has to resolve
-      without the app's router.
-    */
+    // And reload it. Client-side navigation leaves the address bar at /<base>/description with no trailing slash,
+    // which is exactly the URL a reader copies or refreshes — and the one a static host has to resolve without the
+    // app's router.
     const reloaded = await page.goto(page.url(), { waitUntil: "networkidle" });
     const after = await page.evaluate(
       () => document.querySelector("h1")?.textContent?.trim() ?? "",
@@ -228,7 +210,7 @@ console.log("\n── client-side navigation from the story, through the header"
   await page.close();
 }
 
-console.log("\n── the root, which a static host cannot redirect");
+console.log("\n── the root, which is the story itself");
 {
   const page = await browser.newPage();
   const log = watch(page);
@@ -236,8 +218,8 @@ console.log("\n── the root, which a static host cannot redirect");
   await page.waitForTimeout(800);
   const at = new URL(page.url()).pathname;
   say(
-    at === `${BASE}new/` && log.failed.length === 0,
-    `${BASE} lands on the story`,
+    at === BASE && log.failed.length === 0,
+    `${BASE} serves the story itself, with no redirect`,
     `${at}${log.failed.length ? "  " + log.failed.join("; ") : ""}`,
   );
   await page.close();
@@ -245,19 +227,14 @@ console.log("\n── the root, which a static host cannot redirect");
 
 console.log("\n── the files themselves: no root-absolute or external links");
 {
-  /*
-    A BROWSER DOES NOT REQUEST EVERYTHING A PAGE LINKS TO. This check was proven
-    blind the first time it ran: a planted <link rel="icon" href="/favicon.svg">
-    passed, because headless Chromium never fetches favicons, while a planted
-    preload beside it was caught. A real browser does fetch the icon, from
-    outside the wiki. So the export is also read as text.
-
-    Two scans. In HTML, every href/src/content/action/poster attribute: a root-
-    absolute value must start with the base, and nothing may point off-site
-    (iGEM wikis must not load external resources). In HTML, CSS and JS, any
-    quoted path to a file from public/ that lacks the base — that is the shape
-    a hard-coded "/logo.webp" takes in a bundle.
-  */
+  // A browser does not request everything a page links to. This check was proven blind the first time it ran: a
+  // planted <link rel="icon" href="/favicon.svg"> passed, because headless Chromium never fetches favicons, while a
+  // planted preload beside it was caught. A real browser does fetch the icon, from outside the wiki. So the export is
+  // also read as text.
+  // Two scans. In HTML, every href/src/content/action/poster attribute: a root- absolute value must start with the
+  // base, and nothing may point off-site (iGEM wikis must not load external resources). In HTML, CSS and js, any
+  // quoted path to a file from public/ that lacks the base — that is the shape a hard-coded "/logo.webp" takes in a
+  // bundle.
   const { readdir } = await import("node:fs/promises");
   const files = [];
   const walk = async (d) => {
@@ -272,13 +249,10 @@ console.log("\n── the files themselves: no root-absolute or external links")
     f.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
   );
   const barePublic = new RegExp(`["'(]/(${publicFiles.join("|")})["')]`, "g");
-  /*
-    LINKING OUT IS ALLOWED; LOADING FROM OUTSIDE IS NOT. iGEM: "Linking to
-    external sources is … encouraged", while external requests at runtime are
-    prohibited. So an external URL fails only on a tag that makes the browser
-    fetch it — a script, stylesheet, image, frame — never on an <a>. The footer's
-    licence and repository links are exactly the <a> this has to let through.
-  */
+  // Linking out is allowed; loading from outside is not. iGEM: "Linking to external sources is … encouraged", while
+  // external requests at runtime are prohibited. So an external URL fails only on a tag that makes the browser fetch
+  // it — a script, stylesheet, image, frame — never on an <a>. The footer's licence and repository links are exactly
+  // the <a> this has to let through.
   const tag = /<([a-zA-Z][a-zA-Z0-9-]*)(\s[^>]*)?>/g;
   // preceded by whitespace, so `data-content=` is not read as `content=`
   const attr = /\s(href|src|srcset|content|action|poster|data)="([^"]*)"/g;

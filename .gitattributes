@@ -1,0 +1,9 @@
+# Git stores text with LF. Without this, a Windows checkout gets CRLF and every
+# file fails prettier and eslint on that machine — 7,494 errors, from nothing
+# anyone edited.
+* text=auto eol=lf
+
+*.webp binary
+*.ico binary
+*.png binary
+*.jpg binary

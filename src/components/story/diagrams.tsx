@@ -3,29 +3,18 @@ import type { CSSProperties } from "react";
 import { C, L, R } from "@/components/hero/palette";
 import { useSeen } from "@/hooks/use-seen";
 
-/**
- * The story's diagrams, as still figures for the documentation pages.
- *
- * Each one is something the animation already shows. Drawing them again here
- * is not duplication — it is the point. A judge reading the Description page
- * gets the same picture the homepage gave them, at a glance, instead of a
- * paragraph describing a picture they may not have scrolled to.
- *
- * They are drawn in the same units, colours and stroke weights as the story so
- * the two cannot drift apart, and each reveals once on entry and then holds.
- */
+// The story's diagrams, as still figures for the documentation pages. Each one is something the animation
+// already shows: a judge reading the Description page gets the same picture at a glance instead of a paragraph
+// describing a picture they may not have scrolled to.
+// Drawn in the same units, colours and stroke weights as the story so the two cannot drift apart. Each reveals
+// once on entry and then holds.
 
 const ease = "cubic-bezier(.22,1,.36,1)";
 
-/**
- * The splice donor, and what the variant does to it.
- *
- * Positions +1 and +2 of intron 14 carry the conserved GT of the 5′ splice
- * donor site. c.1905+1G>A changes that G to an A, so the site reads AT and may
- * no longer be recognised. The whole claim of the project is in two letters,
- * so the figure is two letters — numbered, because the caption refers to them
- * by position and a reader should be able to find +1 without counting.
- */
+// The splice donor, and what the variant does to it. Positions +1 and +2 of intron 14 carry the conserved GT of
+// the 5' splice donor site; c.1905+1G>A changes that G to an A, so the site reads AT and may no longer be
+// recognised. The whole claim is in two letters, so the figure is two letters, numbered, because the caption
+// refers to them by position.
 export function SpliceFigure() {
   const [ref, seen] = useSeen<HTMLDivElement>();
   const box = (delay: number) => ({
@@ -111,13 +100,8 @@ export function SpliceFigure() {
   );
 }
 
-/**
- * A base's position in the intron, hung below its box.
- *
- * Absolutely placed so it adds no height to the row: the exon and intron
- * labels are centred on the boxes, and a label that pushed the row taller would
- * pull them off-centre.
- */
+// A base's position in the intron, hung below its box. Absolutely placed so it adds no height to the row: the
+// exon and intron labels are centred on the boxes, and a taller row would pull them off-centre.
 function Position({ n, style }: { n: string; style: CSSProperties }) {
   return (
     <span
@@ -129,14 +113,9 @@ function Position({ n, style }: { n: string; style: CSSProperties }) {
   );
 }
 
-/**
- * The causal chain, as five steps.
- *
- * The client asked for exactly this on the homepage and it is carried there by
- * the animation rather than by boxes. On a page a reader skims, the boxes are
- * the right form — and having it in both places means the argument survives
- * whichever one they read.
- */
+// The causal chain, as five steps. The client asked for this on the homepage, where the animation carries it.
+// On a page a reader skims, boxes are the right form, and having it in both places means the argument survives
+// whichever one they read.
 const CHAIN = [
   { t: "A DPYD variant", tone: C.red, solid: true },
   { t: "less DPD activity", tone: C.green, solid: false },
@@ -148,15 +127,9 @@ const CHAIN = [
 export function ChainFigure() {
   const [ref, seen] = useSeen<HTMLDivElement>();
   return (
-    /*
-      Vertical, with a rail down the side.
-
-      A horizontal chain of five boxes does not fit a text column, and when it
-      wraps it leaves an arrow dangling at the end of the first line and the
-      last step stranded and centred below — it reads as broken rather than as
-      a diagram. Vertical never wraps, works at every width without a second
-      layout, and is how a flow is drawn in a document anyway.
-    */
+    // Vertical, with a rail down the side. A horizontal chain of five boxes does not fit a text column, and when it
+    // wraps it leaves an arrow dangling at the end of the first line and the last step stranded below. Vertical
+    // never wraps, works at every width without a second layout, and is how a flow is drawn in a document anyway.
     <div ref={ref} className="mx-auto flex max-w-[26rem] flex-col">
       {CHAIN.map((step, i) => (
         <div key={step.t} className="flex items-stretch gap-4">
@@ -204,26 +177,9 @@ export function ChainFigure() {
   );
 }
 
-/**
- * The two outcomes, side by side: a standard dose against an adjusted one.
- *
- * The homepage makes this point by running the same vessel twice and letting
- * the pile drain. A still page cannot do that, so here it IS the comparison —
- * the one place a side-by-side is the right form rather than the lazy one.
- *
- * CONCEPTUAL, AND LABELLED AS SUCH by the figure around it. The counts are a
- * picture of "more" and "less", not a pharmacokinetic model. The right-hand
- * label says "adjusted", never "matched to the result": the test informs a dose
- * under clinical guidelines, it does not set one.
- */
-/**
- * Where `n` molecules settle in a vessel, bottom row first.
- *
- * Rows alternate three and two, each centred, so the pile nests the way stacked
- * balls do. The old grid shifted every other row of THREE by half a step, which
- * pushed the third molecule of those rows through the vessel wall — and a short
- * pile of two sat against the left side instead of in the middle.
- */
+// Where `n` molecules settle in a vessel, bottom row first. Rows alternate three and two, each centred, so the
+// pile nests the way stacked balls do. The old grid shifted every other row of three by half a step, which
+// pushed the third molecule through the vessel wall, and a pile of two sat against the left side.
 function pile(n: number) {
   const out: { x: number; y: number }[] = [];
   for (let row = 0; out.length < n; row++) {
@@ -233,14 +189,8 @@ function pile(n: number) {
   return out;
 }
 
-export function DoseFigure() {
-  const [ref, seen] = useSeen<HTMLDivElement>();
-  const col = (delay: number) => ({
-    opacity: seen ? 1 : 0,
-    transform: seen ? "translateY(0)" : "translateY(10px)",
-    transition: `opacity 520ms ${ease} ${delay}ms, transform 520ms ${ease} ${delay}ms`,
-  });
-  const Vessel = ({ n, tone, label }: { n: number; tone: string; label: string }) => (
+function Vessel({ n, tone, label }: { n: number; tone: string; label: string }) {
+  return (
     <div className="flex flex-1 flex-col items-center">
       <svg viewBox="0 0 120 190" className="h-[190px] w-auto" aria-hidden="true">
         <rect
@@ -262,6 +212,20 @@ export function DoseFigure() {
       </span>
     </div>
   );
+}
+
+// The two outcomes, side by side: a standard dose against an adjusted one. The homepage makes this point by
+// running the same vessel twice and letting the pile drain; a still page cannot, so here it is the comparison.
+// Conceptual, and labelled as such by the figure around it. The counts are a picture of "more" and "less", not a
+// pharmacokinetic model. The right-hand label says "adjusted", never "matched to the result": the test informs a
+// dose under clinical guidelines, it does not set one.
+export function DoseFigure() {
+  const [ref, seen] = useSeen<HTMLDivElement>();
+  const col = (delay: number) => ({
+    opacity: seen ? 1 : 0,
+    transform: seen ? "translateY(0)" : "translateY(10px)",
+    transition: `opacity 520ms ${ease} ${delay}ms, transform 520ms ${ease} ${delay}ms`,
+  });
   return (
     <div ref={ref} className="flex items-start justify-center gap-8 md:gap-14">
       <div style={col(0)}>
@@ -274,29 +238,15 @@ export function DoseFigure() {
   );
 }
 
-/**
- * The engineering cycle, drawn as a cycle.
- *
- * WHY THIS EXISTS. The Engineering page opened by saying "engineering is not a
- * straight line from an idea to a result" and then presented four identical
- * dashed panels stacked vertically — a straight line. Four boxes that look the
- * same, in a column, is a form with four empty fields, and it was the weakest
- * thing on the site. iGEM judges this page against whether a team went round
- * the loop more than once, so the loop is the one shape the page has to show.
- *
- * ALL SVG, including the text. A CSS grid of boxes with an SVG arrow layer over
- * it drifts out of alignment the moment the two are measured differently; here
- * the nodes and the arrows share one coordinate space and cannot separate.
- *
- * The nodes are real links to the sections below, which is the only interaction
- * on the page. It is navigation rather than decoration: a reader who wants
- * Test can go to Test.
- *
- * THE RETURN ARROW IS THE POINT. Design → Build → Test is a process; the arrow
- * from Learn back to Design is what makes it a cycle, and it is the thing the
- * criterion actually rewards. It is drawn heavier, in the interface red the
- * section rail already uses, and it is the only arrow that is labelled.
- */
+// The engineering cycle, drawn as a cycle. The Engineering page opened by saying "engineering is not a straight
+// line from an idea to a result" and then presented four identical dashed panels stacked vertically. iGEM judges
+// this page on whether a team went round the loop more than once, so the loop is the shape the page has to show.
+// All SVG, including the text. A CSS grid of boxes with an SVG arrow layer over it drifts out of alignment the
+// moment the two are measured differently; here the nodes and the arrows share one coordinate space.
+// The nodes are real links to the sections below, the only interaction on the page: a reader who wants Test can
+// go to Test.
+// The return arrow is the point. Design, Build, Test is a process; the arrow from Learn back to Design is what
+// makes it a cycle, and it is what the criterion rewards. It is heavier and it is the only arrow with a label.
 const CYCLE_NODES = [
   { n: "01", name: "Design", id: "design", x: 40, y: 30 },
   { n: "02", name: "Build", id: "build", x: 380, y: 30 },
@@ -319,15 +269,10 @@ export function CycleFigure() {
 
   return (
     <div ref={ref}>
-      {/*
-        NOT role="img". It carried role="img" with an empty aria-label, which
-        is two faults at once: an image with no accessible name, and — because
-        role="img" hides everything inside it — four working links to the
-        sections below, invisible to a screen reader. It is a graphic that
-        CONTAINS links, so the links stay reachable and each one is named by
-        the text drawn inside it; the arrows and the shadows are decoration and
-        are hidden individually.
-      */}
+      {/* Not role="img". It carried role="img" with an empty aria-label, which is two faults at once: an image with
+          no accessible name, and, because role="img" hides everything inside it, four working links invisible to a
+          screen reader. It is a graphic that contains links, so the links stay reachable and each is named by the
+          text drawn inside it; the arrows and shadows are hidden individually. */}
       <svg viewBox="0 0 620 394" className="h-auto w-full">
         <defs>
           <marker
@@ -379,25 +324,11 @@ export function CycleFigure() {
           pathLength={1}
           style={draw(2)}
         />
-        {/*
-          Learn → Design. The one that closes the loop, and the only one that
-          carries a label — everything above it is a process, and this is what
-          makes it a cycle.
-        */}
-        {/*
-          INK, NOT RED, AND HEAVIER INSTEAD.
-
-          The palette's first rule is that a colour means the same thing on
-          every screen, and red means the variant. Inside chrome — a button, a
-          rail, an active nav item — red reads as the brand accent and cannot
-          be confused with a base pair. Inside an ILLUSTRATION it can, and this
-          is an illustration. A red arrow here quietly teaches a reader who has
-          just come from the story that this edge is somehow the variant.
-
-          The emphasis does not need colour: this edge is 4px against the
-          others' 2.5 and it is the only one that carries a word. Weight and a
-          label are what a drawn diagram uses.
-        */}
+        {/* Learn back to Design. The one that closes the loop, and the only one that carries a label. */}
+        {/* Ink, not red, and heavier instead. The palette's first rule is that a colour means the same thing on every
+            screen, and red means the variant. Inside chrome, red reads as the brand accent; inside an illustration it
+            does not, and a red arrow here would quietly teach a reader that this edge is somehow the variant. The
+            emphasis does not need colour: this edge is 4px against the others' 2.5 and it is the only one with a word. */}
         <path
           d="M140 256 L 140 138"
           fill="none"

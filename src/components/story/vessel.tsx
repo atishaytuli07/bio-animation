@@ -1,19 +1,10 @@
 import { C, ENZYME_PATH } from "@/components/hero/palette";
 
-/**
- * The blood vessel, shared.
- *
- * Two scenes now show the same vessel — "Inside the body", where a standard
- * dose accumulates, and "Before the first dose", where the identical vessel
- * is replayed with a dose adjusted after the test result and stays clear. The
- * whole argument of the second scene is that NOTHING has changed except the
- * dose, so the two must be the same object, drawn from the same numbers. Two
- * copies of this geometry would drift within a week and quietly destroy the
- * comparison the section exists to make.
- *
- * Coordinates are the vessel's own space; callers render their contents inside
- * the same viewBox.
- */
+// The blood vessel, shared by the two scenes that show it: "Inside the body", where a standard dose
+// accumulates, and "Before the first dose", where the identical vessel is replayed with an adjusted dose and
+// stays clear. The whole argument of the second scene is that nothing has changed except the dose, so the two
+// must be the same object drawn from the same numbers. Two copies of this geometry would drift.
+// Coordinates are the vessel's own space; callers render their contents inside the same viewBox.
 
 export const W = 360;
 export const H = 520;
@@ -22,20 +13,16 @@ export const BOT = 492;
 /** Where the enzyme should be — the midpoint both scenes reference. */
 export const EY = 272;
 
-/** The lumen: two soft walls, drawn as one closed path so it can be filled. */
+// The lumen: two soft walls, drawn as one closed path so it can be filled. Its curves are the same numbers as
+// WALL_L and WALL_R below, which SVG gives no way to share, so the three move together or not at all.
 const LUMEN =
   "M32 0 C 12 130, 52 260, 32 390 C 18 460, 38 500, 32 520 L 328 520 C 322 500, 342 460, 328 390 C 308 260, 348 130, 328 0 Z";
 const WALL_L = "M32 0 C 12 130, 52 260, 32 390 C 18 460, 38 500, 32 520";
 const WALL_R = "M328 0 C 348 130, 308 260, 328 390 C 342 460, 322 500, 328 520";
 
-/**
- * The enzyme's outline, at the origin; positioned by its parent.
- *
- * The shape itself now lives in palette.ts as ENZYME_PATH, because it is drawn
- * in three places and used to be drawn three different ways. See the comment
- * there. Re-exported under the local name so the scenes that already import it
- * from here do not have to care where it moved to.
- */
+// The enzyme's outline, at the origin; positioned by its parent. The shape lives in palette.ts as ENZYME_PATH,
+// because it is drawn in three places and used to be drawn three different ways. Re-exported under the local
+// name so the scenes that import it from here do not have to care where it moved.
 export const ENZYME = ENZYME_PATH;
 
 /** Red cells drifting past, so the tube reads as a blood vessel. */
@@ -88,13 +75,9 @@ export function Hex({
   );
 }
 
-/**
- * The lumen, its walls and the cells drifting through it.
- *
- * `id` must be unique per instance: the fade mask is referenced by url(#…),
- * and two scenes mounted at once with the same id would have the second
- * silently steal the first's mask.
- */
+// The lumen, its walls and the cells drifting through it. `id` must be unique per instance: the fade mask is
+// referenced by url(#...), and two scenes mounted at once with the same id would have the second steal the
+// first's mask.
 export function VesselShell({
   id,
   lit,
@@ -110,11 +93,8 @@ export function VesselShell({
   return (
     <>
       <defs>
-        {/*
-          Fade top and bottom. Without it the lumen ends in two flat horizontal
-          edges and reads as a cut-out strip rather than a vessel running on
-          through the body.
-        */}
+        {/* Fade top and bottom. Without it the lumen ends in two flat horizontal edges and reads as a cut-out strip
+            rather than a vessel running on through the body. */}
         <linearGradient id={`${id}-fade`} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0" stopColor="#fff" stopOpacity="0" />
           <stop offset="0.14" stopColor="#fff" stopOpacity="1" />
@@ -137,25 +117,15 @@ export function VesselShell({
         <path d={WALL_R} fill="none" stroke={C.ink} strokeWidth="3" />
       </g>
 
-      {/*
-        Red cells. The client called this "the enlarged vessel-like area" — she
-        could not tell what it was, and a plain tube is not a blood vessel to
-        anyone. Discs drifting past make it one instantly, and they are a
-        different SHAPE from the drug, not just a different colour, so the two
-        can never be confused at a glance.
-      */}
+      {/* Red cells. The client called this "the enlarged vessel-like area": she could not tell what it was, and a
+          plain tube is not a blood vessel to anyone. Discs drifting past make it one instantly, and they are a
+          different shape from the drug, not just a different colour, so the two cannot be confused. */}
       {flow > 0.01 &&
         RBC.map((c, i) => {
           const s = (((phase * 0.09 + c.phase) % 1) + 1) % 1;
-          /*
-            A LANE THAT IS NOT STRAIGHT.
-
-            The cells used to fall down exact vertical lines, which is what made
-            the lumen read as a container rather than as a vessel — the client's
-            note. Each one now drifts sideways on its own slow sine, offset by
-            its index, and rotates a little as it travels. It is a few pixels of
-            movement and it is the difference between falling and flowing.
-          */
+          // A lane that is not straight. The cells used to fall down exact vertical lines, which is what made the lumen
+          // read as a container rather than a vessel. Each one now drifts sideways on its own slow sine, offset by its
+          // index, and rotates a little as it travels: a few pixels, and the difference between falling and flowing.
           const sway = Math.sin(phase * 0.42 + i * 1.7) * 13;
           const cx = 60 + c.x * 240 + sway;
           const cy = TOP + s * (BOT - TOP);

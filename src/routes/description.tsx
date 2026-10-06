@@ -1,63 +1,36 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 
-import { C, R } from "@/components/hero/palette";
 import { PLATE } from "@/components/story/PageHero";
-import { Awaiting, P, PageShell, Section } from "@/components/story/PageShell";
+import { Awaiting, P, PageLink, PageShell, Section } from "@/components/story/PageShell";
 import { CiteMark, SourceList, type Source } from "@/components/story/Cite";
 import { Figure } from "@/components/story/Figure";
 import { ChainFigure, DoseFigure, SpliceFigure } from "@/components/story/diagrams";
 
-/**
- * Project Description — the first content page, and the one the hero's second
- * button promises.
- *
- * WHAT IS WRITTEN HERE AND WHY. Everything on this page restates something the
- * animation already shows, in the plain prose a judge skimming for the
- * Description criterion expects to find. That is deliberate: the story carries
- * the argument visually, and this page is the same argument in words for
- * someone who will not scroll seventeen screens.
- *
- * WHAT IS NOT WRITTEN. Anything specific to ChemoGuard's own method — what the
- * device does, what sample it takes, what it reports, what was built in the
- * lab. None of that is known to whoever writes this file, and inventing it is
- * the failure this project has already had to undo once. Those blocks render
- * as visible <Awaiting> panels rather than TODO comments, so an unfinished
- * page cannot pass for a finished one on the deployed site.
- *
- * THE SCIENCE IS WORDED TO THE CLIENT'S REVIEW. Every claim here says what a
- * variant CAN do, not what it always does, and the test is described as
- * informing a dose under clinical guidelines rather than setting one. Keep new
- * copy to that standard: "may", "can", "is associated with".
- *
- * Every claim that needs a source carries a numbered mark, and a source the
- * team has not supplied renders as visibly missing — see Cite.tsx. iGEM
- * requires that nothing on a wiki be unverifiable, and references are a medal
- * criterion in their own right.
- */
+// Description. Everything here restates what the story shows, in plain prose for a judge who will not scroll
+// the animation. What is NOT here: anything about ChemoGuard's own method. That is the team's to write, and
+// inventing it is a mistake this project has already had to undo once.
+// The wording follows the client's science review: a variant CAN do something, never always; the test informs
+// a dose under clinical guidelines, it never sets one. Avoid "where to cut", "the drug builds up", "matched dose".
 
 const TITLE = "Description — ChemoGuard";
+const DESCRIPTION =
+  "How DPYD variants can raise the risk of toxicity from a standard dose of fluoropyrimidine chemotherapy, and what ChemoGuard proposes to do about it.";
 
 export const Route = createFileRoute("/description")({
   head: () => ({
     meta: [
       { title: TITLE },
-      {
-        name: "description",
-        content:
-          "How DPYD variants can raise the risk of toxicity from a standard dose of fluoropyrimidine chemotherapy, and what ChemoGuard proposes to do about it.",
-      },
+      { name: "description", content: DESCRIPTION },
+      { property: "og:title", content: TITLE },
+      { property: "og:description", content: DESCRIPTION },
+      { property: "og:type", content: "article" },
     ],
   }),
   component: Description,
 });
 
-/**
- * Sources, in the order they are first cited on the page.
- *
- * `supports` is what the source has to establish, written for the team to
- * match against their own reading. When they supply a reference, add it as
- * `cite` and the mark and the list both stop reading as missing.
- */
+// Sources, in the order they are first cited. `supports` says what each source has to establish; when the team
+// supplies a reference, add it as `cite` and both the mark and the list stop reading as missing.
 const SOURCES = [
   {
     id: "use",
@@ -205,19 +178,7 @@ function Description() {
       </Section>
 
       <div className="mt-14 md:mt-20">
-        <Link
-          to="/new"
-          className="inline-block px-6 py-3 text-[15px] font-bold"
-          style={{
-            background: C.redDeep,
-            color: "#fff",
-            border: `2.5px solid ${C.ink}`,
-            borderRadius: R.sm,
-            boxShadow: `4px 4px 0 ${C.ink}`,
-          }}
-        >
-          See it happen
-        </Link>
+        <PageLink to="/">See it happen</PageLink>
       </div>
     </PageShell>
   );

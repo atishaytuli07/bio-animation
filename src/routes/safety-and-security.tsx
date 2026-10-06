@@ -1,39 +1,25 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 
-import { C, L, R } from "@/components/hero/palette";
-import { Awaiting, P, PageShell, Section } from "@/components/story/PageShell";
+import { C, L } from "@/components/hero/palette";
+import { Awaiting, P, PageLink, PageShell, Section } from "@/components/story/PageShell";
 
-/**
- * Safety.
- *
- * Two different things are judged here and they are easy to conflate. iGEM
- * asks about LABORATORY safety — organisms, containment, training, waste — and
- * separately about whether the project itself is safe to exist, which for a
- * diagnostic means human samples, genetic data and what a wrong answer costs.
- * A page that covers only the first reads as a lab induction; a page that
- * covers only the second reads as an essay. Both sections are here.
- *
- * There is also a real safety question specific to THIS project, and it is not
- * a biosafety one: a false reassurance is more dangerous than no test. A
- * result that says "normal" for someone who is not, and a dose that is then
- * given at full strength on the strength of it, is the failure mode this page
- * has to name honestly. It has its own section.
- *
- * As everywhere else on this wiki, nothing is written on the team's behalf.
- * The prose says what each section is for; every claim is an Awaiting panel.
- */
+// Safety. iGEM judges two things here: laboratory safety (organisms, containment, training, waste) and
+// whether the project itself is safe, which for a diagnostic means human samples, genetic data and what a
+// wrong answer costs. Both have sections. The project's own risk is a false reassurance, not a biosafety one.
+// Nothing is written for the team: the prose says what each section is for, every claim is an Awaiting panel.
 
 const TITLE = "Safety — ChemoGuard";
+const DESCRIPTION =
+  "Laboratory safety, biological materials, human samples and genetic data — and the failure mode a pre-treatment test has to be honest about.";
 
-export const Route = createFileRoute("/safety")({
+export const Route = createFileRoute("/safety-and-security")({
   head: () => ({
     meta: [
       { title: TITLE },
-      {
-        name: "description",
-        content:
-          "Laboratory safety, biological materials, human samples and genetic data — and the failure mode a pre-treatment test has to be honest about.",
-      },
+      { name: "description", content: DESCRIPTION },
+      { property: "og:title", content: TITLE },
+      { property: "og:description", content: DESCRIPTION },
+      { property: "og:type", content: "article" },
     ],
   }),
   component: Safety,
@@ -102,13 +88,8 @@ function Safety() {
       </Section>
 
       <Section id="failure" title="If the test is wrong">
-        {/*
-          The section that is specific to this project rather than to iGEM's
-          form, and the one a judge is most likely to remember. The asymmetry is
-          real and worth stating in the page's own voice, because it is a
-          consequence of the project's premise rather than a claim about what
-          the team built.
-        */}
+        {/* The section a judge is most likely to remember. It follows from the project's premise, so it is
+            stated in the page's own voice rather than as a claim about what the team built. */}
         <P>
           The risk this project carries is not mainly a biosafety risk. It is that a clinician
           changes a chemotherapy dose because of a result, and the result is wrong.
@@ -156,32 +137,10 @@ function Safety() {
       </Section>
 
       <div className="mt-14 flex flex-wrap gap-3 md:mt-20">
-        <Link
-          to="/human-practices"
-          className="inline-block px-6 py-3 text-[15px] font-bold"
-          style={{
-            background: C.redDeep,
-            color: "#fff",
-            border: `2.5px solid ${C.ink}`,
-            borderRadius: R.sm,
-            boxShadow: `4px 4px 0 ${C.ink}`,
-          }}
-        >
-          Who this is for
-        </Link>
-        <Link
-          to="/engineering"
-          className="inline-block px-6 py-3 text-[15px] font-bold"
-          style={{
-            background: C.paper,
-            color: C.ink,
-            border: `2.5px solid ${C.ink}`,
-            borderRadius: R.sm,
-            boxShadow: `4px 4px 0 ${C.ink}`,
-          }}
-        >
+        <PageLink to="/human-practices">Who this is for</PageLink>
+        <PageLink to="/engineering" tone="quiet">
           How it was built
-        </Link>
+        </PageLink>
       </div>
       <p className={`mt-6 ${L.note}`} style={{ color: C.inkNote }}>
         Every panel above marked &ldquo;needs the team&rdquo; is written by NIS Kazakhstan
