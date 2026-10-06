@@ -17,7 +17,7 @@ const MARGIN = 14;
 const PAGES = ["/description", "/engineering"];
 // Pages with no character: the piece sits in the empty band instead, from lg. Each is a different object on purpose —
 // the client asked for fewer, larger, meaningful elements but not four identical heroes.
-const PIECE_ONLY = ["/human-practices", "/safety-and-security", "/team"];
+const PIECE_ONLY = ["/human-practices", "/safety-and-security"];
 
 let fails = 0;
 const say = (ok, what, detail = "") => {
@@ -186,6 +186,46 @@ for (const route of PIECE_ONLY) {
           : "no piece rendered",
       );
     }
+    await page.close();
+  }
+}
+
+// Team opens on the team's photographs instead of a drawn piece. The frame has the same duties a piece has: it
+// stays inside the hero, clear of the copy and the edges, and the photograph in it has actually arrived.
+{
+  console.log("\n── /team: the photographs");
+  for (const w of [390, 768, 1024, 1280, 1440, 1920]) {
+    const page = await browser.newPage({ viewport: { width: w, height: 900 } });
+    await page.goto(BASE + "/team", { waitUntil: "networkidle" });
+    await page.waitForTimeout(300);
+    const r = await page.evaluate(() => {
+      const hero = document.querySelector("section[aria-labelledby='page-hero-title']");
+      const frame = hero.querySelector("[aria-roledescription='carousel']");
+      if (!frame) return null;
+      const h = hero.getBoundingClientRect();
+      const f = frame.getBoundingClientRect();
+      const lede = hero.querySelector("h1 ~ p").getBoundingClientRect();
+      const title = hero.querySelector("h1").getBoundingClientRect();
+      const copy = { right: Math.max(lede.right, title.right), bottom: lede.bottom };
+      const shown = [...frame.querySelectorAll("img")].find(
+        (i) => getComputedStyle(i).opacity === "1",
+      );
+      return {
+        inside: f.top >= h.top && f.bottom <= h.bottom + 0.5,
+        edge: Math.round(Math.min(f.left, innerWidth - f.right)),
+        // beside the copy or below it, never across it
+        gap: Math.round(Math.max(f.left - copy.right, f.top - copy.bottom)),
+        loaded: !!shown && shown.complete && shown.naturalWidth > 0,
+        width: Math.round(f.width),
+      };
+    });
+    say(
+      !!r && r.inside && r.edge >= 16 && r.gap >= 16 && r.loaded,
+      `${w}px: the photograph is inside the hero, clear of the copy and the edges`,
+      r
+        ? `${r.width}px wide, ${r.gap}px from the copy, ${r.edge}px from the edge${r.loaded ? "" : ", NOT LOADED"}${r.inside ? "" : ", OUTSIDE THE HERO"}`
+        : "no carousel rendered",
+    );
     await page.close();
   }
 }

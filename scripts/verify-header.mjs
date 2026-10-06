@@ -28,7 +28,10 @@ const say = (ok, what, detail = "") => {
   console.log(`  ${ok ? "ok  " : "FAIL"}  ${what}${detail ? `\n        ${detail}` : ""}`);
 };
 
-const browser = await chromium.launch();
+// Sub-pixel text is off. Hiding a fixed layer changes how the browser composites the menu, and with it whether the
+// menu's own lettering is drawn with coloured fringes: 2,301 pixels of the menu's text "changed" with nothing over
+// it. With plain antialiasing the same comparison is exact, so a real overlap is still caught.
+const browser = await chromium.launch({ args: ["--disable-lcd-text"] });
 
 /** Scroll the story to fraction `f` of its length, in steps, the way a reader would. */
 async function storyAt(page, f) {

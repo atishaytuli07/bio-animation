@@ -2,6 +2,8 @@ import type { CSSProperties, ReactNode } from "react";
 
 import { Cell, Enzyme, Molecule } from "@/components/hero/elements";
 import { asset, C, L, T } from "@/components/hero/palette";
+import { SlideBackdrop, SlideFrame, type Slide } from "@/components/story/HeroCarousel";
+import { useCarousel } from "@/hooks/use-carousel";
 import { useTime } from "@/hooks/use-scroll-progress";
 
 // The hero every documentation page opens with: badge, title, two rules, lede panel, and one drawn object.
@@ -13,10 +15,9 @@ import { useTime } from "@/hooks/use-scroll-progress";
 //   cycle    Engineering       the enzyme inside a loop: design, build, test, learn
 //   voices   Human Practices   three people of different sizes around one test
 //   result   Safety            a variant screened, beside what the test never looked at
-//   crew     Team              the team's emblem
 //   handoff  Contribution      one built thing and its dashed twin, for the next team
 // With a character it hangs beside the figure; without one it sits in the empty right band.
-export type Piece = "dock" | "cycle" | "voices" | "result" | "crew" | "handoff";
+export type Piece = "dock" | "cycle" | "voices" | "result" | "handoff";
 
 // An illustrated character for a page hero. Never use a plate with the page name drawn into the artwork:
 // image text cannot be read by a screen reader, blurs when scaled and cannot follow the site's typeface.
@@ -220,30 +221,6 @@ function Result() {
   );
 }
 
-// Team: the team's own emblem, large. It sits on a white circle because the supplied artwork is transparent
-// wherever it should be white and loses its shape on the purple field.
-function Crew() {
-  return (
-    <div
-      data-piece
-      className="relative grid place-items-center overflow-hidden rounded-full"
-      style={{
-        width: 190,
-        height: 190,
-        background: "#fff",
-        boxShadow: `0 18px 30px rgba(36,28,46,0.28), 0 0 0 3px ${C.ink}1f`,
-      }}
-    >
-      <img
-        src={asset("logo-mark.webp")}
-        alt=""
-        draggable={false}
-        className="h-[150px] w-auto select-none"
-      />
-    </div>
-  );
-}
-
 // Contribution: solid is what this team made, dashed is the same thing in a future team's hands.
 function Handoff() {
   return (
@@ -270,7 +247,6 @@ function PieceArt({ piece }: { piece: Piece }) {
   if (piece === "cycle") return <Cycle />;
   if (piece === "voices") return <Voices />;
   if (piece === "result") return <Result />;
-  if (piece === "crew") return <Crew />;
   return <Dock />;
 }
 
@@ -279,9 +255,12 @@ export function PageHero({
   lede,
   plate,
   piece,
+  slides,
 }: {
   title: string;
   lede: string;
+  // Photographs to open on instead of the purple field. See HeroCarousel.
+  slides?: readonly Slide[] | undefined;
   // The one drawn object this page carries. See Piece above.
   piece?: Piece | undefined;
   // `| undefined` is explicit because exactOptionalPropertyTypes is on: a caller passing an absent plate
@@ -290,6 +269,7 @@ export function PageHero({
 }) {
   // A slow drift, the only motion on a documentation page. Small on purpose: alive, but not distracting.
   const t = useTime(true);
+  const show = useCarousel(slides?.length ?? 0);
 
   return (
     // Named by its own h1: the hero sits outside <main>, so without a name a screen reader finds no landmark here.
@@ -297,21 +277,26 @@ export function PageHero({
       aria-labelledby="page-hero-title"
       className="relative overflow-hidden"
       style={{
-        background: `linear-gradient(158deg, ${C.lavenderDeep}, color-mix(in oklab, ${C.lavenderDeep} 76%, ${C.ink}))`,
+        background: slides
+          ? C.ink
+          : `linear-gradient(158deg, ${C.lavenderDeep}, color-mix(in oklab, ${C.lavenderDeep} 76%, ${C.ink}))`,
       }}
     >
+      {slides && <SlideBackdrop slides={slides} at={show.at} />}
       {/* The stripes from the story's field, so this reads as the same place. The pattern itself is declared in
           styles.css, beside the drifting copy the story uses. */}
-      <div aria-hidden="true" className="hero-stripes absolute inset-0" />
+      {!slides && <div aria-hidden="true" className="hero-stripes absolute inset-0" />}
       {/* Light from above, the same as the story's ground. */}
-      <div
-        aria-hidden="true"
-        className="absolute inset-0"
-        style={{
-          background:
-            "radial-gradient(90% 70% at 70% 30%, rgba(255,255,255,0.18), rgba(255,255,255,0) 70%)",
-        }}
-      />
+      {!slides && (
+        <div
+          aria-hidden="true"
+          className="absolute inset-0"
+          style={{
+            background:
+              "radial-gradient(90% 70% at 70% 30%, rgba(255,255,255,0.18), rgba(255,255,255,0) 70%)",
+          }}
+        />
+      )}
 
       {/* The character, anchored bottom-right and running to the floor of the section, so she stands in the
           hero rather than in a box on it. No mask over her: a blend gradient was tried and it ate the DNA
@@ -382,9 +367,9 @@ export function PageHero({
 
       {/* Extra bottom padding when something stands in the corner, so the lede does not share it. */}
       <div
-        className={`relative mx-auto max-w-[92rem] px-6 pt-14 md:px-10 md:py-20 ${plate ? "pb-40 md:pb-[17rem]" : piece ? "pb-[11rem] md:pb-[13rem]" : "pb-14 md:pb-20"} lg:pb-20`}
+        className={`relative mx-auto max-w-[92rem] px-6 pt-14 md:px-10 md:py-20 ${plate ? "pb-40 md:pb-[17rem]" : piece ? "pb-[11rem] md:pb-[13rem]" : "pb-14 md:pb-20"} lg:pb-20 ${slides ? "lg:flex lg:items-center lg:gap-14" : ""}`}
       >
-        <div className="max-w-[46rem]">
+        <div className="max-w-[46rem] lg:flex-1">
           {/* The badge, in the site's paper and ink language. */}
           <span
             className={`inline-block rounded-[6px] px-3 py-1.5 ${L.note}`}
@@ -421,7 +406,8 @@ export function PageHero({
           <p
             className="mt-7 max-w-[54ch] rounded-[10px] px-5 py-4 text-[15px] leading-relaxed md:mt-9 md:text-[17px]"
             style={{
-              background: `${C.ink}3d`,
+              // over a photograph the panel does more of the work, because the ground behind it is not one colour
+              background: `${C.ink}${slides ? "8c" : "3d"}`,
               border: `2px solid ${C.paper}3d`,
               color: C.paper,
             }}
@@ -429,6 +415,13 @@ export function PageHero({
             {lede}
           </p>
         </div>
+
+        {/* The photographs: beside the copy on a wide screen, under it on a narrow one. */}
+        {slides && (
+          <div className="mt-10 lg:mt-0 lg:w-[46%] lg:max-w-[640px] lg:shrink-0">
+            <SlideFrame slides={slides} show={show} />
+          </div>
+        )}
       </div>
     </section>
   );

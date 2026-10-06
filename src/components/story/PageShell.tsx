@@ -3,6 +3,7 @@ import { useEffect, useState, type ReactNode } from "react";
 
 import { Cell, Enzyme, Molecule } from "@/components/hero/elements";
 import { asset, C, DISPLAY, L, R, T } from "@/components/hero/palette";
+import type { Slide } from "@/components/story/HeroCarousel";
 import { PageHero, type Piece, type Plate } from "@/components/story/PageHero";
 import { SiteHeader } from "@/components/story/SiteHeader";
 import { PAGES } from "@/components/story/site-map";
@@ -19,6 +20,7 @@ export function PageShell({
   lede,
   plate,
   piece,
+  slides,
   sections,
   children,
 }: {
@@ -28,6 +30,8 @@ export function PageShell({
   plate?: Plate | undefined;
   /** The one composed object this page's hero carries. See Piece in PageHero. */
   piece?: Piece | undefined;
+  /** Photographs for the hero to open on, in place of the purple field. */
+  slides?: readonly Slide[] | undefined;
   /** Ids and labels for the index rail; must match the <Section id>s below. */
   sections: { id: string; label: string }[];
   children: ReactNode;
@@ -59,7 +63,7 @@ export function PageShell({
     <div className="min-h-screen" style={{ background: C.paper, color: C.ink }}>
       <SiteHeader />
 
-      <PageHero title={title} lede={lede} plate={plate} piece={piece} />
+      <PageHero title={title} lede={lede} plate={plate} piece={piece} slides={slides} />
 
       <div className="mx-auto flex max-w-[92rem] gap-12 px-6 pb-24 pt-12 md:px-10 md:pt-16">
         {/* The section index. On a long documentation page it is the difference between a reader finding the part

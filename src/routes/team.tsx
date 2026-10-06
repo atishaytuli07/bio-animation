@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import { asset, C, L, R } from "@/components/hero/palette";
+import { C, L, R } from "@/components/hero/palette";
 import { Awaiting, P, PageLink, PageShell, Section } from "@/components/story/PageShell";
 
 // Team. Only the team can write this page, so it is built as an empty shape: a roster grid that renders
@@ -24,9 +24,9 @@ export const Route = createFileRoute("/team")({
   component: Team,
 });
 
-// The team, photographed. Two group shots the team supplied, shown large because the point of them is finding
-// faces. Each is served at two widths, so a phone downloads 60-80 kB rather than the full frame, and both carry
-// their pixel size so the page does not jump when they arrive.
+// The team, photographed. Two group shots the team supplied, and they are what the page opens on: the hero
+// shows them in turn, whole, because the point of them is finding faces. Each is served at two widths, so a
+// phone downloads 60-80 kB rather than the full frame.
 // The captions say only what the pictures show. Who is who belongs to the roster below, and only the team can
 // write that.
 const PHOTOS = [
@@ -41,29 +41,6 @@ const PHOTOS = [
     caption: "In the entrance hall, in front of the school's sign.",
   },
 ] as const;
-
-function TeamPhoto({ photo, lead }: { photo: (typeof PHOTOS)[number]; lead: boolean }) {
-  return (
-    <figure className="m-0">
-      <img
-        src={asset(`${photo.file}-1280.webp`)}
-        srcSet={`${asset(`${photo.file}-800.webp`)} 800w, ${asset(`${photo.file}-1280.webp`)} 1280w`}
-        sizes="(min-width: 1024px) 768px, 100vw"
-        width={1280}
-        height={960}
-        alt={photo.alt}
-        // the first is what the section opens on; the second is below it and can wait
-        loading={lead ? "eager" : "lazy"}
-        decoding="async"
-        className="block h-auto w-full"
-        style={{ border: `2.5px solid ${C.ink}`, borderRadius: R.md }}
-      />
-      <figcaption className="mt-2 text-[14px] leading-relaxed" style={{ color: C.inkNote }}>
-        {photo.caption}
-      </figcaption>
-    </figure>
-  );
-}
 
 /**
  * Placeholder roster slots.
@@ -88,17 +65,11 @@ function Team() {
     <PageShell
       title="Team"
       lede="ChemoGuard is built by students at Nazarbayev Intellectual Schools, Kazakhstan, for iGEM 2026. This page is who we are and what each of us worked on."
-      piece="crew"
+      slides={PHOTOS}
       sections={SECTIONS}
     >
       <Section id="students" title="The team">
-        <div className="flex flex-col gap-8">
-          {PHOTOS.map((photo, i) => (
-            <TeamPhoto key={photo.file} photo={photo} lead={i === 0} />
-          ))}
-        </div>
-
-        <div className="mt-10">
+        <div>
           <P>
             Each card below takes a name and one line saying what that person actually worked on.
             The line is the useful part: it tells a judge who to ask about the assay, the modelling
