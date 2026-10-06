@@ -29,6 +29,13 @@ export const PAGES: Page[] = [
     blurb: "The variant, the enzyme, two people and the dose — the whole argument, in one scroll.",
   },
   {
+    label: "Try it",
+    to: "/playground",
+    ready: true,
+    blurb:
+      "Find one dose that suits three people. You cannot, and that is the argument in twenty seconds.",
+  },
+  {
     label: "Description",
     to: "/description",
     ready: true,
