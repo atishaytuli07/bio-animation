@@ -1,4 +1,4 @@
-# ChemoGuard — NIS-Kazakhstan, iGEM 2026
+# ChemoGuard: NIS-Kazakhstan, iGEM 2026
 
 The team wiki for **ChemoGuard**, the iGEM 2026 project of NIS-Kazakhstan. It is
 about DPYD gene variants, reduced DPD activity and fluoropyrimidine (5-FU)
