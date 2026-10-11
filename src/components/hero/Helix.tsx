@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 
 import {
   BASES,
+  BODY,
   C,
   HBOT,
   HR,
@@ -45,12 +46,85 @@ const BASE_TILT = 9;
 // journey ends with it filling the frame.
 const MAX_ZOOM = 2.9;
 
+// Each backbone is a ribbon with a width, not a stroke, and it is drawn in two parts: the half-turns that face
+// the reader and the half-turns that pass behind. One strand used to be 12px and opaque along its whole length
+// and the other 7px and faint, so the same strand was "in front" on every turn and the object read as a flat
+// ladder. Width now follows depth continuously, and the two parts meet at the silhouette's edge, where a strand
+// goes round the back, so there is no step where they join.
+/** Points along each backbone. Four per pair is where the curve stops reading as straight segments. */
+const SAMPLES = (PAIRS - 1) * 4 + 1;
+const W_NEAR = 13;
+const W_FAR = 6;
+const STEP_A = (TURNS * Math.PI * 2) / (SAMPLES - 1);
+const STEP_Y = (HBOT - HTOP) / (SAMPLES - 1);
+/** The shaded side of the ribbon: the strand's own cream, a step towards the field behind it. */
+const BACK_TONE = "#D9CBF4";
+const BACK_OPACITY = 0.62;
+// Edges of the ribbon at each sample, reused every frame so the loop allocates nothing but its two strings.
+const EDGE = {
+  lx: new Float32Array(SAMPLES),
+  ly: new Float32Array(SAMPLES),
+  rx: new Float32Array(SAMPLES),
+  ry: new Float32Array(SAMPLES),
+  near: new Float32Array(SAMPLES),
+};
+
+/** One run of a ribbon as a closed outline: down the left edge, back up the right. */
+function outline(from: number, to: number) {
+  let d = "";
+  for (let s = from; s <= to; s++)
+    d += `${s === from ? "M" : "L"}${EDGE.lx[s]!.toFixed(1)},${EDGE.ly[s]!.toFixed(1)}`;
+  for (let s = to; s >= from; s--) d += `L${EDGE.rx[s]!.toFixed(1)},${EDGE.ry[s]!.toFixed(1)}`;
+  return d + "Z";
+}
+
+/** Both backbones at this rotation, as the part facing the reader and the part behind. */
+function ribbons(phase: number, radius: number) {
+  let front = "";
+  let back = "";
+  for (const side of [1, -1]) {
+    for (let s = 0; s < SAMPLES; s++) {
+      const a = s * STEP_A + phase;
+      const near = (side * Math.sin(a) + 1) / 2;
+      // the tangent is known exactly, so the normal needs no neighbouring points
+      const dx = -side * Math.sin(a) * radius * STEP_A;
+      const len = Math.hypot(dx, STEP_Y);
+      const half = (W_FAR + (W_NEAR - W_FAR) * near) / 2;
+      const x = HX + side * Math.cos(a) * radius;
+      const y = HTOP + s * STEP_Y;
+      const nx = (STEP_Y / len) * half;
+      const ny = (-dx / len) * half;
+      EDGE.lx[s] = x + nx;
+      EDGE.ly[s] = y + ny;
+      EDGE.rx[s] = x - nx;
+      EDGE.ry[s] = y - ny;
+      EDGE.near[s] = near;
+    }
+    // A segment belongs to the front when its middle faces the reader. The small allowance keeps a segment that
+    // sits exactly on the edge on the same side on the server and in the browser, whose sines differ in the
+    // last digit.
+    let from = 0;
+    let facing = (EDGE.near[0]! + EDGE.near[1]!) / 2 >= 0.5 - 1e-6;
+    for (let s = 1; s < SAMPLES; s++) {
+      const next =
+        s < SAMPLES - 1 ? (EDGE.near[s]! + EDGE.near[s + 1]!) / 2 >= 0.5 - 1e-6 : !facing;
+      if (next === facing) continue;
+      if (facing) front += outline(from, s);
+      else back += outline(from, s);
+      from = s;
+      facing = next;
+    }
+  }
+  return { front, back };
+}
+
 export function Helix({
   onFirstDrag,
   zoom = 0,
   focus = 0,
   flatten = 0,
   read = 0,
+  hush = 0,
 }: {
   onFirstDrag: () => void;
   /** 0 = the hero's whole strand · 1 = arrived at the variant. */
@@ -62,6 +136,8 @@ export function Helix({
    * bring each pair to the front, and the pair names itself when it gets there. Scroll is the crank.
    */
   read?: number;
+  /** 0 to 1: how far the pair labels stand down, for while a headline is set across the strand. */
+  hush?: number;
   /**
    * 0 is a helix, 1 is collapsed to nothing, handing the frame to the readable sequence. The two backbones
    * converge on the axis and the rungs shorten to points, so the structure folds shut rather than fading: the
@@ -73,8 +149,8 @@ export function Helix({
   const hits = useRef<(SVGLineElement | null)[]>([]);
   const nodesA = useRef<(SVGCircleElement | null)[]>([]);
   const nodesB = useRef<(SVGCircleElement | null)[]>([]);
-  const pathA = useRef<SVGPathElement>(null);
-  const pathB = useRef<SVGPathElement>(null);
+  const frontRef = useRef<SVGPathElement>(null);
+  const backRef = useRef<SVGPathElement>(null);
   const tilt = useRef<SVGGElement>(null);
   const label = useRef<SVGGElement>(null);
   const labelText = useRef<SVGTextElement>(null);
@@ -82,6 +158,7 @@ export function Helix({
   const leader = useRef<SVGPathElement>(null);
   const castRef = useRef<SVGPathElement>(null);
   const calloutRef = useRef<SVGGElement>(null);
+  const calloutFit = useRef<SVGGElement>(null);
   const root = useRef<SVGGElement>(null);
 
   const hover = useRef<number | null>(null);
@@ -94,13 +171,17 @@ export function Helix({
   const overRef = useRef(false);
   // The rAF closure is created once, so the scroll-driven values reach it through refs rather than by tearing down
   // and rebuilding the loop.
-  const nav = useRef({ zoom: 0, focus: 0, flatten: 0, read: 0 });
+  const nav = useRef({ zoom: 0, focus: 0, flatten: 0, read: 0, hush: 0 });
   nav.current.zoom = zoom;
   nav.current.focus = focus;
   nav.current.flatten = flatten;
   nav.current.read = read;
+  nav.current.hush = hush;
   /** Cached bounding box; invalidated on resize rather than read per event. */
   const rect = useRef<DOMRect | null>(null);
+  // How much the labels are enlarged so they stay readable. The drawing is 760 units tall and a phone gives it a
+  // third of the screen, where the 17-unit "DPYD" measured 6.4px. 0 means not measured yet.
+  const fit = useRef(0);
   const svg = useRef<SVGSVGElement>(null);
 
   useEffect(() => {
@@ -114,6 +195,16 @@ export function Helix({
     const tick = (now: number) => {
       const dt = Math.min(0.05, (now - last) / 1000);
       last = now;
+
+      if (!fit.current && svg.current) {
+        // screen pixels per drawing unit, and from it the scale that puts a 16-unit label at 12.5px or more
+        // the drawing is fitted inside its box, so whichever of the two sides is tighter sets the scale: on a
+        // tablet the column is narrow and the height is not, and reading the height alone left "DPYD" at 7.8px
+        const box = svg.current.getBoundingClientRect();
+        const unit = Math.min(box.height / 760, box.width / 680);
+        fit.current = unit > 0 ? Math.max(1, 12.5 / (16 * unit)) : 1;
+        calloutFit.current?.setAttribute("transform", `scale(${fit.current.toFixed(3)})`);
+      }
 
       const z = nav.current.zoom;
       const foc = nav.current.focus;
@@ -196,8 +287,6 @@ export function Helix({
         `translate(${(vx - vx * k).toFixed(1)} ${(vy - vy * k).toFixed(1)}) scale(${k.toFixed(3)}) rotate(${lean.toFixed(2)} ${HX} 380) skewY(${(tx * (1 - z)).toFixed(2)})`,
       );
 
-      let da = "";
-      let db = "";
       const h = hover.current;
 
       for (let i = 0; i < PAIRS; i++) {
@@ -212,9 +301,6 @@ export function Helix({
         // `focus` fades every rung but the variant. The pair currently being read is exempt: without this, the last two
         // stops are named while being dimmed by 58%, so the strand argues with its own caption.
         const held = i === VARIANT || (naming > 0.05 && i === aim);
-
-        da += `${i ? "L" : "M"}${xa.toFixed(1)},${y.toFixed(1)}`;
-        db += `${i ? "L" : "M"}${xb.toFixed(1)},${y.toFixed(1)}`;
 
         const g = rungs.current[i];
         if (g) {
@@ -271,13 +357,16 @@ export function Helix({
       if (showIdx === null || !label.current || !labelText.current) {
         label.current?.setAttribute("opacity", "0");
       } else {
-        const inv = 1 / k;
+        const inv = (fit.current || 1) / k;
         const ly = HTOP + (showIdx / (PAIRS - 1)) * (HBOT - HTOP);
         label.current.setAttribute(
           "transform",
           `translate(${(HX - 46 * inv).toFixed(1)} ${(ly - 58 * inv).toFixed(1)}) scale(${inv.toFixed(3)})`,
         );
-        label.current.setAttribute("opacity", (h !== null ? 1 : naming).toFixed(3));
+        label.current.setAttribute(
+          "opacity",
+          (h !== null ? 1 : naming * (1 - nav.current.hush)).toFixed(3),
+        );
         labelText.current.textContent =
           showIdx === VARIANT ? VARIANT_LETTERS : PAIR_LETTERS[showIdx % PAIR_LETTERS.length]!;
         labelText.current.setAttribute("fill", showIdx === VARIANT ? C.red : C.ink);
@@ -298,12 +387,13 @@ export function Helix({
 
       calloutRef.current?.setAttribute("opacity", Math.max(0, 1 - z * 3).toFixed(2));
 
-      pathA.current?.setAttribute("d", da);
-      castRef.current?.setAttribute("d", da);
-      pathB.current?.setAttribute("d", db);
+      const strand = ribbons(phase, radius);
+      frontRef.current?.setAttribute("d", strand.front);
+      castRef.current?.setAttribute("d", strand.front);
+      backRef.current?.setAttribute("d", strand.back);
       if (foc > 0.001) {
-        pathA.current?.setAttribute("opacity", (1 - foc * 0.32).toFixed(2));
-        pathB.current?.setAttribute("opacity", (0.3 * (1 - foc * 0.32)).toFixed(2));
+        frontRef.current?.setAttribute("opacity", (1 - foc * 0.32).toFixed(2));
+        backRef.current?.setAttribute("opacity", (BACK_OPACITY * (1 - foc * 0.32)).toFixed(2));
         castRef.current?.setAttribute("opacity", (0.22 * (1 - foc)).toFixed(2));
       }
       raf = requestAnimationFrame(tick);
@@ -314,12 +404,17 @@ export function Helix({
     const invalidate = () => {
       rect.current = null;
     };
-    window.addEventListener("resize", invalidate);
+    // the label scale depends on the drawing's size, which a scroll does not change
+    const resized = () => {
+      rect.current = null;
+      fit.current = 0;
+    };
+    window.addEventListener("resize", resized);
     window.addEventListener("scroll", invalidate, { passive: true });
 
     return () => {
       cancelAnimationFrame(raf);
-      window.removeEventListener("resize", invalidate);
+      window.removeEventListener("resize", resized);
       window.removeEventListener("scroll", invalidate);
     };
   }, []);
@@ -366,6 +461,7 @@ export function Helix({
   };
 
   const variantY = HTOP + (VARIANT / (PAIRS - 1)) * (HBOT - HTOP);
+  const first = ribbons(0, HR);
 
   return (
     <svg
@@ -438,16 +534,9 @@ export function Helix({
             />
           ))}
 
-          {/* far backbone */}
-          <path
-            ref={pathB}
-            d={initial.map((p, i) => `${i ? "L" : "M"}${p.xb},${p.y}`).join("")}
-            fill="none"
-            stroke="url(#strand)"
-            strokeWidth={7}
-            strokeLinecap="round"
-            opacity={0.3}
-          />
+          {/* The half-turns behind: under the rungs, and in the strand's shaded tone, the way the inside of a
+              twisted ribbon is drawn. */}
+          <path ref={backRef} d={first.back} fill={BACK_TONE} opacity={BACK_OPACITY} />
 
           {initial.map((p, i) => {
             const isVariant = i === VARIANT;
@@ -475,27 +564,17 @@ export function Helix({
 
           {/* The near strand's cast shadow, drawn rather than filtered: the same path offset down and painted dark
               underneath. An SVG drop-shadow on geometry rewritten every frame re-rasterises the filter every frame; a
-              second stroke costs nothing. */}
+              second fill costs nothing. */}
           <path
             ref={castRef}
-            d={initial.map((p, i) => `${i ? "L" : "M"}${p.xa},${p.y}`).join("")}
-            fill="none"
-            stroke="#2A1857"
-            strokeWidth={13}
-            strokeLinecap="round"
+            d={first.front}
+            fill="#2A1857"
             opacity={0.22}
             transform="translate(0 7)"
           />
 
-          {/* near backbone */}
-          <path
-            ref={pathA}
-            d={initial.map((p, i) => `${i ? "L" : "M"}${p.xa},${p.y}`).join("")}
-            fill="none"
-            stroke="url(#strand)"
-            strokeWidth={12}
-            strokeLinecap="round"
-          />
+          {/* the half-turns facing the reader, over the rungs */}
+          <path ref={frontRef} d={first.front} fill="url(#strand)" />
 
           {/* The annotated callout, in the strand's own coordinate space, so it stays locked to the variant at every
               viewport. It draws itself, ring then leader then label, because an authored gesture with a beginning and an
@@ -520,31 +599,39 @@ export function Helix({
               strokeDashoffset={1}
               style={{ animation: "draw 520ms cubic-bezier(0.65,0,0.35,1) 1400ms both" }}
             />
-            <g transform={`translate(-250, ${variantY - 19})`}>
-              <g
-                style={{
-                  transformBox: "fill-box",
-                  transformOrigin: "center",
-                  animation: "popIn 460ms cubic-bezier(0.22,1,0.36,1) 1820ms both",
-                }}
-              >
-                <rect
-                  width={150}
-                  height={38}
-                  rx={5}
-                  fill={C.paper}
-                  stroke={C.ink}
-                  strokeWidth={3}
-                />
-                <text
-                  x={75}
-                  y={25}
-                  textAnchor="middle"
-                  fill={C.ink}
-                  style={{ font: "700 17px system-ui, sans-serif", letterSpacing: "0.16em" }}
+            {/* Placed by its right-hand middle, where the leader leaves it, so that enlarging it for a small screen
+                grows it away from the strand. The enlargement is set from the loop, on its own group, for the same
+                reason the animation has its own. */}
+            <g transform={`translate(-100, ${variantY})`}>
+              <g ref={calloutFit}>
+                <g
+                  style={{
+                    transformBox: "fill-box",
+                    transformOrigin: "center",
+                    animation: "popIn 460ms cubic-bezier(0.22,1,0.36,1) 1820ms both",
+                  }}
                 >
-                  DPYD
-                </text>
+                  <rect
+                    x={-150}
+                    y={-19}
+                    width={150}
+                    height={38}
+                    rx={5}
+                    fill={C.paper}
+                    stroke={C.ink}
+                    strokeWidth={3}
+                  />
+                  <text
+                    x={-75}
+                    y={6}
+                    textAnchor="middle"
+                    fill={C.ink}
+                    // the site's own face: system-ui is a different typeface on every machine
+                    style={{ font: `700 17px ${BODY}`, letterSpacing: "0.1em" }}
+                  >
+                    DPYD
+                  </text>
+                </g>
               </g>
             </g>
           </g>
@@ -586,7 +673,7 @@ export function Helix({
               x={46}
               y={23}
               textAnchor="middle"
-              style={{ font: "700 16px ui-monospace, monospace", letterSpacing: "0.06em" }}
+              style={{ font: `700 16px ${BODY}`, letterSpacing: "0.06em" }}
             />
           </g>
 

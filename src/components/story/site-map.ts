@@ -26,14 +26,14 @@ export const PAGES: Page[] = [
     label: "The story",
     to: "/",
     ready: true,
-    blurb: "The variant, the enzyme, two people and the dose — the whole argument, in one scroll.",
+    blurb: "The variant, the enzyme, two people and the dose: the whole argument, in one scroll.",
   },
   {
     label: "Try it",
     to: "/playground",
     ready: true,
     blurb:
-      "You watched two people. Now set the dose yourself, for up to five patients, and see where the same dose lands in each.",
+      "You watched two people. Now set the dose yourself, for up to four patients, and see where the same dose lands in each.",
   },
   {
     label: "Description",
@@ -46,7 +46,7 @@ export const PAGES: Page[] = [
     label: "Engineering",
     to: "/engineering",
     ready: true,
-    blurb: "Design, build, test, learn — including the passes that failed and what they changed.",
+    blurb: "Design, build, test, learn, including the passes that failed and what they changed.",
   },
   {
     label: "Human Practices",
@@ -94,6 +94,6 @@ export const ALIASES = [
   { from: "/new", to: "/" },
 ];
 
-// What the header shows. Contribution and Attributions live in the footer and the closing cards instead: six
-// items already fill the desktop bar at 1024px, and both pages are found by their standard URLs.
+// What the header shows. Contribution and Attributions live in the footer and the closing cards instead: seven
+// items are what the desktop bar holds comfortably at 1024px, and both pages are found by their standard URLs.
 export const NAV = PAGES.filter((p) => p.to !== "/attributions" && p.to !== "/contribution");

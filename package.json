@@ -13,11 +13,13 @@
     "build:static": "node scripts/build-static.mjs",
     "verify": "bash scripts/verify.sh",
     "audit": "node scripts/audit.mjs",
-    "check": "node scripts/verify-client-review.mjs && node scripts/verify-wording.mjs && node scripts/verify-header.mjs && node scripts/verify-hero-art.mjs && node scripts/verify-a11y.mjs && node scripts/audit.mjs",
+    "check": "node scripts/verify-client-review.mjs && node scripts/verify-wording.mjs && node scripts/verify-header.mjs && node scripts/verify-hero-art.mjs && node scripts/verify-playground.mjs && node scripts/verify-a11y.mjs && node scripts/audit.mjs",
     "verify:static": "node scripts/verify-static.mjs"
   },
   "dependencies": {
+    "@fontsource-variable/gabarito": "^5.3.0",
     "@fontsource-variable/instrument-sans": "^5.3.0",
+    "@fontsource-variable/inter": "^5.3.0",
     "@tailwindcss/vite": "^4.3.3",
     "@tanstack/react-router": "^1.170.41",
     "@tanstack/react-start": "^1.168.60",

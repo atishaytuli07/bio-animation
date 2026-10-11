@@ -8,8 +8,10 @@ import {
 } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 
-// Instrument Sans, self-hosted (OFL, so shipping it inside the wiki is allowed). The package publishes one
+// The heading face and the body face, both self-hosted (OFL, so shipping them inside the wiki is allowed). A
+// third file, for the prime character alone, is declared in styles.css. Each package publishes one
 // stylesheet per axis, and each face carries a unicode-range, so a reader downloads only the subset in use.
+import "@fontsource-variable/gabarito/wght.css";
 import "@fontsource-variable/instrument-sans/wght.css";
 
 import { C, R, T } from "@/components/hero/palette";
@@ -99,13 +101,13 @@ export const Route = createRootRoute({
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { name: "theme-color", content: "#F5F2F5" },
       // Per-route heads override title/description; these are the fallbacks.
-      { title: "ChemoGuard — iGEM 2026" },
+      { title: "ChemoGuard · iGEM 2026" },
       {
         name: "description",
         content:
           "Pharmacogenomic screening for DPD deficiency before the first dose of fluoropyrimidine chemotherapy.",
       },
-      { name: "author", content: "ChemoGuard — iGEM 2026" },
+      { name: "author", content: "ChemoGuard, iGEM 2026" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],

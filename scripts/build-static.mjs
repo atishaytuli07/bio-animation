@@ -148,7 +148,7 @@ async function main() {
         join(dir, "index.html"),
         `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">` +
           `<meta http-equiv="refresh" content="0; url=${target}">` +
-          `<link rel="canonical" href="${target}"><title>ChemoGuard — iGEM 2026</title>` +
+          `<link rel="canonical" href="${target}"><title>ChemoGuard · iGEM 2026</title>` +
           `</head><body><p><a href="${target}">Continue to ChemoGuard</a></p></body></html>\n`,
         "utf8",
       );

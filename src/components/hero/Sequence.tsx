@@ -1,4 +1,4 @@
-import { BASES_ON_FIELD, C } from "./palette";
+import { BASES_ON_FIELD, BODY, C } from "./palette";
 
 // The arrival: the strand resolved into DNA you can read, and the payoff of the whole descent. The hero taught
 // the base-pair colours by hover; here those colours become letters and the one that matters changes in front of
@@ -26,6 +26,10 @@ const DONOR_SECOND = "T";
 const TONE = BASES_ON_FIELD;
 
 const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
+// How the annotations go as the camera retreats: out by a little under half way, and then not painted at all.
+// They used to fade over the whole retreat while the group shrank, so for most of it they were 8 to 11px of text
+// at 4 to 9% opacity, which read as something that had failed to clear.
+const leave = (far: number) => clamp01(1 - far * 2.3);
 /** Fast at first, settling at the end — a camera decelerating, not a linear tween. */
 const easeOutCubic = (t: number) => 1 - Math.pow(1 - clamp01(t), 3);
 
@@ -59,7 +63,18 @@ const backbone = (half: number, amp: number, startUp: boolean) => {
  * A named region rather than spelled-out bases. "exon 14" is verifiable, six invented letters are not, and
  * this reads as an annotated locus instead of a sequence nobody can check.
  */
-function Region({ label, t, align }: { label: string; t: number; align: "left" | "right" }) {
+function Region({
+  label,
+  t,
+  align,
+  far,
+}: {
+  label: string;
+  t: number;
+  align: "left" | "right";
+  /** 0 to 1: the camera's retreat. The label leaves with it instead of shrinking to a size nobody can read. */
+  far: number;
+}) {
   return (
     <span
       /* 0.4em, floored at 11px: these are the smallest strings in the scene, and at 0.32em of the old mobile
@@ -70,13 +85,16 @@ function Region({ label, t, align }: { label: string; t: number; align: "left" |
       // Fixed, not `em`. These used to be 0.4em of the row's own size, which was fine while that size was capped at
       // 51px and absurd once it was not: at a 90px base they would set at 38px and compete with the letters they
       // annotate. The letters are the subject and these are chrome.
-      className="font-sans text-[11px] font-bold uppercase mx-3 md:mx-5 md:text-[13px] lg:text-[16px]"
+      className="mx-3 text-[13px] font-bold uppercase md:mx-5 md:text-[15px] lg:text-[18px]"
       style={{
+        fontFamily: BODY,
         color: C.paper,
-        // 0.9, not 0.62. These name the exon/intron boundary, the mechanism the frame exists to show, and at 0.62
-        // paper on lavenderDeep they measured 2.53:1 against the 4.5:1 an 11px string is held to.
-        opacity: t * 0.9,
-        letterSpacing: "0.18em",
+        // Full strength while the camera is close. These name the exon/intron boundary, the mechanism the frame
+        // exists to show. During the retreat the whole group scales down and they measured 9px on a desktop and
+        // 6px on a phone, so they go rather than stay as specks.
+        opacity: t * leave(far),
+        visibility: leave(far) < 0.05 ? "hidden" : "visible",
+        letterSpacing: "0.1em",
         // They arrive from outside, not from on top of the letters. The offsets used to be +14 for the left label and
         // -14 for the right, which pointed both inward: each began its entrance overlapping the glyph it labels, and at
         // page 0.125 "intron 14" sat 3.2px inside the T. Reversed, the pair opens outward as the sequence assembles.
@@ -188,7 +206,7 @@ export function Sequence({
    * with `recede` running 0.80 to 1.00 of the scene, the caption is fully out by p 0.85, leaving 0.85 to 0.87 as
    * a breath with nothing on screen but the receding DNA before the statement starts at 0.87.
    */
-  const captionOut = clamp01((recede - 0.03) / 0.22);
+  const captionOut = clamp01((recede - 0.06) / 0.2);
 
   /** Letters land in order of distance from the variant, not left to right. */
   const step = (distance: number) => {
@@ -205,9 +223,13 @@ export function Sequence({
       <div
         className="flex flex-col items-center"
         style={{
-          transform: `translateY(${(-far * 3.4).toFixed(2)}vh) scale(${(1 - far * 0.42).toFixed(3)})`,
+          // It lifts further than it used to (3.4vh): the closing statement is three lines now, and on a 600px
+          // window it reached the locus line.
+          transform: `translateY(${(-far * 7).toFixed(2)}vh) scale(${(1 - far * 0.42).toFixed(3)})`,
           transformOrigin: "50% 42%",
-          opacity: 1 - far * 0.3,
+          // A light fade only. At 0.3 the letters themselves fell under their contrast floor mid-retreat (the T
+          // measured 2.8:1), and the locus line with them.
+          opacity: 1 - far * 0.1,
         }}
       >
         {/* The lower bound is 2rem, not 1.5rem. Everything in this block is sized in em off this one value, so it
@@ -229,86 +251,181 @@ export function Sequence({
           }}
         >
           {/* the end of exon 14 — named, not spelled out */}
-          <Region label="exon 14" t={step(3)} align="right" />
+          <Region label="exon 14" t={step(3)} align="right" far={far} />
           {/* the boundary the variant sits on */}
+          {/* It was 2px at half strength, the faintest mark in a frame that exists to show it. Now it is the
+              height of the boxes and as solid as their letters, with a tick at each end so it reads as a boundary
+              and not as a stray stroke. */}
           <span
-            className="mx-2 block md:mx-3"
-            style={{
-              width: 2,
-              height: "1.5em",
-              background: `${C.paper}80`,
-              opacity: step(2),
-            }}
-          />
-
-          {/* the one that matters */}
-          <span className="relative mx-2 inline-flex flex-col items-center md:mx-3">
-            {/* What it used to be, directly above what it became, on a shared vertical axis. "G struck through, A below
-                it" is the whole story of this variant in two glyphs. */}
+            className="relative mx-2 block md:mx-3"
+            style={{ width: 3, height: "2em", background: C.paper, opacity: step(2) }}
+          >
             <span
-              className="absolute bottom-full flex flex-col items-center"
-              style={{
-                opacity: Math.min(1, Math.max(0, flip * 2.4 - 0.12)),
-                transition: "opacity .4s ease",
-              }}
-            >
+              className="absolute -left-[4px] top-0 block h-[3px] w-[11px]"
+              style={{ background: C.paper }}
+            />
+            <span
+              className="absolute -left-[4px] bottom-0 block h-[3px] w-[11px]"
+              style={{ background: C.paper }}
+            />
+          </span>
+
+          {/* The donor pair, held as one unit so the bracket that names it is measured from the two boxes and
+              nothing else. Sized from the row, the bracket sat 10px off the pair, because "exon 14" and "intron 14"
+              are different widths and the row is centred on all of it. */}
+          <span className="relative mx-2 inline-flex items-center md:mx-3">
+            {/* the one that matters */}
+            <span className="relative inline-flex flex-col items-center">
+              {/* What it used to be, directly above what it became, on a shared vertical axis. "G struck through, A below
+                it" is the whole story of this variant in two glyphs. */}
               <span
-                className="text-[0.72em] leading-none line-through"
-                style={{ color: C.paper, opacity: 1, letterSpacing: 0 }}
+                className="absolute bottom-full flex flex-col items-center"
+                style={{
+                  opacity: Math.min(1, Math.max(0, flip * 2.4 - 0.12)),
+                  transition: "opacity .4s ease",
+                }}
               >
-                {REF_BASE}
+                {/* A slash across it, not a strike-through: a horizontal rule lands on the G's own crossbar and
+                    the two together read as a different glyph. */}
+                <span
+                  className="relative text-[0.72em] leading-none"
+                  style={{ color: C.paper, letterSpacing: 0 }}
+                >
+                  {REF_BASE}
+                  <span
+                    aria-hidden="true"
+                    className="absolute -left-[14%] top-1/2 block h-[0.09em] w-[128%] -translate-y-1/2 -rotate-[32deg]"
+                    style={{ background: C.paper }}
+                  />
+                </span>
+                <span
+                  className="mt-1 block w-px"
+                  style={{ height: "0.7em", background: `${C.paper}88` }}
+                />
               </span>
+
               <span
-                className="mt-1 block w-px"
-                style={{ height: "0.7em", background: `${C.paper}88` }}
-              />
+                className="inline-flex items-center justify-center rounded-[6px]"
+                style={{
+                  width: "1.5em",
+                  height: "1.6em",
+                  letterSpacing: 0,
+                  background: lit ? C.red : "transparent",
+                  // Scales with the box; floored so a phone still gets a real line.
+                  border: `max(2px, 0.042em) solid ${lit ? C.red : `${C.paper}66`}`,
+                  color: lit ? "#fff" : C.paper,
+                  // No extra scale once it is lit. It grew 6%, which made it larger than the box it is paired
+                  // with and pushed it past the end of the bracket under them.
+                  transform: `scale(${step(0).toFixed(3)})`,
+                  // No glow. A 34px red bloom behind the letter was doing what a neon sign does: the box is already the loudest
+                  // object in the frame, being the only filled red thing on the page, and a halo made it look like a template.
+                  transition: "background .45s ease, border-color .45s ease, color .45s ease",
+                }}
+              >
+                {lit ? ALT_BASE : REF_BASE}
+              </span>
             </span>
 
+            {/* Intron position +2, boxed to match the variant. The claim of this frame is that these are a pair, the two
+              letters that together say "cut here". A solid red box beside a small pale letter read as one important
+              thing next to some background typography. */}
             <span
-              className="inline-flex items-center justify-center rounded-[6px]"
+              className="ml-3 inline-flex items-center justify-center rounded-[6px] md:ml-[18px]"
               style={{
                 width: "1.5em",
                 height: "1.6em",
                 letterSpacing: 0,
-                background: lit ? C.red : "transparent",
-                // Scales with the box; floored so a phone still gets a real line.
-                border: `max(2px, 0.042em) solid ${lit ? C.red : `${C.paper}66`}`,
-                color: lit ? "#fff" : C.paper,
-                transform: `scale(${(step(0) * (lit ? 1 + flip * 0.06 : 1)).toFixed(3)})`,
-                // No glow. A 34px red bloom behind the letter was doing what a neon sign does: the box is already the loudest
-                // object in the frame, being the only filled red thing on the page, and a halo made it look like a template.
-                transition: "background .45s ease, border-color .45s ease, color .45s ease",
+                border: `2px solid ${C.paper}55`,
+                // cream, like the G beside it: in its base colour it was the same pink the scene uses for the
+                // variant, so pink meant two things in one frame
+                color: C.paper,
+                opacity: step(1),
+                transform: `scale(${(0.86 + step(1) * 0.14).toFixed(3)})`,
               }}
             >
-              {lit ? ALT_BASE : REF_BASE}
+              {DONOR_SECOND}
+            </span>
+            <span
+              className="absolute inset-x-0 top-full flex flex-col items-center gap-1.5 pt-2 md:pt-2.5"
+              style={{
+                fontFamily: BODY,
+                letterSpacing: 0,
+                opacity: step(3) * leave(far),
+                visibility: leave(far) < 0.05 ? "hidden" : "visible",
+              }}
+            >
+              <span
+                aria-hidden="true"
+                className="block h-[7px] w-full rounded-b-[5px]"
+                style={{ border: `2px solid ${C.paper}`, borderTop: 0 }}
+              />
+              <span
+                className="whitespace-nowrap text-[13px] font-bold leading-none md:text-[15px]"
+                style={{ color: C.paper }}
+              >
+                5′ splice donor site
+              </span>
+              {/* Which side of the boundary the pair is on. "Intron 14" stands to the right of the boxes, so
+                  without this a reader can take G and T as lying between the exon and the intron. */}
+              <span
+                className="whitespace-nowrap text-[13px] font-semibold leading-none"
+                style={{ color: C.paper }}
+              >
+                the first two letters of intron 14
+              </span>
             </span>
           </span>
+          <Region label="intron 14" t={step(3)} align="left" far={far} />
+        </div>
 
-          {/* Intron position +2, boxed to match the variant. The claim of this frame is that these are a pair, the two
-              letters that together say "cut here". A solid red box beside a small pale letter read as one important
-              thing next to some background typography. */}
-          <span
-            className="ml-1 inline-flex items-center justify-center rounded-[6px] md:ml-1.5"
-            style={{
-              width: "1.5em",
-              height: "1.6em",
-              letterSpacing: 0,
-              border: `2px solid ${C.paper}55`,
-              color: TONE[DONOR_SECOND],
-              opacity: step(1),
-              transform: `scale(${(0.86 + step(1) * 0.14).toFixed(3)})`,
-            }}
-          >
-            {DONOR_SECOND}
+        {/* The two states the pair can be in, under the bracket that names it (the margin is the bracket and its
+            label, which hang below the row). Both are always shown and the one in force is the solid one, so
+            wherever the reader stops the frame says which sequence this is: the flip used to be the only evidence
+            that there had been a reference at all. */}
+        <div
+          className="mt-[64px] flex flex-col items-center md:mt-[68px]"
+          style={{
+            fontFamily: BODY,
+            opacity: step(3) * leave(far),
+            visibility: leave(far) < 0.05 ? "hidden" : "visible",
+          }}
+        >
+          <span className="flex items-center gap-2 text-[13px] font-bold">
+            {(
+              [
+                { name: "Reference", letters: `${REF_BASE}${DONOR_SECOND}`, on: !lit },
+                { name: "Variant", letters: `${ALT_BASE}${DONOR_SECOND}`, on: lit },
+              ] as const
+            ).map((s) => (
+              <span
+                key={s.name}
+                className="rounded-full px-2.5 py-1"
+                style={{
+                  // the one not in force keeps a dark ground of its own: bare, on the ground while it was still
+                  // deepening, it measured 4.4:1
+                  background: s.on ? C.paper : `${C.ink}59`,
+                  color: s.on ? C.ink : C.paper,
+                  border: `1.5px solid ${C.paper}`,
+                  transition: "background .45s ease, color .45s ease",
+                }}
+              >
+                {s.name} <span className="font-mono text-[1.12em]">{s.letters}</span>
+              </span>
+            ))}
           </span>
-          <Region label="intron 14" t={step(3)} align="left" />
         </div>
 
         {/* The locus stays through the retreat. It is four tokens of monospace, it labels the thing on screen rather
             than explaining it, and at 58% of its original size it cannot compete with a display headline. */}
         <p
-          className="mt-7 font-mono text-[13px] font-bold tracking-[0.22em] md:text-[16px]"
-          style={{ color: C.paper, opacity: Math.min(1, Math.max(0, flip * 2 - 0.3)) }}
+          className="mt-3 font-mono text-[14px] font-bold tracking-[0.1em] md:text-[17px]"
+          style={{
+            color: C.paper,
+            opacity: Math.min(1, Math.max(0, flip * 2 - 0.3)),
+            // It counter-scales, so the one label that stays through the retreat stays at the size it was set.
+            // Inside the shrinking group it reached 9px on a desktop and under 8px on a phone.
+            transform: `scale(${(1 / (1 - far * 0.42)).toFixed(3)})`,
+          }}
         >
           DPYD · c.1905+1G&gt;A
         </p>
@@ -317,14 +434,20 @@ export function Sequence({
             It leaves before the closing statement arrives. It used to hold for the rest of the scene, so the frame
             carried the mechanism and the stakes at once, two paragraphs stacked under a receding diagram. The
             caption's job is finished once the reader has understood the flip. */}
+        {/* Two sentences on two clocks. What GT is for arrives with the letters, so it can be read while they are
+            still the reference; what the change does arrives with the change. Together they were at full strength
+            for about 16vh of scroll, which is not long enough for 24 words. Both are in the page from the start,
+            so the second arriving moves nothing. */}
         <p
-          className="mt-3 max-w-[34ch] text-center text-[13px] font-semibold leading-snug md:text-[15px]"
-          style={{
-            color: C.paper,
-            opacity: Math.min(1, Math.max(0, flip * 2 - 0.7)) * 0.8 * (1 - captionOut),
-          }}
+          className="mt-2 max-w-[40ch] text-center text-[14px] font-semibold leading-snug md:text-[16px]"
+          style={{ fontFamily: BODY, color: C.paper, opacity: 1 - captionOut }}
         >
-          These two letters mark the splice site. Change one, and it may no longer be recognised.
+          <span style={{ opacity: step(3) }}>
+            The conserved GT sequence marks the 5′ splice donor site.
+          </span>{" "}
+          <span style={{ opacity: clamp01(flip * 2.5 - 0.5) }}>
+            When G changes to A, the splice site may no longer be recognised correctly.
+          </span>
         </p>
       </div>
     </div>

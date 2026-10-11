@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 import { C, L } from "@/components/hero/palette";
+import { PLATE } from "@/components/story/PageHero";
 import { Awaiting, P, PageLink, PageShell, Section } from "@/components/story/PageShell";
 
 // Safety. iGEM judges two things here: laboratory safety (organisms, containment, training, waste) and
@@ -8,9 +9,9 @@ import { Awaiting, P, PageLink, PageShell, Section } from "@/components/story/Pa
 // wrong answer costs. Both have sections. The project's own risk is a false reassurance, not a biosafety one.
 // Nothing is written for the team: the prose says what each section is for, every claim is an Awaiting panel.
 
-const TITLE = "Safety — ChemoGuard";
+const TITLE = "Safety · ChemoGuard";
 const DESCRIPTION =
-  "Laboratory safety, biological materials, human samples and genetic data — and the failure mode a pre-treatment test has to be honest about.";
+  "Laboratory safety, biological materials, human samples and genetic data, and the failure mode a pre-treatment test has to be honest about.";
 
 export const Route = createFileRoute("/safety-and-security")({
   head: () => ({
@@ -39,7 +40,8 @@ function Safety() {
   return (
     <PageShell
       title="Safety"
-      lede="What we worked with, how we contained it, and what a test that informs a chemotherapy dose has to be careful about — including the way it could do harm by being wrong."
+      lede="What we worked with, how we contained it, and what a test that informs a chemotherapy dose has to be careful about, including the way it could do harm by being wrong."
+      plate={PLATE.safety}
       piece="result"
       sections={SECTIONS}
     >
@@ -76,7 +78,7 @@ function Safety() {
           is taken, not after.
         </P>
         <P>
-          If no human samples were used, that is a complete and perfectly good answer — say so
+          If no human samples were used, that is a complete and perfectly good answer: say so
           plainly, and say what was used instead.
         </P>
         <Awaiting what="Needs the team: samples, consent and data">
@@ -96,8 +98,8 @@ function Safety() {
         </P>
         <P>
           The two ways of being wrong are not equally bad. A test that wrongly flags a variant leads
-          to a reduced dose in someone who could have tolerated a full one — undertreatment, which
-          is serious. A test that wrongly reports normal gives false reassurance and a full dose to
+          to a reduced dose in someone who could have tolerated a full one: undertreatment, which is
+          serious. A test that wrongly reports normal gives false reassurance and a full dose to
           someone who may not clear it, which is the harm the project exists to prevent. A test like
           this has to be built and described with that asymmetry in front of it.
         </P>
@@ -111,14 +113,14 @@ function Safety() {
           Which variants the assay covers and which known ones it does not. What controls guard
           against a false negative. What a result actually says to the clinician who reads it, and
           who is responsible for interpreting it. These need the team&rsquo;s own method and its own
-          citations — nothing here may be inferred.
+          citations: nothing here may be inferred.
         </Awaiting>
       </Section>
 
       <Section id="not" title="What we did not do">
         <P>
           Deliberate limits are part of a safety record. Anything considered and then ruled out on
-          safety grounds — an organism, a modification, a sample source, a claim — is worth naming,
+          safety grounds (an organism, a modification, a sample source, a claim) is worth naming,
           along with the reason.
         </P>
         <Awaiting what="Needs the team: the limits you set" />
@@ -131,7 +133,7 @@ function Safety() {
           this page; this page is where a reader finds out what was submitted and why.
         </P>
         <Awaiting what="Needs the team: submissions">
-          Which forms were submitted and when — including any check-in for parts or organisms
+          Which forms were submitted and when, including any check-in for parts or organisms
           requiring one. Link to the team&rsquo;s safety documentation where iGEM hosts it.
         </Awaiting>
       </Section>

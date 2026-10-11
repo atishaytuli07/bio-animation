@@ -2,13 +2,14 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import { C, L } from "@/components/hero/palette";
 import { CiteMark, SourceList, type Source } from "@/components/story/Cite";
+import { PLATE } from "@/components/story/PageHero";
 import { Awaiting, P, PageLink, PageShell, Section } from "@/components/story/PageShell";
 
 // Human Practices. The criterion is not "did you do outreach": it is whether what the team learned outside
 // the lab changed the project. A page listing talks scores nothing; "we believed X, a clinician told us Y,
 // so we did Z" scores the medal. The sections follow that arc, and every prompt asks for a decision with a cause.
 
-const TITLE = "Human Practices — ChemoGuard";
+const TITLE = "Human Practices · ChemoGuard";
 const DESCRIPTION =
   "Who ChemoGuard is for, who the team spoke to about it, and what changed in the project as a result.";
 
@@ -56,7 +57,7 @@ const SOURCES = [
   {
     id: "use",
     supports:
-      "The scale of fluoropyrimidine use — how many people receive it, ideally with a figure for Kazakhstan.",
+      "The scale of fluoropyrimidine use: how many people receive it, ideally with a figure for Kazakhstan.",
   },
   {
     id: "bsa",
@@ -94,6 +95,7 @@ function HumanPractices() {
     <PageShell
       title="Human Practices"
       lede="A test that can inform a chemotherapy dose is not only a technical problem. This page records who ChemoGuard is meant to serve, what the people around it told us, and the decisions we made differently because of what we heard."
+      plate={PLATE.humanPractices}
       piece="voices"
       sections={SECTIONS}
     >
@@ -108,13 +110,13 @@ function HumanPractices() {
         </P>
         <P>
           That makes this a project about a decision someone else makes on your behalf, before you
-          have any symptoms to report. The questions that follow — who is offered the test, how fast
+          have any symptoms to report. The questions that follow (who is offered the test, how fast
           the result comes back, who explains it, and what happens to people the test is never
-          offered to — are not downstream of the science. They decide whether the science helps
+          offered to) are not downstream of the science. They decide whether the science helps
           anyone.
         </P>
         <Awaiting what="Needs the team: the local picture">
-          Fluoropyrimidine use and DPYD testing practice in Kazakhstan specifically — whether
+          Fluoropyrimidine use and DPYD testing practice in Kazakhstan specifically: whether
           pre-treatment testing is currently done, by whom, and what it costs. This is the fact that
           makes the project local rather than generic, and it needs a source.
         </Awaiting>
@@ -154,7 +156,7 @@ function HumanPractices() {
         </P>
         <Awaiting what="Needs the team: the people">
           For each: who they are, what they do, when you spoke, and what you asked them. Include the
-          people who were sceptical — a stakeholder who disagreed is more useful evidence than five
+          people who were sceptical: a stakeholder who disagreed is more useful evidence than five
           who approved. Anyone quoted or named must have agreed to it.
         </Awaiting>
       </Section>
@@ -177,19 +179,19 @@ function HumanPractices() {
 
         <P>
           This is the part the criterion rewards, and the part most often missing. Integrated Human
-          Practices means the project is different because of what was learned outside the lab — not
+          Practices means the project is different because of what was learned outside the lab, not
           that the team went outside the lab and then carried on.
         </P>
         <P>
           The useful shape is a decision with a cause:{" "}
           <em>we assumed this, we were told that, so we changed this specific thing.</em> A change
           to the sample type, the readout, the turnaround target, the wording of a result, or the
-          decision not to build something at all — any of those counts, and an abandoned idea counts
+          decision not to build something at all: any of those counts, and an abandoned idea counts
           as much as a built one.
         </P>
         <Awaiting what="Needs the team: decisions with causes">
           Each change: what the project was going to do, what you learned, what it does now, and who
-          or what prompted it. If nothing changed, say that plainly and say why — an honest account
+          or what prompted it. If nothing changed, say that plainly and say why: an honest account
           of a project that did not move reads far better than an invented one.
         </Awaiting>
       </Section>
@@ -214,7 +216,7 @@ function HumanPractices() {
       <Section id="reflection" title="Reflection">
         <P>
           What the team would do differently, and what remains unresolved. Naming a limitation is
-          not a weakness on this page — it is the evidence that the work was examined rather than
+          not a weakness on this page: it is the evidence that the work was examined rather than
           defended.
         </P>
         <Awaiting what="Needs the team: what is still open" />

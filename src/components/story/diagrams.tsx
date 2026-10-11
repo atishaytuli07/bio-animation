@@ -358,7 +358,7 @@ export function CycleFigure() {
         </text>
 
         {CYCLE_NODES.map((node, i) => (
-          <a key={node.id} href={`#${node.id}`} aria-label={`${node.name} — go to that section`}>
+          <a key={node.id} href={`#${node.id}`} aria-label={`${node.name}, go to that section`}>
             <g
               style={{
                 opacity: seen ? 1 : 0,

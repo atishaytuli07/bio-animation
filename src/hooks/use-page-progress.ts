@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 
+import { toStory } from "@/lib/story-map";
 import { subscribe } from "@/lib/ticker";
 import { clamp01 } from "./use-scroll-progress";
 
@@ -11,7 +12,7 @@ import { clamp01 } from "./use-scroll-progress";
 // marker this behaves exactly as before.
 const STORY_END = "story-end";
 
-// Progress through the whole document, 0 to 1. Every scene has its own local progress, which is what makes it
+// Progress through the story, 0 to 1, in story coordinates (see story-map.ts). Every scene has its own local progress, which is what makes it
 // animate; what was missing was something that knows where the reader is in the story rather than in a section,
 // and without that a continuous background or a persistent world has nothing to be driven by.
 // Rides the shared ticker rather than a scroll listener, so it costs one layout read per frame alongside
@@ -28,7 +29,8 @@ export function usePageProgress(steps = 240) {
       // offsetTop is read every frame rather than cached, because the ticker already costs one layout read here and
       // the marker moves with anything above it: a font loading late, an image settling, a viewport resize.
       const span = (end ? end.offsetTop : doc.scrollHeight) - window.innerHeight;
-      const raw = span > 0 ? clamp01(window.scrollY / span) : 0;
+      // in story coordinates, so every constant keeps its meaning whatever the scenes' lengths are
+      const raw = span > 0 ? toStory(clamp01(window.scrollY / span)) : 0;
       const next = Math.round(raw * steps) / steps;
       if (next !== last) {
         last = next;

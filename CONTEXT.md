@@ -32,6 +32,49 @@ agreed.
 
 ---
 
+# The October 2026 review (read this first)
+
+Adina reviewed The Story in October 2026: 55 points, scoped to the homepage scroll. Everything below this section
+was written before that review. Where the two disagree, this section is right and the older text is history.
+
+**What changed, and what now holds**
+
+- **Colour has one meaning each.** Lavender is DNA and genetics. Red is the variant and nothing else inside a
+  picture. Coral is the drug, always: it no longer turns red as it accumulates, and neither does the patient.
+  Green is the DPD enzyme. Chrome (the progress rail, the nav rule, the chapter label) is ink.
+- **The ground is seven colours, not three purples.** Cream, lavender (the descent), indigo (the variant), warm
+  violet (the enzyme), plum (the patients), pink (inside the body), warm cream (the decision and the end). The
+  old green-grey frame at the resolution is gone. Type on every ground is measured: 4.5:1 for small text, 3:1
+  for large.
+- **Two typefaces, both shipped with the wiki.** Gabarito for headings and the wordmark (`DISPLAY`), Instrument
+  Sans for everything else (`BODY`), including the DNA letters. Tailwind's `font-sans` and `font-mono` both point
+  at the body face. The prime in "5′" comes from a bundled Inter file limited to that character. The
+  typeface question that used to live in TYPEFACE-DECISION.md is closed.
+- **No em dashes in anything a reader sees**, on any page. `verify-wording.mjs` fails the build if one appears.
+- **A tenth beat exists, by the client's request.** The older rule below says the story is locked at nine. She
+  asked for one ChemoGuard moment near the end, so there is one, at the turn: the wordmark, "Know before the first
+  dose.", and three numbered steps. It carries numbers and no pictures, because the team has not published its
+  sample type, method or readout. Do not add another.
+- **"Inside the body" travels 610vh, not 760.** Story positions are converted in one place, `src/lib/story-map.ts`,
+  so the page-fraction constants everywhere else keep their meaning. Beats inside that scene are written in vh
+  through `v()`. To change the scene's length, change `WHY_TRAVEL` and the vh numbers in `Why.tsx`, nothing else.
+- **Wording follows her sentences.** The ones that must stay are in `STORY_REQUIRED` in `verify-wording.mjs`, and
+  the ones they replaced are in `BANNED`. Readouts say what the picture shows (a dose, an exposure), never an
+  outcome. Patients are "Patient A, expected DPD activity" and "Patient B, reduced DPD activity", never "her"
+  and "him".
+- **The offset shadow means pressable, and only that.** Tags, the result card, the slider card and the closing
+  cards wear a hairline. Small labels are 12px or more.
+- **Floating objects are cells and dots only**, eight and fourteen, none on a phone. Drug and enzyme shapes appear
+  only where they mean the drug and the enzyme.
+
+**Still open, and on Adina**
+
+- The clinical guideline behind "can inform dose adjustment under clinical guidelines", and the sources for the
+  story's factual statements. The card links to Description, where the reference is still marked needed.
+- Her sign-off on wording she did not supply: "Patient A / Patient B", "Know before the first dose.", "Testing
+  before the first dose.", the slider readouts, and the colour meanings above.
+- The teacher's confirmed technical details, for the ChemoGuard moment and the "What we are building" section.
+
 # Standing rules
 
 Things already decided, already argued, or already rejected. **Read this before
@@ -1027,3 +1070,15 @@ SSH host alias, set **repo-locally**. Global git config is untouched
   special award's own page (e.g. `/safety-and-security`, not `/safety`).
 - Best Wiki is largely a **content** criterion. The design is not the risk; the
   empty pages are.
+
+## Try it, after the client's October review
+
+The page was rebuilt around Adina's ten points. Code is in `src/routes/playground.tsx` and `src/components/playground/` (`model.ts`, `PatientColumn.tsx`, `Chart.tsx`).
+
+- Each patient is an illustrated head and shoulders over a gauge, with one colour that is also their line on the chart. Four patients at most.
+- Colours: coral is the drug only, green is the illustrative target range and the DPD icons, red is the illustrative threshold and any state above the target, lavender is neutral interface. No state uses coral.
+- Five steps, each with a title, one action and one reason. Only the step in hand is watched, and it must hold for 2.5 s.
+- The closing card uses Adina's sentences word for word. Do not reword them.
+- The chart marks what the reader changed ("dose changed", "DPD changed", "patient added") so a bend in a curve has a cause.
+- The page scrolls when it has to. It is no longer forced into one screen.
+- Open with Adina: green means both the target range and the DPD enzyme on this page.

@@ -1,4 +1,4 @@
-import { Cell, Enzyme, Molecule } from "@/components/hero/elements";
+import { Cell } from "@/components/hero/elements";
 import { C } from "@/components/hero/palette";
 import { track, usePageProgress } from "@/hooks/use-page-progress";
 
@@ -17,15 +17,19 @@ import { track, usePageProgress } from "@/hooks/use-page-progress";
 const DENSITY = [
   [0.0, 0.5], // hero — the helix already fills the frame
   [0.08, 0.75],
-  [0.14, 0.92], // the descent, deep in the purple
-  [0.185, 1.0], // the sequence arrival — the emptiest frame in the story
-  [0.24, 0.6], // the enzyme bridge: copy + diagram, so pull back
-  [0.33, 0.4], // the two patients carry their own frame
-  [0.46, 0.34],
+  [0.125, 0.8], // the descent, deep in the purple
+  // The letter changes between 0.143 and 0.156. This was the densest stretch of the story, 30 drifting things
+  // around the one change the reader is here to see, so the world steps back for it and returns for the retreat.
+  [0.14, 0.4],
+  [0.16, 0.4],
+  [0.19, 0.8],
+  [0.24, 0.4], // the enzyme bridge: copy + diagram, so pull back
+  [0.33, 0.28], // the two patients carry their own frame
+  [0.46, 0.24],
   // Act one of the bloodstream is the densest screen on the site: figure, vessel, molecules, a tag and a control. The
   // client asked for the ambient elements to stop competing there, so this is the quietest the world gets.
-  [0.6, 0.28],
-  [0.86, 0.42], // after the turn the frame is calmer, so the world breathes
+  [0.582, 0.28],
+  [0.799, 0.42], // after the turn the frame is calmer, so the world breathes
   [1.0, 0.46],
 ] as const;
 
@@ -35,29 +39,26 @@ const DENSITY = [
 // That rule is right for every scene except the first. The hero is the only screen whose copy is left-aligned,
 // so objects at x=6..21, safely outside a centre column, land on its headline, paragraph and buttons.
 // `heroClear` steps them back while the hero is on screen and releases them once the descent begins.
+// Cells only. There were sixteen objects here, ten of them drug molecules and enzymes: the shapes the story
+// uses for 5-FU and for DPD, drifting through the gene scenes before either had been introduced.
 const OBJECTS = [
-  { k: "cell", x: 6, s: 0.5, tone: C.pink, depth: 0.9, phase: 0.05, sm: true },
-  { k: "mol", x: 13, s: 0.34, tone: C.coral, depth: 0.45, phase: 0.62, sm: false },
-  { k: "enz", x: 4, s: 0.38, tone: C.green, depth: 0.3, phase: 0.31, sm: false },
-  { k: "mol", x: 18, s: 0.28, tone: C.coral, depth: 0.62, phase: 0.87, sm: false },
-  { k: "cell", x: 9, s: 0.36, tone: C.blue, depth: 0.55, phase: 0.44, sm: false },
-  { k: "enz", x: 16, s: 0.24, tone: C.green, depth: 0.2, phase: 0.15, sm: false },
-  { k: "mol", x: 3, s: 0.26, tone: C.lavender, depth: 0.36, phase: 0.71, sm: false },
-  { k: "cell", x: 21, s: 0.22, tone: C.pink, depth: 0.16, phase: 0.93, sm: false },
-  { k: "cell", x: 94, s: 0.46, tone: C.blue, depth: 0.85, phase: 0.2, sm: true },
-  { k: "enz", x: 87, s: 0.36, tone: C.green, depth: 0.4, phase: 0.74, sm: false },
-  { k: "mol", x: 96, s: 0.3, tone: C.coral, depth: 0.28, phase: 0.45, sm: false },
-  { k: "cell", x: 81, s: 0.26, tone: C.pink, depth: 0.22, phase: 0.11, sm: false },
-  { k: "mol", x: 90, s: 0.24, tone: C.lavender, depth: 0.5, phase: 0.58, sm: false },
-  { k: "enz", x: 98, s: 0.28, tone: C.green, depth: 0.66, phase: 0.03, sm: false },
-  { k: "mol", x: 84, s: 0.2, tone: C.coral, depth: 0.14, phase: 0.36, sm: false },
-  { k: "cell", x: 92, s: 0.3, tone: C.pink, depth: 0.72, phase: 0.82, sm: false },
+  { x: 6, s: 0.5, tone: C.pink, depth: 0.9, phase: 0.05 },
+  { x: 14, s: 0.3, tone: C.blue, depth: 0.5, phase: 0.62 },
+  { x: 9, s: 0.36, tone: C.blue, depth: 0.55, phase: 0.31 },
+  { x: 21, s: 0.22, tone: C.pink, depth: 0.16, phase: 0.93 },
+  { x: 94, s: 0.46, tone: C.blue, depth: 0.85, phase: 0.2 },
+  { x: 81, s: 0.26, tone: C.pink, depth: 0.22, phase: 0.11 },
+  { x: 88, s: 0.24, tone: C.blue, depth: 0.4, phase: 0.58 },
+  { x: 92, s: 0.3, tone: C.pink, depth: 0.72, phase: 0.82 },
 ] as const;
 
 // Particles. Cheap, tiny, and they fill the deep middle of a frame without putting anything there the reader
 // has to interpret. This is the particles and depth the client asked for, and the reason the sequence arrival no
 // longer reads as an object alone in a void.
-const MOTES = Array.from({ length: 26 }, (_, i) => ({
+// Fourteen, where there were twenty-six: about twenty were on screen in every frame of the story, which is not
+// depth, it is weather. None is coral, because coral is the drug and these drift through the gene scenes before
+// the drug exists.
+const MOTES = Array.from({ length: 14 }, (_, i) => ({
   x: (i * 37.4) % 100,
   phase: (i * 0.173) % 1,
   r: 1.5 + ((i * 7) % 5) * 0.7,
@@ -77,7 +78,7 @@ export function World() {
   // over the hero's copy column, the one place in the story where content is not centred.
   const overHero = Math.max(0, 1 - p / 0.085);
   /** How much an object at this x is suppressed while the hero is up. */
-  const heroClear = (x: number) => (x < 44 ? 1 - overHero * 0.88 : 1);
+  const heroClear = (x: number) => (x < 44 ? 1 - overHero : 1);
 
   // The header band. Objects drift through the top of the viewport and one sat directly behind the logo; this
   // layer is behind the chrome, so it read as a smudge under the mark rather than as depth. Faded by position
@@ -101,7 +102,7 @@ export function World() {
               transform: `translate(-50%, -50%) translateY(${(-10 + y * 120).toFixed(2)}vh)`,
               width: m.r * 2,
               height: m.r * 2,
-              background: i % 5 === 0 ? C.coral : i % 3 === 0 ? C.pink : C.paper,
+              background: i % 3 === 0 ? C.pink : C.paper,
               opacity:
                 Math.round(
                   edge *
@@ -129,7 +130,9 @@ export function World() {
         return (
           <div
             key={i}
-            className={o.sm ? "absolute" : "absolute hidden md:block"}
+            // Wide screens only. On a phone the scene fills the frame and a cell had nowhere to drift but across
+            // it: one sat on the patient's label and another on the enzyme caption.
+            className="absolute hidden md:block"
             style={{
               left: `${o.x}%`,
               top: 0,
@@ -143,13 +146,7 @@ export function World() {
               filter: o.depth > 0.7 ? undefined : `blur(${((1 - o.depth) * 0.8).toFixed(2)}px)`,
             }}
           >
-            {o.k === "cell" ? (
-              <Cell s={o.s} tone={o.tone} />
-            ) : o.k === "mol" ? (
-              <Molecule s={o.s} tone={o.tone} />
-            ) : (
-              <Enzyme s={o.s} tone={o.tone} />
-            )}
+            <Cell s={o.s} tone={o.tone} />
           </div>
         );
       })}

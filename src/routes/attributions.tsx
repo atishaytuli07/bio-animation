@@ -8,7 +8,7 @@ import { SiteHeader } from "@/components/story/SiteHeader";
 // where generative AI was used. Saying so costs nothing; being found out would cost the medal.
 // Everything under "Still to be completed" can only be written by the people who did the work.
 
-const TITLE = "Attributions — ChemoGuard";
+const TITLE = "Attributions · ChemoGuard";
 const DESCRIPTION =
   "Who built what on the ChemoGuard wiki, which work came from outside the team, and where generative AI was used.";
 
@@ -33,13 +33,13 @@ type Entry = { what: string; who: string; note?: string };
 const TEAM_WORK: Entry[] = [
   {
     what: "The project, and the argument this wiki makes",
-    who: "Adina — NIS Kazakhstan",
+    who: "Adina, NIS Kazakhstan",
     note: "ChemoGuard's subject, the case the wiki argues and the order it argues it in are the team's own. The story was built to that brief: follow one gene to one letter, then to two people given the same dose, and end before the first dose rather than after it.",
   },
   {
     what: "Scientific review and content direction",
-    who: "Adina — NIS Kazakhstan",
-    note: "Every scientific statement in the story and on the Description page was read and corrected in the team's own review — what the variant does to the splice site, what reduced DPD activity means, and the line between what a test reports and what a clinician decides. Those corrections are the wording that shipped: “may” and “can” rather than “does”, and a dose that is informed by a result under clinical guidelines rather than set by it.",
+    who: "Adina, NIS Kazakhstan",
+    note: "Every scientific statement in the story and on the Description page was read and corrected in the team's own review: what the variant does to the splice site, what reduced DPD activity means, and the line between what a test reports and what a clinician decides. Those corrections are the wording that shipped: “may” and “can” rather than “does”, and a dose that is informed by a result under clinical guidelines rather than set by it.",
   },
 ];
 
@@ -51,7 +51,7 @@ const AI_USE: Entry[] = [
   },
   {
     what: "Page headings and titles",
-    who: "Set in live text by the team — never part of an image",
+    who: "Set in live text by the team, never part of an image",
     note: "Some of the illustrations were generated with a page title drawn into the artwork. None is used that way. Every heading on this wiki is real text so that it can be read by a screen reader, scaled without softening, and set in the site’s own typeface. Where a figure appears to hold a sign, the words beside her are HTML.",
   },
   {
@@ -71,13 +71,23 @@ const AI_USE: Entry[] = [
 
 const THIRD_PARTY: Entry[] = [
   {
+    what: "Gabarito",
+    who: "The Gabarito Project Authors (Naipe Foundry), SIL Open Font License 1.1",
+    note: "The heading typeface. Self-hosted from this wiki.",
+  },
+  {
     what: "Instrument Sans",
-    who: "Rodrigo Fuenzalida and Nicole Fally — SIL Open Font License 1.1",
-    note: "Self-hosted from this wiki. No external font service is used anywhere on the site.",
+    who: "Rodrigo Fuenzalida and Nicole Fally, SIL Open Font License 1.1",
+    note: "The body typeface. Self-hosted from this wiki. No external font service is used anywhere on the site.",
+  },
+  {
+    what: "Inter",
+    who: "The Inter Project Authors, SIL Open Font License 1.1",
+    note: "Used for one character only, the prime in “5′”, which neither of the other two typefaces contains. Self-hosted from this wiki.",
   },
   {
     what: "React, TanStack Router, Vite, Tailwind CSS",
-    who: "Their respective authors — MIT licence",
+    who: "Their respective authors, MIT licence",
   },
 ];
 

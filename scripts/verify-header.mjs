@@ -142,8 +142,8 @@ for (const [w, h] of [
     const centred = Math.abs(r.kMid - (r.fTop + r.fBottom) / 2) <= 1;
     say(
       covers && centred && r.fillW > 0,
-      `${w}px: fill covers the ${r.border}px border and the knob is centred on it`,
-      `header ends ${r.bottom}px · fill ${r.fTop}→${r.fBottom} · knob centre ${r.kMid}`,
+      `${w}px: fill covers the ${r.border}px border and the chapter marks are centred on it`,
+      `header ends ${r.bottom}px · fill ${r.fTop}→${r.fBottom} · marks centre ${r.kMid}`,
     );
   }
   await page.close();

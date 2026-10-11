@@ -6,7 +6,7 @@ import { Awaiting, P, PageLink, PageShell, Section } from "@/components/story/Pa
 // standard link to a 404 fails the criterion on a technicality, so the page exists before its content does.
 // It has to say what the contribution is and why it helps future teams. Only the team can write that.
 
-const TITLE = "Contribution — ChemoGuard";
+const TITLE = "Contribution · ChemoGuard";
 const DESCRIPTION =
   "What ChemoGuard leaves behind for future iGEM teams, and why it is useful to them.";
 
@@ -34,7 +34,7 @@ function Contribution() {
   return (
     <PageShell
       title="Contribution"
-      lede="What this project leaves behind for the teams that come after it — and why it is worth their time."
+      lede="What this project leaves behind for the teams that come after it, and why it is worth their time."
       piece="handoff"
       sections={SECTIONS}
     >
@@ -46,9 +46,9 @@ function Contribution() {
           methods; or anything else with a clear benefit to the teams that follow.
         </P>
         <Awaiting what="Needs the team: the contribution">
-          What it is, concretely — a part with its Registry name, a protocol, a dataset, a tool —
-          and where a future team finds it. Only something the team actually made or measured
-          belongs here.
+          What it is, concretely (a part with its Registry name, a protocol, a dataset, a tool) and
+          where a future team finds it. Only something the team actually made or measured belongs
+          here.
         </Awaiting>
       </Section>
 
@@ -59,7 +59,7 @@ function Contribution() {
           what it would have cost them without it.
         </P>
         <Awaiting what="Needs the team: the case for it">
-          Who would use it and for what, what it improves on, and any evidence that it works — with
+          Who would use it and for what, what it improves on, and any evidence that it works, with
           the data or characterisation behind that claim linked or shown.
         </Awaiting>
       </Section>

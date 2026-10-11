@@ -6,7 +6,8 @@ import reactRefresh from "eslint-plugin-react-refresh";
 import tseslint from "typescript-eslint";
 
 export default tseslint.config(
-  { ignores: ["dist", ".output", ".vinxi"] },
+  // dist-static is the built wiki: minified bundles that took the linter over nine minutes to format-check
+  { ignores: ["dist", "dist-static", ".output", ".vinxi", ".tanstack"] },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     files: ["**/*.{ts,tsx}"],

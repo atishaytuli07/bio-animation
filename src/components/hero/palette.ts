@@ -1,5 +1,5 @@
 // The ChemoGuard visual system, in one place. The rule from the Production Brief is that a colour means the
-// same thing on every screen: lavender is genetics, coral is the drug, green is a validated result, and red is
+// same thing on every screen: lavender is genetics, coral is the drug, green is the DPD enzyme, and red is
 // only ever the variant, plus the brand mark. A colour that is decorative on one screen and meaningful on
 // another makes the whole system read as decoration.
 export const C = {
@@ -44,6 +44,22 @@ export const C = {
   redSignoff: "#E03A3Ed9",
 };
 
+// The site is set in two typefaces and both ship with it. iGEM serves a wiki from its own servers and forbids
+// loading anything from elsewhere, so a face is either a file in the build or it is whatever the reader's machine
+// happens to have. The heading face used to be the second kind: a stack of system fonts that came out as Avenir
+// on a Mac, Century Gothic or Trebuchet on Windows and something else on Linux, and it was applied to some
+// headlines and not others, so the same role was in two faces one scroll apart.
+//   DISPLAY   headings and the wordmark. Gabarito, an open-licence geometric face that goes to weight 900.
+//   BODY      everything else: copy, labels, buttons, navigation, and the DNA letters. Instrument Sans.
+// Neither file has the prime in "5′ splice donor site", so that one character comes from a third bundled
+// file, declared in styles.css as "ChemoGuard Marks" and limited to it by unicode-range. It is first in both
+// stacks so the mark is the same on every machine; nothing else is ever drawn from it.
+export const BODY =
+  '"ChemoGuard Marks", "Instrument Sans Variable", "Instrument Sans", ui-sans-serif, system-ui, sans-serif';
+
+export const DISPLAY =
+  '"ChemoGuard Marks", "Gabarito Variable", "Gabarito", ui-sans-serif, system-ui, sans-serif';
+
 // The type scale. Every headline was hand-tuned before this existed: five sizes and four letter-spacings across
 // three sections, and the largest type on the page was the single word "Why?", bigger than the hero.
 // One rule ties the steps together: the bigger the type, the tighter the tracking. Each step carries its own
@@ -53,19 +69,30 @@ export const C = {
 //   sub       the line that answers a headline, or closes a beat
 //   label     chapter labels and diagram labels, uppercase and letterspaced
 //   caption   the small explanatory line under a diagram
+// Headings are semi-bold. At 900 the heading face read as shouting, the site owner's word for it was "bold",
+// and it is a wide face that carries a headline without the extra weight. The weight is set here, not by a class
+// on each heading, so it is one decision.
 export const T = {
   display: {
+    fontFamily: DISPLAY,
+    fontWeight: 600,
     fontSize: "clamp(2.7rem, 5.9vw, 5rem)",
     lineHeight: 0.94,
     letterSpacing: "-0.042em",
   },
   headline: {
+    fontFamily: DISPLAY,
+    fontWeight: 600,
     fontSize: "clamp(2rem, 4.8vw, 3.8rem)",
     lineHeight: 1,
     letterSpacing: "-0.034em",
   },
   sub: {
-    fontSize: "clamp(1.35rem, 2.9vw, 2.3rem)",
+    fontFamily: DISPLAY,
+    fontWeight: 600,
+    // 24px at the least. Semi-bold type only counts as large, with the 3:1 contrast floor that goes with it, from
+    // 24px; at 21.6px the tinted words in these lines needed 4.5:1 on a phone and measured 3.5 to 4.1.
+    fontSize: "clamp(1.5rem, 2.9vw, 2.3rem)",
     lineHeight: 1.12,
     letterSpacing: "-0.024em",
   },
@@ -92,13 +119,13 @@ export const L = {
   /** Chapter label, pinned identically on every stop stage. */
   label: "absolute left-6 top-24 z-20 md:left-10 md:top-28",
   /** Chapter label typography — uppercase, letterspaced, always this size. */
-  labelType: "inline-flex items-center gap-2.5 text-[11px] font-bold uppercase tracking-[0.22em]",
+  labelType: "inline-flex items-center gap-2.5 text-[12px] font-bold uppercase tracking-[0.12em]",
   // In-scene uppercase annotation: a hint, a state, a unit. Distinct from the chapter label on purpose, since
   // that is chrome and wears wider tracking while this is part of the picture. The audit found these at
   // 10px/0.18em in one place and 11px/0.18em in another.
-  note: "text-[11px] font-bold uppercase tracking-[0.18em]",
+  note: "text-[12px] font-bold uppercase tracking-[0.12em]",
   /** The small explanatory line under a title. Was 11px, 12px and two different trackings, for one job. */
-  sub: "text-[11px] font-semibold leading-snug tracking-normal",
+  sub: "text-[12px] font-semibold leading-snug tracking-normal",
   /**
    * Where a stop's headline sits. One coordinate, every stop, with a pixel floor on phones only.
    * The chapter label sits at a fixed top-24 / md:top-28, 96px and 112px. On a phone the headline wraps to the
@@ -147,17 +174,8 @@ export const BASES_ON_FIELD: Record<string, string> = {
 // site is built on rather than merely reacting to the pointer. The variant reads "G to A", what happens at DPYD
 // c.1905+1G>A: a reward for curiosity, not the jargon dump the client objected to.
 export const PAIR_LETTERS = ["A·T", "T·A", "G·C", "C·G"];
-export const VARIANT_LETTERS = "G→A";
-
-// The display stack, for brand chrome: the wordmark, the navigation, buttons and chapter labels.
-// It lived in the story route, so it applied on exactly one page. Measured, the wordmark rendered in Avenir Next
-// at 21px/800/-0.21px on the story and in Instrument Sans at -0.24px on /description: the same two words, two
-// typefaces, one click apart.
-// Interim. This is a stack of whatever happens to be installed, so it renders differently on every machine. The
-// fix is one self-hosted file, which iGEM requires anyway since external CDNs are banned. Sharing the stack
-// means that decision lands in one place. See TYPEFACE-DECISION.md.
-export const DISPLAY =
-  '"Avenir Next", Avenir, "Century Gothic", "URW Gothic", Futura, "Trebuchet MS", ui-rounded, system-ui, sans-serif';
+// ">" as the variant's own name writes it (c.1905+1G>A), and because neither bundled face has an arrow
+export const VARIANT_LETTERS = "G>A";
 
 // DPD, drawn once for the whole site. There were three of these. The client's note was that the enzyme "reads
 // slightly like a container/bowl rather than a protein/enzyme", and the redraw that answered it reached one of

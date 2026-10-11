@@ -12,7 +12,7 @@ import { ChainFigure, DoseFigure, SpliceFigure } from "@/components/story/diagra
 // The wording follows the client's science review: a variant CAN do something, never always; the test informs
 // a dose under clinical guidelines, it never sets one. Avoid "where to cut", "the drug builds up", "matched dose".
 
-const TITLE = "Description — ChemoGuard";
+const TITLE = "Description · ChemoGuard";
 const DESCRIPTION =
   "How DPYD variants can raise the risk of toxicity from a standard dose of fluoropyrimidine chemotherapy, and what ChemoGuard proposes to do about it.";
 
@@ -55,7 +55,7 @@ const SOURCES = [
   {
     id: "guidelines",
     supports:
-      "The clinical guideline for pre-treatment DPYD genotyping and dose adjustment, named — the team supplies which one.",
+      "The clinical guideline for pre-treatment DPYD genotyping and dose adjustment, named: the team supplies which one.",
   },
 ] as const satisfies readonly Source[];
 
@@ -86,8 +86,8 @@ function Description() {
     >
       <Section id="problem" title="The problem">
         <P>
-          Fluoropyrimidines — 5-FU and its oral prodrug capecitabine — are among the most widely
-          used chemotherapy drugs in the world.
+          Fluoropyrimidines (5-FU and its oral prodrug capecitabine) are among the most widely used
+          chemotherapy drugs in the world.
           <Cite id="use" /> A large proportion of 5-FU is normally broken down by the enzyme
           dihydropyrimidine dehydrogenase (DPD), which helps control systemic drug exposure.
           <Cite id="catabolism" />

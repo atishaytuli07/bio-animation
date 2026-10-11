@@ -46,7 +46,7 @@ export function SiteHeader({
             >
               <img
                 src={asset("logo-mark.webp")}
-                alt="ChemoGuard — NIS Kazakhstan, iGEM 2026"
+                alt="ChemoGuard, NIS Kazakhstan, iGEM 2026"
                 width={28}
                 height={34}
                 className="h-[27px] w-auto md:h-[30px]"
@@ -60,13 +60,11 @@ export function SiteHeader({
             </span>
           </Link>
 
-          {/* The hand-drawn underline marks the page you are on. */}
-          <nav
-            aria-label="Pages"
-            className="hidden items-center gap-7 lg:flex"
-            style={{ fontFamily: DISPLAY }}
-          >
-            {NAV.map((page, i) =>
+          {/* The rule under a link marks the page you are on. */}
+          {/* 32px between links, 40 from 1280px. At 28 the short words ran together: "Safety" and "Team" are about
+              40px wide, so the gap was most of a word, and there were 134px spare at the narrowest desktop width. */}
+          <nav aria-label="Pages" className="hidden items-center gap-8 lg:flex xl:gap-10">
+            {NAV.map((page) =>
               page.ready ? (
                 <Link
                   key={page.label}
@@ -76,7 +74,7 @@ export function SiteHeader({
                   style={{ color: C.ink }}
                 >
                   {page.label}
-                  <Underline index={i} active={page.to === pathname} />
+                  <Underline active={page.to === pathname} />
                 </Link>
               ) : (
                 <span
@@ -164,12 +162,12 @@ export function SiteHeader({
                 style={{ color: C.ink, borderTop: i ? `1.5px solid ${C.ink}22` : undefined }}
               >
                 {page.label}
-                {/* A phone menu is a stack of rows with no baseline for the squiggle, so the current page gets a coral dot. */}
+                {/* A phone menu is a stack of rows with no baseline for a rule, so the current page gets a dot, in the same ink. */}
                 {page.to === pathname && (
                   <span
                     aria-hidden="true"
                     className="block size-2 shrink-0 rounded-full"
-                    style={{ background: C.coral }}
+                    style={{ background: C.ink }}
                   />
                 )}
               </Link>

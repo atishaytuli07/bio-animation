@@ -29,6 +29,9 @@ export type Plate = {
   alt?: string;
   // Where the figure's painted pixels start, as a fraction of the image width. The piece beside it is placed from this.
   lead?: number;
+  // A figure that reaches well past the middle of its plate leaves no room for the piece at 1280.
+  // Its piece waits for a wider screen.
+  wide?: boolean;
 };
 
 // The character each page opens with. A plate has to say something about its own page: a scientist holding
@@ -37,6 +40,9 @@ export const PLATE = {
   description: { src: "hero-description.webp", lead: 0.5 },
   // lead 0.5, not 0.55: he holds the device out in front of him. At 0.55 the piece overlapped his hands by 237px.
   engineering: { src: "hero-engineering.webp", lead: 0.5 },
+  // Both are drawn from the waist up and gesture towards the copy, so they fill more of the plate than the two above.
+  safety: { src: "hero-safety.webp", lead: 0.357, wide: true },
+  humanPractices: { src: "hero-human-practices.webp", lead: 0.315, wide: true },
 } satisfies Record<string, Plate>;
 
 // Description: DPD with 5-FU in its cleft. Labels are plain text on a thin line, not boxes, because a box
@@ -306,14 +312,15 @@ export function PageHero({
           aria-hidden={plate.alt ? undefined : "true"}
           // Tablets put her in the corner like phones do. At full height on 768px she reached x 446 against a
           // lede ending at 651, so her arm crossed the text. Side by side only from lg.
-          className="pointer-events-none absolute bottom-0 right-0 block h-[152px] md:h-[250px] lg:h-[92%]"
+          // A wide figure stays in the corner one step longer: at 1024 it stood on the title and the lede.
+          className={`pointer-events-none absolute bottom-0 right-0 block md:h-[250px] ${plate.wide ? "h-[136px] xl:h-[92%]" : "h-[152px] lg:h-[92%]"}`}
         >
           {piece && (
             // Placed from `lead`, so it follows the figure at any width instead of landing on her.
             // From xl only: the gap between the copy and the figure is 288px at 1280, 445 at 1440, 700 at 1920,
             // and nothing below 1280.
             <div
-              className="absolute hidden xl:block"
+              className={`absolute hidden ${plate.wide ? "min-[1600px]:block" : "xl:block"}`}
               style={{
                 right: `calc(${((1 - (plate.lead ?? 0.5)) * 100).toFixed(1)}% + 28px)`,
                 top: "26%",
@@ -367,7 +374,7 @@ export function PageHero({
 
       {/* Extra bottom padding when something stands in the corner, so the lede does not share it. */}
       <div
-        className={`relative mx-auto max-w-[92rem] px-6 pt-14 md:px-10 md:py-20 ${plate ? "pb-40 md:pb-[17rem]" : piece ? "pb-[11rem] md:pb-[13rem]" : "pb-14 md:pb-20"} lg:pb-20 ${slides ? "lg:flex lg:items-center lg:gap-14" : ""}`}
+        className={`relative mx-auto max-w-[92rem] px-6 pt-14 md:px-10 md:py-20 ${plate ? "pb-40 md:pb-[17rem]" : piece ? "pb-[11rem] md:pb-[13rem]" : "pb-14 md:pb-20"} ${plate?.wide ? "xl:pb-20" : "lg:pb-20"} ${slides ? "lg:flex lg:items-center lg:gap-14" : ""}`}
       >
         <div className="max-w-[46rem] lg:flex-1">
           {/* The badge, in the site's paper and ink language. */}

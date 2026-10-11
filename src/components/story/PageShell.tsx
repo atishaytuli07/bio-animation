@@ -375,7 +375,6 @@ export function SiteFooter() {
           <nav
             aria-label="All pages"
             className="flex flex-wrap items-center gap-x-6 gap-y-2 text-[14px] font-semibold"
-            style={{ fontFamily: DISPLAY }}
           >
             {PAGES.map((p) =>
               p.ready ? (

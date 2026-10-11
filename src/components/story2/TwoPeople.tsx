@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 
-import { asset, C, ENZYME_PATH, L, T } from "@/components/hero/palette";
+import { asset, C, L, R, T } from "@/components/hero/palette";
+import { Slot } from "@/components/story/EnzymeSlot";
 import { usePageProgress } from "@/hooks/use-page-progress";
 import { recordStory } from "@/lib/story-state";
 import {
@@ -45,17 +46,39 @@ const HIS_MAX = 0.5;
 // The tube, as one cubic, used twice. The path that draws the line and the sampler that runs the dose along it
 // used to carry the same four control points as separate literals, so moving the end meant editing two places
 // and hoping they agreed.
-// The end is on the forearm, measured. At (-30, 226) the cannula landed at x 81.3% of patient A's plate and
-// 17.8% of patient B's, while at that height A's near arm spans 87 to 97% and B's spans 5 to 16%: both sat in
-// the gap between the arm and the torso, at hip height, which is why the client saw them plugged into a pocket.
-// Nine units toward the stand and nine up puts them at about 90% and 9%, inside the arm on both plates.
-const TUBE = { p0: [74, 162], p1: [74, 214], p2: [22, 250], p3: [-16, 217] } as const;
-/** The cannula, sitting on the tube's end. */
-const CANNULA = { x: -29, y: 212, w: 14, h: 6 } as const;
+// The end is on the back of the hand, measured from the artwork. Both plates have the near arm hanging at the
+// side with the hand between 50% and 55% of the figure's height: patient A's spans 85 to 98% of the plate's
+// width there and patient B's 5.5 to 17%. The end used to sit at 42.5% down, which is on the forearm but level
+// with the waistband, and it was painted under the figure, so what showed was a tube stopping at a hip. The
+// client raised it twice.
+// The figure is 1/1.18 of this drawing's height and the gap between them is a fixed share of that height (see
+// GAP), so one point lands on the same place at every screen size: (-22, 249) is 90% across A and 9.5% across B,
+// 52% down both.
+const TUBE = { p0: [74, 162], p1: [74, 232], p2: [34, 294], p3: [-22, 249] } as const;
+/** The dressing that holds the line on the hand, centred on the tube's end. */
+const CANNULA = { x: -28, y: 244, w: 12, h: 10 } as const;
+/** Space between a figure and its stand, as a share of the figure's height. 16px at the desktop size it was set at. */
+const GAP = "calc(var(--fig2) * 0.034)";
+/** The most drug either figure holds in this scene: the shared uptake plus all of what patient B cannot clear. */
+const PEAK = 0.7;
 
-function IV({ dose, flow, flip }: { dose: number; flow: number; flip: boolean }) {
+function IV({
+  dose,
+  amount,
+  flow,
+  flip,
+}: {
+  /** How far the infusion has run, 0 to 1. */
+  dose: number;
+  /** How much was hung to begin with, 0 to 1 of a standard dose. */
+  amount: number;
+  flow: number;
+  flip: boolean;
+}) {
   const t = useTime(flow > 0.01);
-  const fluid = 1 - dose * 0.85;
+  // A lower dose is less in the bag. It used to be the same bag drained less far, so turning the dose down made
+  // the bag look fuller.
+  const fluid = amount * (1 - dose * 0.85);
   const drug = C.coral;
   return (
     <svg
@@ -116,16 +139,6 @@ function IV({ dose, flow, flip }: { dose: number; flow: number; flip: boolean })
         strokeWidth="3"
         strokeLinecap="round"
       />
-      <rect
-        x={CANNULA.x}
-        y={CANNULA.y}
-        width={CANNULA.w}
-        height={CANNULA.h}
-        rx="3"
-        fill={C.paper}
-        stroke={C.ink}
-        strokeWidth="2.5"
-      />
       {/* the dose travelling */}
       {flow > 0.01 &&
         [0, 0.22, 0.41, 0.63, 0.84].map((off, i) => {
@@ -154,6 +167,22 @@ function IV({ dose, flow, flip }: { dose: number; flow: number; flip: boolean })
             />
           );
         })}
+      <rect
+        x={CANNULA.x}
+        y={CANNULA.y}
+        width={CANNULA.w}
+        height={CANNULA.h}
+        rx="3"
+        fill={C.paper}
+        stroke={C.ink}
+        strokeWidth="2.5"
+      />
+      {/* the tape across it, which is what makes a small pale rectangle read as a dressing */}
+      <path
+        d={`M${CANNULA.x + 4} ${CANNULA.y} v${CANNULA.h} M${CANNULA.x + 8} ${CANNULA.y} v${CANNULA.h}`}
+        stroke={C.ink}
+        strokeWidth="1.5"
+      />
     </svg>
   );
 }
@@ -186,7 +215,9 @@ function Patient({
   const breath = Math.sin(t * 0.9 + seed) * 1.4;
   const load = Math.min(1, alarm);
   const level = fill * 100;
-  const tint = alarm > 0.01 ? `color-mix(in oklab, ${C.red} ${alarm * 100}%, ${C.coral})` : C.coral;
+  // Coral throughout. It used to turn red as the load climbed, and red is the variant: the drug does not become
+  // something else by accumulating. More of it is shown as more of it, by depth and by strength.
+  const tint = C.coral;
   const mask = {
     maskImage: `url(${src})`,
     WebkitMaskImage: `url(${src})`,
@@ -200,7 +231,9 @@ function Patient({
       <div
         className="h-full"
         style={{
-          transform: `translateY(${(breath + load * 7).toFixed(2)}px) rotate(${(load * 1.1).toFixed(2)}deg)`,
+          // The settle is a share of the figure's own height (1.5%, which is 7px at the size it was drawn for).
+          // As a fixed 7px it sank a 141px figure on a small phone below the foot of its own stand.
+          transform: `translateY(calc(${breath.toFixed(2)}px + ${(load * 1.5).toFixed(2)}%)) rotate(${(load * 1.1).toFixed(2)}deg)`,
           transformOrigin: "50% 100%",
         }}
       >
@@ -212,7 +245,10 @@ function Patient({
             style={{
               ...mask,
               background: `linear-gradient(to top, ${tint} 0%, ${tint} ${level}%, transparent ${Math.min(100, level + 18)}%)`,
-              opacity: q(0.42 + alarm * 0.3),
+              // Lighter than it was (0.42 rising to 0.72). The tint is the exposure, but it should not be the
+              // loudest thing in the frame: the client asked for the difference to be carried by DPD activity
+              // and exposure, and each patient's tag now states both.
+              opacity: q(0.34 + alarm * 0.16),
               mixBlendMode: "multiply",
             }}
           />
@@ -228,11 +264,94 @@ function Patient({
   );
 }
 
+// The enzyme bridge's two rows: the reference sequence and the variant, as named in the scene before, and the DPD
+// activity each goes with. The reason sits under the variant row in the science review's own sentence.
+const STATES = [
+  {
+    state: "Reference",
+    pair: "GT",
+    letter: "G",
+    variant: false,
+    activity: "expected DPD activity",
+    why: "",
+  },
+  {
+    state: "Variant",
+    pair: "AT",
+    letter: "A",
+    variant: true,
+    activity: "DPD activity can be reduced",
+    why: "Abnormal splicing can reduce the amount of functional DPD produced.",
+  },
+] as const;
+
+/**
+ * Who this patient is, over their head: a letter and their DPD activity, with the five slots from the scene
+ * before. The scene used to tell the two apart only by which one turned red, and by "Her" and "Him" on the
+ * slider, so nothing stopped a reader concluding the difference was their sex. This says what the difference is
+ * for as long as they are on screen.
+ */
+function PatientTag({
+  name,
+  activity,
+  made,
+  exposure,
+  side,
+}: {
+  name: string;
+  activity: string;
+  made: number;
+  /** How much drug is in this patient now, 0 to 1 of the most the scene shows. */
+  exposure: number;
+  /** Which side of the pair this patient stands on, so the tag can keep to the outside. */
+  side: "left" | "right";
+}) {
+  return (
+    <div
+      // Over the head on a phone or tablet. On a phone it is wider than the figure, so it sits above the top of
+      // the stand as well (the stand is 18% taller than the figure) and crosses neither. From 1024px it
+      // moves to the patient's outer side at shoulder height: over the head there it sat 50 to 74px into the
+      // headline. Both sets of classes are written out whole, because Tailwind only builds what it can read.
+      className={`absolute bottom-full mb-[calc(var(--fig2)*0.2)] w-[104px] px-2 py-1.5 text-center max-md:[@media(max-height:700px)]:w-[94px] max-md:[@media(max-height:700px)]:px-1 md:mb-3 md:w-max md:px-3 md:py-2 lg:bottom-auto lg:top-[16%] lg:mb-0 ${side === "left" ? "left-0 lg:left-auto lg:right-full lg:mr-4" : "right-0 lg:left-full lg:right-auto lg:ml-4"}`}
+      style={{ background: PANEL, borderRadius: R.sm, color: C.ink }}
+    >
+      <p className="text-[12px] font-black leading-none md:text-[13px]">{name}</p>
+      <p className="mt-1 text-[12px] font-semibold leading-tight md:text-[13px]">{activity}</p>
+      {/* a short phone has no room for the row, and the words above it say the same thing */}
+      <span
+        className="mt-1.5 flex justify-center gap-0.5 max-md:[@media(max-height:700px)]:hidden"
+        aria-hidden="true"
+      >
+        {[0, 1, 2, 3, 4].map((i) => (
+          <Slot key={i} made={i < made ? 1 : 0} small />
+        ))}
+      </span>
+      {/* The exposure as a measure, in the drug's own colour, so the difference between the two can be read off
+          a labelled bar and does not depend on noticing that one figure has changed colour. */}
+      <span className="mt-1.5 block max-md:[@media(max-height:700px)]:hidden" aria-hidden="true">
+        <span className="block text-[12px] font-semibold leading-none">5-FU exposure</span>
+        <span
+          className="mt-1 block h-[6px] overflow-hidden rounded-full"
+          style={{ background: `${C.ink}24` }}
+        >
+          <span
+            className="block h-full rounded-full"
+            style={{ width: `${Math.round(Math.min(1, exposure) * 100)}%`, background: C.coral }}
+          />
+        </span>
+      </span>
+    </div>
+  );
+}
+
+/** The bridge's panel: cream with a little of the chapter's lavender in it. */
+const PANEL = `color-mix(in oklab, ${C.paper} 90%, ${C.lavender})`;
+
 export function TwoPeople() {
   const [ref, p, active] = useSmoothProgress<HTMLElement>(0.1);
   // Dissolve out across the measured boundary at 0.513, as the bloodstream scene rises into the same frame.
   const pageP = usePageProgress();
-  const handoff = range(pageP, 0.489, 0.526);
+  const handoff = range(pageP, 0.489, 0.522);
 
   // The beats: enter, the same treatment, identical and held, one clears while one fills, the sentence finishes.
   // The hold is the point, because the split only hurts if the reader has had time to believe there was no
@@ -249,8 +368,12 @@ export function TwoPeople() {
   // was still fading: two unrelated pieces of information sharing a frame at the boundary that most needed to feel
   // clean. Opening at 0.13 puts it at page 0.243, after the descent has dissolved at 0.231. The cost is that the
   // two-patient act runs 377vh instead of 441vh, which is a fair price for a boundary that reads as continuous.
-  const bridge = beat(p, 0.13, 0.2, 0.3, 0.37);
-  const slots = range(p, 0.19, 0.31);
+  // It opens at 0.10, page 0.236, just after the descent has finished dissolving at 0.231. At 0.13 there was a
+  // frame of bare ground between the two scenes.
+  const bridge = beat(p, 0.1, 0.17, 0.3, 0.37);
+  // The three enzymes go as the panel arrives, so it is read in the state its title describes. They used to go
+  // across the whole of its stay, and for the first third of it the row under "reduced" was full.
+  const slots = range(p, 0.13, 0.2);
   const pp = range(p, 0.35, 1);
 
   // easeOut, not linear: a linear fade leaves the figures, stands and bags all half-transparent for about half a
@@ -263,7 +386,13 @@ export function TwoPeople() {
   const clearA = range(pp, 0.54, 0.74);
   const buildB = range(pp, 0.54, 0.8);
   const alarm = range(pp, 0.6, 0.82);
-  const outcome = beat(pp, 0.8, 0.9, 1.2, 1.3);
+  // In by 0.80. Arriving at 0.80 to 0.90 it reached full strength as the scene began to dissolve (pp 0.88), so
+  // the line the whole scene builds to was above half strength for two hundredths of the page.
+  const outcome = beat(pp, 0.72, 0.8, 1.2, 1.3);
+
+  // How far the slider card is up. From 0.52, not 0.56: at full strength it used to be on screen for a fifth of
+  // a screen's scroll, which is not long to find a control and use it.
+  const card = easeOut(band(pp, 0.52, 0.58, 0.72, 0.78));
 
   // The reader's dose. It starts at 1, the standard dose, so a reader who never touches the slider sees exactly
   // the scene that was here before it existed, and every harness that only scrolls measures the same thing.
@@ -283,11 +412,15 @@ export function TwoPeople() {
   /** Enough of a dose to still be a treatment for her. */
   const treated = level >= HER_MIN;
 
-  const fillA = uptake * level * (1 - clearA);
+  // What each body settles at. Patient A clears most of what arrives but not all of it: the bar used to fall to
+  // zero, which said a patient with expected DPD activity has no drug in them. Patient B clears less of the same
+  // dose, by enough that half a dose leaves B where a whole one leaves A (0.6 x 0.5 = 0.3 x 1), which is the
+  // level both readouts call "as expected". So the words and the bars now measure the same thing.
+  const fillA = uptake * level * (1 - clearA * 0.7);
   // He holds what she holds, plus what his reduced DPD cannot clear, and the slider governs only that second
   // term. At or below his ceiling it is zero and he behaves like her; at the standard dose it is the load the
   // scene was always showing.
-  const fillB = (uptake + 0.36 * buildB * over) * level;
+  const fillB = (uptake * (1 - clearA * 0.4 * (1 - over)) + 0.36 * buildB * over) * level;
   const alarmB = alarm * over;
 
   useEffect(() => {
@@ -308,80 +441,118 @@ export function TwoPeople() {
         // Three steps, not two. 768 is exactly Tailwind's md, so a two-step rule handed the tablet the desktop value and
         // the overlap there did not move. Phones get 22vh, tablets 19vh, desktop 17vh, one vh above the approved 16,
         // which is 8px on a 768-tall laptop and buys the card 16px of clearance instead of 8.
-        className="sticky top-0 h-screen overflow-hidden [--fig2:36vh] [--feet:22vh] md:[--fig2:min(52vh,600px)] md:[--feet:19vh] lg:[--feet:17vh]"
+        // The figures are capped by width as well as height. Sized by height alone, the pair with their stands came
+        // to 416px on a 390px phone and 786px on a 768px tablet, so the outer arms were cut off by the frame.
+        // A short screen gets smaller figures standing higher, because the card under them does not shrink. A
+        // short laptop window gets smaller ones too: at 52vh the stands reached the headline, and the second
+        // line of the closing sentence was drawn underneath both bags.
+        className="sticky top-0 h-screen overflow-hidden [--fig2:min(36vh,68vw)] [--feet:22vh] max-md:[@media(max-height:700px)]:[--fig2:min(22vh,68vw)] max-md:[@media(max-height:700px)]:[--feet:200px] md:[--fig2:min(52vh,600px,60vw)] md:[--feet:19vh] lg:[--feet:max(17vh,120px)] lg:[@media(max-height:700px)]:[--fig2:38vh]"
         style={{ opacity: 1 - q(handoff), visibility: handoff > 0.99 ? "hidden" : "visible" }}
       >
         {/* No background and no scattered field here any more; both moved to Ground and World. A scene that paints
             its own rectangle cannot fade into the next one, and that hard edge was the client's main note. */}
         {/* The chapter label lives in the story rail now — see StoryProgress. */}
 
-        {/* The bridge: one letter, and how much enzyme this body builds. Drawn with the vocabulary already
-            established, the red variant badge from the descent and the green enzyme the next scene will find missing. */}
+        {/* The bridge: the letter, and the enzyme that goes with it. Drawn with the vocabulary already established,
+            the red variant from the descent and the green enzyme the next scene will find missing. */}
         {bridge.o > 0.004 && (
           <div
-            className="pointer-events-none absolute inset-x-0 top-1/2 z-20 flex -translate-y-1/2 flex-col items-center px-6"
+            // a little below centre on a phone, where the panel is tall enough to reach the chapter label, and centred in
+            // the space under the header on a wider screen, not in the whole window
+            className="pointer-events-none absolute inset-x-0 top-[55%] z-20 flex -translate-y-1/2 flex-col items-center px-6 md:top-[calc(50%+30px)]"
             style={{ opacity: q(bridge.o), transform: `translateY(${bridge.y.toFixed(1)}px)` }}
           >
-            {/* 560px was 6.8% of a 1440x900 frame and the headline beneath it measured 10.9%: the words took more of the
-                screen than the picture at the moment the picture is supposed to be making the argument. What the client
-                keeps rejecting is emptiness, not text, so the fix is to fill the frame rather than strip the copy. */}
-            <svg viewBox="0 0 460 130" className="w-[min(92vw,860px)]" aria-hidden="true">
-              {/* the letter, carried straight over from the sequence */}
-              <g transform="translate(6 44)">
-                <rect width="42" height="46" rx="9" fill={C.red} stroke={C.ink} strokeWidth="3" />
-                <text
-                  x="21"
-                  y="33"
-                  textAnchor="middle"
-                  fill="#fff"
-                  style={{ font: "800 25px ui-monospace, monospace" }}
-                >
-                  A
-                </text>
-              </g>
-              <path
-                d="M62 67 L 104 67"
-                stroke={C.ink}
-                strokeWidth="3"
-                strokeLinecap="round"
-                markerEnd=""
-              />
-              <path d="M96 60 L 106 67 L 96 74 Z" fill={C.ink} />
-
-              {/* Five slots, two filled. "Reduced, not absent" is the accurate claim, and the picture makes it without a
-                  sentence. */}
-              {[0, 1, 2, 3, 4].map((i) => {
-                const on = range(slots, i * 0.12, i * 0.12 + 0.3);
-                const made = i < 2;
-                return (
-                  // The same object the bloodstream scene draws. This used to be an inline rounded rectangle with a notch, a
-                  // second, older enzyme, so the reader was taught one silhouette here and shown another two scenes later. See
-                  // ENZYME_PATH in palette.ts.
-                  // 0.64 puts the canonical path's 53-unit width back on the 34 units this diagram was laid out around, so nothing
-                  // else in the composition moves; the stroke is divided by the same factor to keep its painted weight.
-                  <g key={i} transform={`translate(${124 + i * 68 - 0.7} 39) scale(0.64)`}>
-                    <path
-                      d={ENZYME_PATH}
-                      fill={made ? C.green : "none"}
-                      fillOpacity={made ? on : 0}
+            {/* The two states the reader has just met, each beside the enzyme it leaves the body with. One red
+                letter followed by fewer green shapes showed a result and asked the reader to supply the rest: what
+                the shapes are, what the dashed ones mean, and why one causes the other. Every one of those is
+                written here, in type a phone can read, which a label inside the old drawing could not be.
+                It sits on a pale panel so the enzyme's green and the variant's red are on the ground they were
+                picked for. */}
+            <div
+              className="w-[min(92vw,620px)] px-4 py-3.5 text-left md:px-7 md:py-5"
+              style={{ background: PANEL, borderRadius: R.md, color: C.ink }}
+            >
+              {/* The key comes first, so the shapes are named before the rows that use them. */}
+              <p className="mb-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-[12px] font-semibold md:mb-4 md:text-[13px]">
+                <span className="font-black">DPD enzyme</span>
+                <span className="flex items-center gap-1.5">
+                  <Slot made={1} small /> functional
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <Slot made={0} small /> may not be produced
+                </span>
+              </p>
+              {STATES.map((s, row) => (
+                <div key={s.letter} className={row ? "mt-3.5 md:mt-5" : undefined}>
+                  <p className="text-[13px] font-semibold leading-snug md:text-[15px]">
+                    <span className="font-black">
+                      {s.state} <span className="font-mono text-[1.08em]">{s.pair}</span>
+                    </span>
+                    : {s.activity}
+                  </p>
+                  <div className="mt-1.5 flex items-center gap-2 md:mt-2 md:gap-3.5">
+                    <span
+                      className="grid h-9 w-8 shrink-0 place-items-center font-mono text-[19px] font-extrabold md:h-12 md:w-11 md:text-[26px]"
+                      style={{
+                        background: s.variant ? C.red : C.paper,
+                        color: s.variant ? "#fff" : C.ink,
+                        border: `2.5px solid ${C.ink}`,
+                        borderRadius: R.sm,
+                      }}
+                    >
+                      {s.letter}
+                    </span>
+                    <svg
+                      viewBox="0 0 34 14"
+                      className="w-5 shrink-0 md:w-8"
+                      aria-hidden="true"
+                      fill="none"
                       stroke={C.ink}
-                      strokeWidth="4"
-                      strokeDasharray={made ? undefined : "8 8"}
+                      strokeWidth="2.6"
+                      strokeLinecap="round"
                       strokeLinejoin="round"
-                      opacity={made ? 1 : 0.35}
-                    />
-                  </g>
-                );
-              })}
-            </svg>
+                    >
+                      <path d="M2 7H31M25 2l6 5-6 5" />
+                    </svg>
+                    <span className="flex gap-1 md:gap-2.5" aria-hidden="true">
+                      {[0, 1, 2, 3, 4].map((i) => {
+                        // With the variant, three of the five stop being made, one after another as the reader
+                        // scrolls: the row starts as the reference row and becomes the reduced one.
+                        const lost =
+                          s.variant && i >= 2
+                            ? range(slots, (i - 2) * 0.2, (i - 2) * 0.2 + 0.4)
+                            : 0;
+                        return <Slot key={i} made={1 - lost} />;
+                      })}
+                    </span>
+                  </div>
+                  {s.why && (
+                    <p
+                      className="mt-1.5 text-[12.5px] leading-snug md:text-[14px]"
+                      style={{ color: C.inkBody }}
+                    >
+                      {s.why}
+                    </p>
+                  )}
+                </div>
+              ))}
+              <p
+                className="mt-3 border-t pt-2.5 text-[12px] leading-snug md:mt-4 md:pt-3 md:text-[13px]"
+                style={{ borderColor: `${C.ink}26`, color: C.inkBody }}
+              >
+                Illustration, not a measured ratio.
+              </p>
+            </div>
 
             <p
-              className="mt-6 max-w-[34ch] text-center font-black md:mt-8"
+              // wide enough for two lines: at 34ch the sentence ran to three, and with the panel above it the block was
+              // taller than a laptop screen, so the panel's top went under the header
+              className="mt-4 max-w-[46ch] text-center font-black md:mt-6"
               style={{ ...T.sub, color: C.paper }}
             >
               A <span style={{ color: C.redOnField }}>DPYD</span> variant can reduce{" "}
-              <span style={{ color: C.greenOnField }}>DPD</span> activity — limiting the body's
-              ability to clear 5-FU.
+              <span style={{ color: C.greenOnField }}>DPD</span> activity, which can limit the
+              body's ability to clear <span className="whitespace-nowrap">5-FU</span>.
             </p>
           </div>
         )}
@@ -400,36 +571,67 @@ export function TwoPeople() {
             transformOrigin: "50% 100%",
           }}
         >
-          <div className="flex items-end gap-2 md:gap-4" style={{ height: "var(--fig2)" }}>
-            <Patient
-              src={asset("patient-a.webp")}
-              fill={fillA}
-              alarm={0}
-              flip={false}
-              animate={active}
-              seed={0}
-            />
+          <div className="flex items-end" style={{ height: "var(--fig2)", gap: GAP }}>
+            <div className="relative h-full">
+              <PatientTag
+                name="Patient A"
+                activity="expected DPD activity"
+                made={5}
+                exposure={fillA / PEAK}
+                side="left"
+              />
+              <Patient
+                src={asset("patient-a.webp")}
+                fill={fillA}
+                alarm={0}
+                flip={false}
+                animate={active}
+                seed={0}
+              />
+            </div>
             {/* Taller than the figure on purpose. At 92% the bag hung level with the patient's chest, so the only place
                 the line could reach was their legs, which is what the client saw. A real stand is taller than the person,
-                and once it is, the tube descends to the forearm the way it does in a ward. */}
-            <div className="h-[118%]">
-              <IV dose={dose * level} flow={flow} flip={false} />
+                and once it is, the tube descends to the hand the way it does in a ward.
+                Above the figure in paint order: the figure is a transformed layer, so without this the end of the
+                line and its dressing were drawn underneath the hand they are on. */}
+            <div className="relative z-10 h-[118%]">
+              <IV dose={dose} amount={level} flow={flow} flip={false} />
             </div>
           </div>
-          <div className="flex items-end gap-2 md:gap-4" style={{ height: "var(--fig2)" }}>
-            <div className="h-[118%]">
-              <IV dose={dose * level} flow={flow} flip />
+          <div className="flex items-end" style={{ height: "var(--fig2)", gap: GAP }}>
+            <div className="relative z-10 h-[118%]">
+              <IV dose={dose} amount={level} flow={flow} flip />
             </div>
-            <Patient
-              src={asset("patient-b.webp")}
-              fill={fillB}
-              alarm={alarmB}
-              flip={false}
-              animate={active}
-              seed={1.9}
-            />
+            <div className="relative h-full">
+              <PatientTag
+                name="Patient B"
+                activity="reduced DPD activity"
+                made={2}
+                exposure={fillB / PEAK}
+                side="right"
+              />
+              <Patient
+                src={asset("patient-b.webp")}
+                fill={fillB}
+                alarm={alarmB}
+                flip={false}
+                animate={active}
+                seed={1.9}
+              />
+            </div>
           </div>
         </div>
+
+        {/* What the scene is, for as long as it is on screen and the slider card is not: the card carries the same
+            two sentences, and it is only up for about half a screen. Without this the last frame of the scene, the
+            one with the man visibly affected, had no disclaimer and nothing saying sex is not the cause. */}
+        <p
+          className="pointer-events-none absolute inset-x-0 bottom-[3vh] z-20 mx-auto w-fit max-w-[92vw] rounded px-3 py-1.5 text-center text-[12px] leading-snug md:text-[13px]"
+          style={{ background: `${C.ink}cc`, color: C.paper, opacity: q(enter * (1 - card)) }}
+        >
+          Illustrative simulation, not a clinical prediction. The two differ in DPD activity, not
+          because of their sex.
+        </p>
 
         {/* The slider: one dose, two people. It arrives only after the two have visibly diverged, because before that
             the long identical uptake is the beat and a control there would let the reader break it. It leaves at 0.72
@@ -443,24 +645,31 @@ export function TwoPeople() {
           // the floor instead of 3.
           className="absolute inset-x-0 bottom-[3vh] z-30 flex justify-center px-6 md:bottom-[2vh]"
           style={{
-            opacity: q(easeOut(band(pp, 0.56, 0.62, 0.72, 0.78))),
-            pointerEvents: q(easeOut(band(pp, 0.56, 0.62, 0.72, 0.78))) > 0.3 ? "auto" : "none",
+            opacity: q(card),
+            pointerEvents: q(card) > 0.3 ? "auto" : "none",
           }}
         >
           <div
-            className="w-full max-w-[420px] rounded-[10px] px-4 py-3 md:max-w-[640px] md:px-5 md:py-2.5"
-            style={{
-              background: C.paper,
-              border: `2.5px solid ${C.ink}`,
-              boxShadow: `4px 4px 0 ${C.ink}`,
-            }}
+            className="w-full max-w-[420px] rounded-[10px] px-4 py-2 md:max-w-[720px] md:px-5 md:py-2.5"
+            // A hairline and no offset shadow. On this site the hard shadow means "press this", and this is a
+            // panel holding a slider, not a button.
+            style={{ background: C.paper, border: `1.5px solid ${C.ink}59` }}
           >
             <div className="flex items-baseline justify-between gap-3">
-              <span className={L.note} style={{ color: C.ink }}>
+              {/* tighter than the house label, so it stays on one line beside the state on a 360px phone */}
+              <span
+                className="text-[12px] font-bold uppercase tracking-[0.08em] md:tracking-[0.14em]"
+                style={{ color: C.ink }}
+              >
                 One dose, both patients
               </span>
-              <span className={L.note} style={{ color: C.inkNote }}>
-                {level >= 0.95 ? "standard" : level <= HIS_MAX ? "reduced" : "lowered"}
+              <span
+                className="text-[12px] font-bold uppercase tracking-[0.08em] md:tracking-[0.14em]"
+                style={{ color: C.inkBody }}
+              >
+                {/* "much lower", not "reduced": the tag beside it says "reduced DPD activity", and one word was
+                    doing two jobs in one frame */}
+                {level >= 0.95 ? "standard" : level <= HIS_MAX ? "much lower" : "lower"}
               </span>
             </div>
 
@@ -476,29 +685,49 @@ export function TwoPeople() {
                   setChosen(Number(e.currentTarget.value));
                   setMoved(true);
                 }}
-                className="mt-3 w-full md:mt-0 md:flex-1"
-                style={{ accentColor: C.redDeep, touchAction: "none" }}
+                className="mt-2 w-full md:mt-0 md:flex-1"
+                // ink: red is the variant, and a slider is not
+                style={{ accentColor: C.ink, touchAction: "none" }}
               />
 
-              <div className="mt-2.5 grid grid-cols-2 gap-2 md:mt-0 md:w-[270px] md:shrink-0">
+              {/* What the picture shows at this dose, said as what it is: a dose, and an exposure. The readouts were
+                  "treated" and "accumulating", which are outcomes, and a slider on a wiki cannot know those.
+                  Ink on a tint, not green and red: green is the enzyme and red is the variant, and a reader who
+                  cannot separate the two hues loses nothing. The tint is coral, the drug's, when there is more or
+                  less of the drug than intended. */}
+              <div className="mt-2 grid grid-cols-2 gap-2 md:mt-0 md:w-[372px] md:shrink-0">
                 {[
-                  { who: "Her", ok: treated, yes: "treated", no: "under-treated" },
-                  { who: "Him", ok: over <= 0.02, yes: "clears it", no: "accumulating" },
+                  {
+                    who: "Patient A",
+                    ok: treated,
+                    // exposure for both, so the two read as one measure and neither repeats the dose named above
+                    yes: "exposure as expected",
+                    no: "exposure may be too low",
+                  },
+                  {
+                    who: "Patient B",
+                    ok: over <= 0.02,
+                    yes: "exposure as expected",
+                    no: "exposure can increase",
+                  },
                 ].map((r) => (
                   <div
                     key={r.who}
                     className="rounded-[6px] px-2.5 py-1.5"
                     style={{
-                      background: r.ok ? `${C.green}1f` : `${C.red}14`,
-                      border: `2px solid ${r.ok ? C.green : C.red}66`,
+                      background: r.ok ? `${C.ink}0a` : `${C.coral}2e`,
+                      border: `1.5px solid ${r.ok ? `${C.ink}40` : C.coral}`,
                     }}
                   >
-                    <span className={L.note} style={{ color: C.inkNote }}>
+                    <span
+                      className="block text-[12px] font-bold leading-none"
+                      style={{ color: C.inkBody }}
+                    >
                       {r.who}
                     </span>
                     <span
-                      className="mt-0.5 block text-[13px] font-black leading-none"
-                      style={{ color: r.ok ? C.green : C.redDeep }}
+                      className="mt-1 block text-[12.5px] font-black leading-tight md:whitespace-nowrap md:text-[13px] md:leading-none"
+                      style={{ color: C.ink }}
                     >
                       {r.ok ? r.yes : r.no}
                     </span>
@@ -506,6 +735,14 @@ export function TwoPeople() {
                 ))}
               </div>
             </div>
+            <p className="mt-1.5 text-[12px] leading-tight" style={{ color: C.inkBody }}>
+              Illustrative simulation, not a clinical prediction.
+              {/* said outright, because the two are drawn as a woman and a man; a short phone has no line to spare */}
+              <span className="max-md:[@media(max-height:700px)]:hidden">
+                {" "}
+                The two differ in DPD activity, not because of their sex.
+              </span>
+            </p>
           </div>
         </div>
 
@@ -523,18 +760,23 @@ export function TwoPeople() {
           </p>
         </div>
 
-        {/* "…doesn't mean the same outcome." — only after the split has happened */}
+        {/* The second half of the sentence, only after the split has happened. "Exposure", because that is what
+            the picture shows: how much drug is in each body. An outcome is a different thing, and the science
+            review asks for the two not to be swapped. */}
         <div className={L.headline} style={{ opacity: q(outcome.o) }}>
           <p
             className={`text-center font-black ${L.headlineWidth}`}
             style={{
               ...T.headline,
+              // Sized to stay on one line inside the width the headline is allowed (see L.headlineWidth). It is
+              // longer than the first half of the sentence, and at the headline's full size it wrapped: the
+              // second line was drawn across the tops of both stands.
+              fontSize: "clamp(1.75rem, min(4.8vw, (100vw - 34rem) / 16.8), 3.8rem)",
               color: C.paper,
               transform: `translateY(${outcome.y.toFixed(1)}px)`,
             }}
           >
-            &hellip;doesn&rsquo;t mean the{" "}
-            <span style={{ color: C.redOnField }}>same outcome.</span>
+            &hellip;may not mean the same exposure.
           </p>
         </div>
       </div>

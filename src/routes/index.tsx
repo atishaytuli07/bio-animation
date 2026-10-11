@@ -14,7 +14,7 @@ import { World } from "@/components/story/World";
 import { usePageProgress } from "@/hooks/use-page-progress";
 import { band, easeOut, range, useSmoothProgress } from "@/hooks/use-scroll-progress";
 import { Cell, Enzyme, Molecule } from "@/components/hero/elements";
-import { C, DISPLAY, L, R, T } from "@/components/hero/palette";
+import { C, L, R, T } from "@/components/hero/palette";
 
 // The story, and the wiki's front door. Everything is drawn in code as SVG. No three.js: the old WebGL helix was slow to
 // load, read as generic, and could not morph or recolour.
@@ -32,7 +32,7 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "A DPYD variant can reduce how fast the body clears fluoropyrimidine chemotherapy. Follow the gene, the enzyme and the drug — and see why testing comes before the first dose.",
+          "A variation in the DPYD gene can affect how the body processes fluoropyrimidine chemotherapy. Follow the gene, the enzyme and the drug, and see why testing comes before the first dose.",
       },
       { property: "og:title", content: "ChemoGuard: why testing comes before the first dose" },
       { property: "og:type", content: "website" },
@@ -59,7 +59,12 @@ const SCALE_STOPS = [
   // These start where "One gene. One letter." finishes leaving.
   { label: "Your genome", note: "about three billion letters", in: 0.34, out: 0.41 },
   { label: "Chromosome 1", note: "1p21.3", in: 0.47, out: 0.54 },
-  { label: "DPYD", note: "encodes DPD, which breaks down 5-FU", in: 0.6, out: 0.67 },
+  {
+    label: "DPYD",
+    note: "encodes DPD, which breaks down a large proportion of 5-FU",
+    in: 0.6,
+    out: 0.67,
+  },
 ] as const;
 
 // The story rail: where you are, and what you are looking at, in one place. The client found the small
@@ -68,97 +73,61 @@ const SCALE_STOPS = [
 // live here now and the annotations are the only thing left that looks like that.
 // Chapter names are deliberately not the words of the headline they sit over: "04 - Look closer" above a
 // headline reading "Look closer." was her own complaint.
-// Thresholds 02 and 03 are measured against the picture, not the section handoffs at 0.203 and 0.276. Traced at
-// 0.01 steps, the enzyme bridge is not visible until 0.25 and the two patients do not appear until 0.32.
+// Thresholds are measured against the picture, not the section handoffs, and are in story coordinates (see
+// story-map.ts). The enzyme bridge opens at 0.236 and the two patients do not appear until 0.32.
 const CHAPTERS = [
   { at: 0.0, n: "01", name: "The gene" },
-  { at: 0.245, n: "02", name: "The enzyme" },
+  { at: 0.238, n: "02", name: "The enzyme" },
   { at: 0.315, n: "03", name: "Two people" },
-  { at: 0.509, n: "04", name: "Inside the body" },
+  // 0.525, once the patients have gone: at 0.509 it changed while their closing line was still on screen
+  { at: 0.525, n: "04", name: "Inside the body" },
   // Not a new section — the same scene, after it turns. The rail names the argument even though the picture never
   // restarts.
-  { at: 0.84, n: "05", name: "Before the first dose" },
+  // 0.806 is where "What if we knew first?" is half in. At 0.84 the label used to change while the line before
+  // it was still leaving.
+  { at: 0.806, n: "05", name: "Before the first dose" },
 ] as const;
 
-// The marker riding the rail: one base pair seen end-on, on the same maths as the strand itself. The two nodes
-// sit at plus and minus cos(a) of the axis and swap depth through sin(a), four turns across the page.
-// Scroll-driven, not looping. A marker spinning on a timer would be ambient motion in the one place the reader
-// looks to answer "how much is left", and ambient loops are what make a site read as generated.
-// Paper fill with ink outlines, because the ground travels cream, purple, pink, cream: a filled dot in any
-// palette colour disappears on one of those. Red would also mean the variant, and a progress marker is not that.
-function RailKnob({ p }: { p: number }) {
-  const a = p * Math.PI * 8;
-  const cos = Math.cos(a);
-  const near = (Math.sin(a) + 1) / 2;
-  const x1 = 9 + cos * 5.4;
-  const x2 = 9 - cos * 5.4;
-  return (
-    <div
-      aria-hidden="true"
-      className="absolute top-0 -translate-x-1/2"
-      // max() keeps the knob a knob at the top of the page. At p=0 a centred marker at left:0 is half outside
-      // the window and reads as a rendering fault rather than a starting position.
-      style={{
-        left: `max(10px, ${(p * 100).toFixed(2)}%)`,
-        // Arrives with the fill. At p=0 a knob with no fill beside it measured as a stray glyph at the edge of
-        // the bar, not a start position.
-        opacity: q(range(p, 0, 0.015)),
-      }}
-    >
-      <svg width="18" height="18" viewBox="0 0 18 18">
-        <line
-          x1={x1}
-          y1="9"
-          x2={x2}
-          y2="9"
-          stroke={C.ink}
-          strokeWidth="2"
-          strokeLinecap="round"
-          opacity="0.55"
-        />
-        <circle
-          cx={x2}
-          cy="9"
-          r={3 - near * 0.9}
-          fill={C.paper}
-          stroke={C.ink}
-          strokeWidth="1.6"
-          opacity="0.72"
-        />
-        <circle
-          cx={x1}
-          cy="9"
-          r={2.1 + near * 0.9}
-          fill={C.paper}
-          stroke={C.ink}
-          strokeWidth="1.8"
-        />
-      </svg>
-    </div>
-  );
-}
-
-// The progress rail, on the header's lower edge rather than across the top of it. The header used to scroll
-// away and the rail hung 7px from the top of the window; the header stays now, so up there the knob would travel
-// across the logo and every nav label. On the bar's bottom seam it crosses no text and sits half on cream.
+// The progress rail, on the header's lower edge. The fill says how far the reader is, and the marks on it are the
+// four chapter boundaries: hollow until reached, solid after. They used to be a single knob, two tiny circles
+// drawn as "a base pair seen end-on" that turned as you scrolled. At 5px nobody could read that, and the client
+// asked what the circles were for. Now they are for something, and the label below the bar names the chapter.
+// Ink, not the lavender-to-coral-to-red gradient it had: those three colours mean genetics, the drug and the
+// variant inside the story, and a progress bar is none of them.
 // Positioned from the bottom of the bar row: -mt-[8px] with the 7px pad puts the 3px fill 1px above the row's
-// end, covering the header's 2px border at both header heights, and centres the 18px knob on it.
+// end, covering the header's 2px border at both header heights, and centres the 17px row of marks on it.
 function ProgressRail() {
   const p = usePageProgress(200);
   return (
     <div className="relative -mt-[8px] pt-[7px]">
-      {/* No track. Drawing the untravelled part in 7% ink put the unfinished part of the story across the top of
-          every frame. The fill and the marker say where you are; the remainder does not need painting. */}
+      {/* No track. Drawing the untravelled part put the unfinished part of the story across the top of every
+          frame. The fill and the marks say where you are; the remainder does not need painting. */}
       <div className="h-[3px] w-full">
         <div
           className="h-full origin-left"
-          style={{
-            width: `${(p * 100).toFixed(1)}%`,
-            background: `linear-gradient(90deg, ${C.lavender}, ${C.coral}, ${C.red})`,
-          }}
+          style={{ width: `${(p * 100).toFixed(1)}%`, background: C.ink }}
         />
       </div>
-      <RailKnob p={p} />
+      <svg
+        aria-hidden="true"
+        className="absolute inset-x-0 top-0 h-[17px] w-full overflow-visible"
+        style={{ opacity: q(range(p, 0, 0.015)) }}
+      >
+        {CHAPTERS.slice(1).map((c) => {
+          const reached = p >= c.at;
+          return (
+            <circle
+              key={c.n}
+              cx={`${(c.at * 100).toFixed(1)}%`}
+              cy="8.5"
+              r={reached ? 4.2 : 3.6}
+              fill={reached ? C.ink : C.paper}
+              stroke={C.ink}
+              strokeWidth="1.6"
+            />
+          );
+        })}
+      </svg>
     </div>
   );
 }
@@ -174,19 +143,24 @@ function StoryProgress() {
           the per-scene labels used, which is the first line clear of the header. At pt-3 it sat on the logo.
           A band, not a range: a range reaches 1 and stays, which left "05 - Before the first dose" pinned over a
           closing landing that is not part of the story. It goes out over the last two percent. */}
-      <div className={L.label} style={{ opacity: q(easeOut(band(p, 0.062, 0.11, 0.975, 0.998))) }}>
+      <div className={L.label} style={{ opacity: q(easeOut(band(p, 0.068, 0.11, 0.985, 0.999))) }}>
         <span
-          className={L.labelType}
-          style={{
-            color: p > 0.06 && p < 0.6 ? C.paper : C.redDeep,
-            transition: "color 400ms ease",
-          }}
+          // Cream on a dark ground of its own, for the whole story. It used to turn red once the ground went
+          // pink, and red on pink measured 2.6:1 through "Inside the body" and under 4.5:1 to the end; before
+          // that, on the plum of the patients' scene, neither colour could pass at this size. The label only
+          // exists once the reader has left the hero, so it never sits on cream.
+          className={`${L.labelType} -ml-2 rounded bg-[var(--chip)] px-2 py-1`}
+          style={
+            {
+              color: C.paper,
+              "--chip": `${C.ink}cc`,
+            } as React.CSSProperties
+          }
         >
           <span
             className="block h-0.5 w-7"
             style={{
-              background: p > 0.06 && p < 0.6 ? C.paper : C.red,
-              transition: "background 400ms ease",
+              background: C.paper,
             }}
           />
           {chapter.n} · {chapter.name}
@@ -196,14 +170,16 @@ function StoryProgress() {
   );
 }
 
-/** Scattered field of scientific elements — the "much less empty background". */
+// The hero's own objects: the story's three actors, on the opening screen. A drug molecule on the seam, two
+// enzymes in the field, and cells.
+// They were cut to three cells in the October review round, on the reading that the client found them
+// sticker-like. The site's owner asked for them back: on this one screen they are what makes the opening feel
+// inhabited, and they introduce the shapes the story goes on to use. The ambient layer behind every other scene
+// stays as it was reduced (cells and dots only), so the drug and the enzyme still mean something where it counts.
+// Positions are percentages of the viewport, and the layout stacks below md, so an object tuned for the seam
+// lands on the copy once the columns stack. Those are marked hideSm and do not render there.
+// depth: 0 = far (small, soft, barely moves) to 1 = near (large, sharp, moves most)
 const FIELD = [
-  // Deliberately few. The hero ran this array, a separate DOTS layer and the global World at once: 58 drifting
-  // elements on the one screen whose copy is left-aligned, three of them sitting on the paragraph, the button and
-  // the chapter label. What is left is only what the global world cannot do, objects that straddle the seam.
-  // Positions are percentages of the viewport, and the layout stacks below md, so objects tuned for the seam land
-  // on the copy once the columns stack. The ones that would collide are marked hideSm and do not render there.
-  // depth: 0 = far (small, soft, barely moves) to 1 = near (large, sharp, moves most)
   { k: "enz", x: 72, y: 12, s: 0.5, r: 10, tone: C.green, depth: 0.5 },
 
   // On the seam. The field's edge sits near x = 42%, so these sit half on cream and half on purple, which is what
@@ -280,9 +256,17 @@ function HeroConcept() {
   // Her phrase, once, before the annotations start narrating. It starts at 0.17, where the hero copy finishes
   // leaving, and is clear before the first scale label arrives at 0.34. Solve these against the opacity crossings
   // rather than the window numbers: this one is above 12% until 0.324, which is why the label waits for 0.34.
-  const followIn = band(p, 0.17, 0.24, 0.28, 0.33);
+  // It holds from 0.21 to 0.29, about 26vh of scroll. It was at full strength for 0.24 to 0.28 only, which a
+  // single flick of a wheel passes.
+  const followIn = band(p, 0.16, 0.21, 0.29, 0.33);
   // The cream side gives way as we travel in, so the two halves become one space rather than staying a split screen.
-  const merge = range(p, 0.07, 0.38);
+  // Finished by p 0.30. It ran to 0.38, and for that last stretch a strip of ground showed down the left edge with
+  // the corner wash laid over it, which read as a grey panel beside the field.
+  const merge = range(p, 0.07, 0.3);
+  // How much of the light lavender is left at the field's bright end. The hero's field is a gradient from light to
+  // deep; as it spreads it settles to the deep end, so "One gene. One letter." is set on the richer purple the
+  // chapter is named for. On the light end paper measured 3.5:1.
+  const fieldLight = Math.round((1 - Math.min(1, merge * 1.6)) * 100);
   // Objects clear out well before the first annotation lands.
   const ambientOut = range(p, 0.05, 0.22);
 
@@ -371,12 +355,14 @@ function HeroConcept() {
               // Once merged, this field is a full-screen opaque rectangle on top of Ground and World, which is
               // why the descent and the sequence looked like an object alone in a void. It dissolves into the
               // ground, which is already running the same lavender to lavenderDeep, so the swap is invisible.
-              opacity: 1 - range(merge, 0.72, 1),
+              // It lets go only after it covers the screen (p 0.30) and the ground has followed (0.33): the same
+              // deep lavender. It used to start at merge 0.72, with a strip of cream still showing beside it.
+              opacity: 1 - range(p, 0.34, 0.44),
               // Grain and colour only, no stripes. This field used to paint its own copy of the surface pattern
               // at rgba(255,255,255,0.05) while Ground painted another at 0.06 x light x 0.55, so when the field
               // dissolved the texture fell from 0.0555 white to 0.0113 and never came back. Ground owns it now,
               // and dissolving this field is a pure colour handover with no texture change.
-              backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='0.1'/%3E%3C/svg%3E"), linear-gradient(160deg, ${C.lavender}, ${C.lavenderDeep})`,
+              backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='0.1'/%3E%3C/svg%3E"), linear-gradient(160deg, color-mix(in oklab, ${C.lavender} ${fieldLight}%, ${C.lavenderDeep}), ${C.lavenderDeep})`,
             }}
           />
           {/* a thin ink keyline along the field edge — the reference wikis all
@@ -444,7 +430,7 @@ function HeroConcept() {
               background: `radial-gradient(120% 104% at 0% 0%, ${C.ink}c9, ${C.ink}70 56%, transparent 84%)`,
               // It arrives with the bar, not on its own slower ramp. Measured at page 0.09, "01 - The gene" ran
               // at 2.47:1, "Your genome" at 2.04 and its note at 1.65, recovering to 4.90 only by 0.12.
-              opacity: q(range(pageP, 0.042, 0.08)),
+              opacity: q(range(pageP, 0.064, 0.084)),
             }}
           />
 
@@ -460,8 +446,8 @@ function HeroConcept() {
               {/* A chapter label, not a control. It used to carry the paper fill, ink border and hard offset
                   shadow of the secondary button, so two affordances wore one appearance. The offset shadow now
                   means exactly one thing: pressable. Neither reference wiki boxes its chapter label. */}
-              <span className={L.labelType} style={{ fontFamily: DISPLAY, color: C.redDeep }}>
-                <span className="block h-0.5 w-7" style={{ background: C.red }} />
+              <span className={L.labelType} style={{ color: C.ink }}>
+                <span className="block h-0.5 w-7" style={{ background: C.ink }} />
                 01 · The gene
               </span>
 
@@ -480,15 +466,15 @@ function HeroConcept() {
                 className="mt-4 max-w-md text-[16px] font-medium leading-relaxed md:mt-6 md:text-[17px]"
                 style={{ color: C.inkBody }}
               >
-                One gene affects how fast your body clears a widely used chemotherapy drug. For some
-                people, a standard dose can be more than they can handle.
+                A variation in the DPYD gene can affect how the body processes fluoropyrimidine
+                chemotherapy, and why the same starting dose may carry very different risks.
               </p>
 
-              <div className="mt-5 flex flex-wrap items-center gap-3 md:mt-8">
+              <div className="mt-5 flex flex-wrap items-center gap-2 sm:gap-3 md:mt-8">
                 <button
-                  className="px-6 py-3 text-[15px] font-bold text-white transition-transform hover:-translate-y-0.5"
+                  // narrower padding on a phone, so the two buttons share a row and both are on the opening screen
+                  className="px-3.5 py-3 text-[14px] font-bold text-white transition-transform hover:-translate-y-0.5 sm:px-6 sm:text-[15px]"
                   style={{
-                    fontFamily: DISPLAY,
                     background: C.redDeep,
                     border: `2.5px solid ${C.ink}`,
                     borderRadius: R.sm,
@@ -511,9 +497,8 @@ function HeroConcept() {
                 {DESCRIPTION?.ready && (
                   <Link
                     to={DESCRIPTION.to}
-                    className="px-6 py-3 text-[15px] font-bold transition-transform hover:-translate-y-0.5"
+                    className="px-3.5 py-3 text-[14px] font-bold transition-transform hover:-translate-y-0.5 sm:px-6 sm:text-[15px]"
                     style={{
-                      fontFamily: DISPLAY,
                       background: C.paper,
                       color: C.ink,
                       border: `2.5px solid ${C.ink}`,
@@ -521,7 +506,7 @@ function HeroConcept() {
                       boxShadow: `4px 4px 0 ${C.ink}`,
                     }}
                   >
-                    Explore the project
+                    Explore the science
                   </Link>
                 )}
               </div>
@@ -542,13 +527,20 @@ function HeroConcept() {
                 } as React.CSSProperties
               }
             >
-              <div className="relative h-[34vh] w-full max-w-[520px] md:h-[82vh]">
+              {/* a short phone gives the strand less, so the first button stays on the opening screen */}
+              <div
+                className="relative h-[34vh] w-full max-w-[520px] max-md:[@media(max-height:700px)]:h-[25vh] md:h-[min(82vh,calc(100vh-13rem))]"
+                // The headline is set across the strand, and a white backbone ran through its letters. The strand
+                // dims while the words are up and comes back as they leave.
+                style={{ opacity: q(1 - followIn * 0.55) }}
+              >
                 <Helix
                   onFirstDrag={() => setDragged(true)}
                   zoom={zoom}
                   focus={focus}
                   flatten={flatten}
                   read={read}
+                  hush={followIn}
                 />
                 <div
                   className="pointer-events-none absolute inset-x-0 -bottom-1 flex justify-center"
@@ -560,11 +552,11 @@ function HeroConcept() {
                   }}
                 >
                   <span
-                    className={`flex items-center gap-2 px-3 py-1.5 ${L.note}`}
-                    // Ink, for the same reason as the nav beside it: this only exists on the hero, where the
-                    // field is still light lavender. Paper tops out at 2.79:1 there and this measured 1.96:1,
-                    // the least readable string on the opening screen.
-                    style={{ color: C.ink, opacity: 0.96 }}
+                    className={`flex items-center gap-2 rounded-full px-3.5 py-1.5 ${L.note} !text-[12px]`}
+                    // On its own cream ground. Ink straight on the field measured 3.24:1 at 11px, and paper
+                    // tops out at 2.79:1 there, so neither colour of type can pass on the lavender itself. No
+                    // border and no offset shadow: it is a hint, and those mean pressable.
+                    style={{ color: C.ink, background: C.paper }}
                   >
                     <svg width="26" height="10" viewBox="0 0 26 10" aria-hidden="true">
                       <path
@@ -600,14 +592,20 @@ function HeroConcept() {
                 // which sits at a fixed top-24 / md:top-28, ending near 120px and 136px. A bare top: 20vh is
                 // 88px on a 439px-tall window, under the label's 96px, so the two printed over each other.
                 // Anything pinned to this column needs the same floor.
-                className="pointer-events-none absolute left-6 top-[max(140px,20vh)] z-20 md:left-10 md:top-[max(156px,20vh)]"
+                // Below 1280px the strand reaches this column and passes straight behind these ("Chromosome 1"
+                // measured 1.77:1 at 1024 where a backbone crossed it), so there they sit on their own dark ground,
+                // and at the foot of the frame: at the top, on a phone, the chip covered the strand's own pair
+                // label. A wider screen keeps them in the empty left column, where the corner wash is enough.
+                className="pointer-events-none absolute left-3 z-20 rounded-md px-3 py-2 max-xl:bottom-[9vh] max-xl:bg-[#241C2Ed9] md:left-7 xl:left-10 xl:top-[max(156px,20vh)] xl:p-0"
                 style={{ opacity: q(easeOut(on)) }}
               >
                 <span
                   // Same spec as every other small label on the site. This had its own tracking (0.26em) and its note
                   // had its own size and spacing, so one kind of thing was wearing three costumes.
-                  className="flex flex-col gap-1.5 text-[11px] font-bold uppercase tracking-[0.22em]"
-                  style={{ fontFamily: DISPLAY, color: C.paper }}
+                  // The body face, a step larger and less widely spaced than the chapter label: these are scientific
+                  // names, and at 11px with 0.22em tracking in the display face they were the hardest text to read.
+                  className="flex flex-col gap-1.5 text-[12px] font-bold uppercase tracking-[0.14em] md:text-[13px]"
+                  style={{ color: C.paper }}
                 >
                   <span className="flex items-center gap-3">
                     <span className="block h-px w-8" style={{ background: `${C.paper}99` }} />
@@ -615,7 +613,9 @@ function HeroConcept() {
                   </span>
                   {/* opacity-90, not 70. This is the only place a scale stop says anything, and at 0.7 an 11px
                         string never reached the 4.5:1 it is held to, however strong the wash behind it got. */}
-                  <span className={`pl-11 normal-case opacity-95 ${L.sub}`}>{stop.note}</span>
+                  <span className="max-w-[17rem] pl-11 text-[13px] font-semibold normal-case leading-snug tracking-normal md:text-[14px]">
+                    {stop.note}
+                  </span>
                 </span>
               </div>
             );
@@ -632,7 +632,6 @@ function HeroConcept() {
             <p
               className="relative text-center font-black"
               style={{
-                fontFamily: DISPLAY,
                 ...T.headline,
                 // Paper, like every other headline set on the field. Ink chased a contrast number, but near-black
                 // type on the purple reads as a caption stamped onto the scene and made the site speak in two
@@ -663,7 +662,7 @@ function HeroConcept() {
           {/* The stakes, last. It closes the loop on the hero's headline and pays it off with scale rather than
               repeating it. */}
           <div
-            className="pointer-events-none absolute inset-x-0 bottom-[13vh] z-20 flex justify-center px-6"
+            className="pointer-events-none absolute inset-x-0 bottom-[9vh] z-20 flex justify-center px-6"
             style={{
               opacity: q(easeOut(closing)),
               visibility: closing < 0.02 ? "hidden" : "visible",
@@ -672,7 +671,6 @@ function HeroConcept() {
             <p
               className="max-w-3xl text-center font-black"
               style={{
-                fontFamily: DISPLAY,
                 ...T.sub,
                 color: C.paper,
                 // Two even lines on a phone instead of one word left hanging.
@@ -680,11 +678,11 @@ function HeroConcept() {
                 transform: `translateY(${((1 - closing) * 18).toFixed(1)}px)`,
               }}
             >
-              About three billion letters.
-              <br />
-              <span style={{ color: C.redOnField }}>
-                This one can make a standard dose too much.
-              </span>
+              Among billions of DNA letters,{" "}
+              <span className="whitespace-nowrap" style={{ color: C.redOnField }}>
+                a single change
+              </span>{" "}
+              can increase the risk of severe fluoropyrimidine toxicity.
             </p>
           </div>
         </div>
@@ -737,15 +735,6 @@ function HeroConcept() {
           animation: enter 760ms cubic-bezier(0.22, 1, 0.36, 1) both;
         }
 
-        /* Particles in suspension actually drift, so this motion is earned. */
-        @keyframes float {
-          0%, 100% { transform: translate(-50%,-50%) translateY(0); }
-          50%      { transform: translate(-50%,-50%) translateY(-10px); }
-        }
-        .float {
-          animation: float ease-in-out infinite;
-        }
-
         /* Portrait: the field is a band across the top, curving away at its lower edge, with the strand inside it
            and the copy on cream below. Landscape: it returns to the right-hand column. */
         .field {
@@ -755,6 +744,13 @@ function HeroConcept() {
           /* The curved lower edge straightens as the field merges to full height. Left at 100%, the ellipse bit
              the bottom corners once the field filled the screen and left a cream sliver. */
           clip-path: ellipse(150% calc(100% + var(--merge, 0) * 90%) at 50% 0%);
+        }
+        /* A short phone gives the strand a quarter of the screen instead of a third, so the band is shallower too,
+           or its lower edge would cross the chapter label. */
+        @media (max-width: 767px) and (max-height: 700px) {
+          .field {
+            height: calc(40% + var(--merge, 0) * 60%);
+          }
         }
         @media (min-width: 768px) {
           .field {

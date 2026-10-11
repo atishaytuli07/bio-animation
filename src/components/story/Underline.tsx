@@ -1,34 +1,22 @@
 import { C } from "@/components/hero/palette";
 
-// A hand-drawn underline, the signature detail of Wuxi's navigation. The point is that it is not a straight
-// rule: the control points are derived from the item's index so no two squiggles match, and it overshoots the
-// word at both ends the way a marker stroke does.
-// It lives here because two headers need it. Defined inside the story route, the documentation pages, which are
-// the ones a reader actually navigates between, had no way to say which page they were on.
-// The parent must be relative and leave room below the text (pb-2), since this is absolutely positioned.
-export function Underline({ index, active = false }: { index: number; active?: boolean }) {
-  const wob = ((index * 37) % 7) - 3; // −3…3, deterministic per item
-  const lift = ((index * 23) % 5) - 2;
+// The mark under the page you are on, and under a link you are pointing at.
+// A straight ink rule. It used to be a hand-drawn coral squiggle, a different wobble for every item: the only
+// wavy line on a site drawn entirely in straight hairlines and ink outlines, and in the colour that means the
+// drug everywhere else. The client's note was that it should belong to the same system as everything around it.
+// It lives here because two headers need it. The parent must be relative and leave room below the text (pb-2),
+// since this is absolutely positioned.
+export function Underline({ active = false }: { active?: boolean }) {
   return (
-    <svg
-      viewBox="0 0 100 10"
-      preserveAspectRatio="none"
+    <span
       aria-hidden="true"
-      className="pointer-events-none absolute inset-x-[-8%] bottom-0 h-[9px] w-[116%] origin-left transition-[opacity,transform] duration-300"
+      className="pointer-events-none absolute inset-x-0 bottom-0 block h-[2.5px] origin-left rounded-full transition-[opacity,transform] duration-300"
       style={{
+        background: C.ink,
         opacity: active ? 1 : 0,
         transform: active ? "scaleX(1)" : "scaleX(0.55)",
       }}
       data-underline=""
-    >
-      <path
-        d={`M2 ${6 + lift * 0.3} C 24 ${3 + wob}, 48 ${8 - wob * 0.6}, 72 ${5 + wob * 0.4} S 92 ${7 - lift * 0.4}, 98 ${5 + lift * 0.2}`}
-        fill="none"
-        stroke={C.coral}
-        strokeWidth={3.4}
-        strokeLinecap="round"
-        vectorEffect="non-scaling-stroke"
-      />
-    </svg>
+    />
   );
 }

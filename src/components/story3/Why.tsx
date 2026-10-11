@@ -1,8 +1,11 @@
+import { Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 
-import { asset, C, L, T } from "@/components/hero/palette";
+import { asset, BODY, C, DISPLAY, L, T } from "@/components/hero/palette";
+import { Slot } from "@/components/story/EnzymeSlot";
 import { usePageProgress } from "@/hooks/use-page-progress";
 import { BOT, ENZYME, EY, H, Hex, TOP, VesselShell, W } from "@/components/story/vessel";
+import { WHY_TRAVEL, whyAt } from "@/lib/story-map";
 import { recordStory } from "@/lib/story-state";
 import {
   band,
@@ -34,24 +37,36 @@ import {
 
 const q = (v: number) => Math.round(v * 20) / 20;
 
+/** Cream at most of its strength: the ground under the two lines that explain the drawing. */
+const NOTE_GROUND = `${C.paper}c7`;
+
 /** Molecules in flight. Every 4th is still cleared — the enzyme is reduced. */
 const IN_FLIGHT = 9;
 const CLEARED_EVERY = 4;
 
-// A small annotation pinned over the vessel, with a leader dot. Integrated rather than floating in the margin:
-// the client asked for a small integrated label, and a caption parked at the edge of the screen does not tell
-// you which thing it is naming.
+// A small annotation for the vessel. On a wide screen it stands outside the vessel's left wall, in the empty third
+// of the frame, with a leader running in to the thing it names; the leader's length is the tag's own, because the
+// three things are at different depths. It used to hang off the right of its anchor, which is the side the man
+// is on: at 1280x600 the first tag covered his face.
+// Below 1024px there is no empty third, so the tag is a plain label centred over the vessel at a height where it
+// covers nothing it names. On a phone it used to sit, boxed, on top of the enzyme row it was labelling.
+// No ink border and no offset shadow: those mean "press this" here, and a label is not a control.
 function Tag({
   on,
   x,
   y,
+  narrowY,
   title,
   sub,
   tone,
 }: {
   on: number;
+  /** Where the leader ends, as a share of the vessel's width from its left edge. */
   x: number;
+  /** Height on a wide screen, as a share of the vessel's height. */
   y: number;
+  /** Height below 1024px, same measure. May be negative: above the vessel. */
+  narrowY: number;
   title: string;
   sub: string;
   tone: string;
@@ -59,37 +74,45 @@ function Tag({
   if (on <= 0.004) return null;
   return (
     <div
-      // The anchor is a CSS variable rather than an inline `left`, so a media query can override it: on a phone the
-      // vessel is centred and narrow, and a tag pointing right from 62% ran off the screen. Below md it flips, with
-      // the row reversed, so the box sits inboard and the leader points back at the thing it names.
-      className="pointer-events-none absolute flex items-center gap-2 left-[var(--tx)] max-md:left-auto max-md:right-[1%] max-md:flex-row-reverse"
-      style={{
-        ["--tx" as string]: `${x}%`,
-        top: `${y}%`,
-        opacity: q(easeOut(on)),
-        transform: `translateY(${((1 - easeOut(on)) * 8).toFixed(1)}px)`,
-      }}
+      className="pointer-events-none absolute top-[var(--ny)] flex items-center max-lg:inset-x-0 max-lg:justify-center lg:right-[var(--tr)] lg:top-[var(--ty)] lg:-translate-y-1/2"
+      style={
+        {
+          "--tr": `${((1 - x) * 100).toFixed(1)}%`,
+          "--ty": `${y}%`,
+          "--ny": `${narrowY}%`,
+          opacity: q(easeOut(on)),
+        } as React.CSSProperties
+      }
     >
       <span
-        className="block h-2.5 w-2.5 shrink-0 rounded-full"
-        style={{ background: tone, border: `2px solid ${C.ink}` }}
-      />
-      <span className="block h-px w-4 shrink-0" style={{ background: `${C.ink}55` }} />
-      <span
-        className="whitespace-nowrap rounded-[6px] px-2.5 py-1.5"
-        style={{
-          background: C.paper,
-          border: `2px solid ${C.ink}`,
-          boxShadow: `2px 2px 0 ${C.ink}`,
-        }}
+        className="whitespace-nowrap rounded-[6px] px-3 py-1.5"
+        style={{ background: C.paper, border: `1.5px solid ${C.ink}47` }}
       >
-        <span className="block text-[13px] font-black leading-none" style={{ color: C.ink }}>
+        <span
+          className="block text-[14px] font-black leading-none md:text-[15px]"
+          style={{ color: C.ink }}
+        >
           {title}
         </span>
-        <span className={`mt-0.5 block ${L.sub}`} style={{ color: C.inkNote }}>
+        <span
+          className="mt-1 block text-[12px] font-semibold leading-none md:text-[13px]"
+          style={{ color: C.inkBody }}
+        >
           {sub}
         </span>
       </span>
+      {/* the leader, from the label across the wall to the thing itself */}
+      <span
+        className="hidden h-[1.5px] shrink-0 lg:block"
+        style={{
+          width: `calc(var(--vessel) * ${(0.692 * x + 0.03).toFixed(3)})`,
+          background: `${C.ink}80`,
+        }}
+      />
+      <span
+        className="hidden h-2.5 w-2.5 shrink-0 rounded-full lg:block"
+        style={{ background: tone, border: `1.5px solid ${C.ink}` }}
+      />
     </div>
   );
 }
@@ -108,74 +131,70 @@ export function Why() {
   // show the same picture, the same man, the same lens, the same vessel, so dissolving between them stacked two
   // figures and two headlines for a whole screen of scroll.
   // Nothing about the picture changes at the turn. What changes is its state: the drug piles up under a standard
-  // dose, then the variant is known, the dose comes down, the pile drains and the enzyme fills in. One vessel, one
-  // figure, one continuous scroll, so the story turns and the scene does not restart.
+  // dose, then the variant is known, the dose comes down and the pile drains. The enzyme does not change. One
+  // vessel, one figure, one continuous scroll, so the story turns and the scene does not restart.
+
+  // The timeline, in vh of scroll, since that is what the reader spends. The scene travelled 760vh and showed
+  // about six distinct pictures in it; the client asked for 20 to 30% less. What went is the waiting, not the
+  // beats: the empty vessel before the drug arrives (76vh to 40), the three labels that used to take turns on one
+  // unchanging picture (290vh to 170, by arriving together), the hold after "exposure can increase", and a blank
+  // tail. What came in is the one beat the story did not have, the project itself, at the turn. 600vh in all,
+  // which is 21% less scroll than before.
+  //     0 to  40   the man and an empty vessel               "Look closer."
+  //    40 to 120   the drug arrives, and is named
+  //   120 to 262   the enzyme, the variant above it, and the load building as they are named
+  //   262 to 344   "So 5-FU exposure can increase."
+  //   344 to 425   the turn                                   "What if we knew first?"
+  //   398 to 496   ChemoGuard: know before the first dose. The scene steps back for it.
+  //   478 to 545   the result, and the dose comes down
+  //   522 to 582   what had accumulated drains
+  //   540 to 600   the closing line, held, and the scene's exit
+  /** A position in this scene, in vh from its start, as the local progress its beats are driven by. */
+  const v = (vh: number) => vh / WHY_TRAVEL;
 
   /* act one — what a standard dose does */
-  const enter = easeOut(range(p, 0.01, 0.06));
-  const lineA = beat(p, 0.03, 0.09, 0.19, 0.25);
-  const flow = band(p, 0.1, 0.16, 0.97, 0.995);
-  const drugLabel = band(p, 0.13, 0.19, 0.28, 0.33);
-  const gap = range(p, 0.24, 0.32);
-  const link = range(p, 0.3, 0.4);
-  const variantLabel = band(p, 0.32, 0.38, 0.44, 0.49);
-  const build = range(p, 0.38, 0.56);
-  const alarm = range(p, 0.44, 0.58);
-  const enzymeLabel = band(p, 0.46, 0.52, 0.57, 0.62);
-  // lineB's exit and lineC's entrance must not overlap, and getting that right is not as simple as making the
-  // windows not touch. `beat` eases the entrance but leaves the exit linear, so copy arrives fast and leaves
-  // gently, and the two ramps are not symmetric: an entrance is at 0.88 a third of the way through while an exit
-  // is still at 0.55. With the old windows (out 0.67 to 0.72, in 0.68 to 0.74) both lines sat above half opacity
-  // between p 0.6909 and 0.6975, two headlines dissolving through each other at the turn.
-  // The audit's collision check found it, but only sometimes: the window is 0.0066 of local progress and the check
-  // samples 60 scroll positions, so it landed inside about one run in five. It passed twice before it failed.
-  // These windows leave a gap of 0.031 between lineB dropping below 0.45 and lineC reaching it. Recompute both
-  // crossings if either window moves.
-  const lineB = beat(p, 0.56, 0.62, 0.655, 0.7);
+  const enter = easeOut(range(p, v(5), v(30)));
+  const lineA = beat(p, v(8), v(28), v(95), v(115));
+  const flow = band(p, v(40), v(70), 0.97, 0.995);
+  const drugLabel = band(p, v(55), v(80), v(110), v(130));
+  const gap = range(p, v(120), v(160));
+  const link = range(p, v(135), v(175));
+  const variantLabel = band(p, v(150), v(175), v(235), v(255));
+  const build = range(p, v(175), v(270));
+  const alarm = range(p, v(205), v(275));
+  // With the variant's label, not after it. On a wide screen they stand at different heights outside the vessel
+  // and on a narrow one above and below it, so the two can share the frame, and the reader sees the letter and
+  // what it does to the enzyme as one statement.
+  const enzymeLabel = band(p, v(165), v(190), v(250), v(270));
+  // Each headline is out before the next is in. `beat` eases the entrance and leaves the exit linear, so two
+  // windows that merely touch still put both lines above half strength for a moment: the next line's entrance
+  // starts where this one's exit ends, never inside it.
+  const lineB = beat(p, v(262), v(292), v(312), v(344));
 
   /* the turn — and everything after it undoes what act one built */
-  const lineC = beat(p, 0.7, 0.76, 0.8, 0.85);
-  const result = band(p, 0.72, 0.78, 0.97, 0.995);
+  const lineC = beat(p, v(344), v(380), v(400), v(425));
+  // The project's own moment, and the answer to the question still on screen as it arrives. The story explained
+  // why testing matters for five chapters without once naming the thing the team is building. It takes the whole
+  // frame, the scene dimming behind it, because it is the one beat that is not about this patient.
+  const moment = band(p, v(398), v(428), v(470), v(496));
+  const result = band(p, v(478), v(510), 0.97, 0.995);
   /** 9 molecules of standard dose come down to 4. */
-  const trim = range(p, 0.76, 0.85);
-  /** What had accumulated drains away — the payoff of the whole section. */
-  // The drain waits for the reader, then goes anyway. It ran 0.79 to 0.89 while the second control fades in over
-  // 0.78 to 0.84, so by the time the button was legible the vessel was already half empty, and holding it moved
-  // the count by one molecule, inside its own noise. A control that cannot change what happens is a prop.
-  // At 0.84 to 0.94 there are about 43vh of scroll where the control is fully up and nothing else is clearing the
-  // vessel. Press and it empties under your thumb; scroll past and the drain does it a moment later, so a reader
-  // who never touches it still gets the resolution.
-  const drain = range(p, 0.84, 0.94);
-  /**
-   * The dose comes down to meet the enzyme this person actually has. This used to be called `heal`, and it
-   * filled the enzyme shape in solid, which told the reader that reducing the dose restored enzyme activity. A
-   * carrier makes less DPD before the test and exactly the same amount after it; the only thing that changes is
-   * how much drug arrives. Scene two already draws this correctly, so scene three was contradicting it.
-   * Nothing about the enzyme moves on this beat. What moves is the load.
-   */
-  const adjusted = range(p, 0.81, 0.9);
-  // "A safer starting dose.", and it leaves, which it did not before. Two faults, the second caused by the first.
-  // Its out-window was 1.2 to 1.3, past anything progress can reach, so it never retired: at the end of the page
-  // it scrolled up under the story rail at full opacity, 64% over "05 - Before the first dose" on a 430px phone
-  // and 65% measured while wheel-scrolling at 1024.
-  // Moving it earlier to make room for the scene's exit put it inside lineC's departure, the same mistake as
-  // lineB and lineC above. lineC clears 12% opacity at 0.844; at an entrance of 0.82 this crossed it at 0.822 and
-  // the two lines sat over each other at up to 65%. Entering at 0.86 crosses at 0.862, a clear 0.018 after lineC
-  // has gone. Full by roughly 0.88, which leaves a hold of about 45vh before the stage fades at local 0.933.
-  const lineD = beat(p, 0.86, 0.91, 0.96, 0.99);
-  /**
-   * The scene leaves as a whole, driven by real scroll rather than by the spring. The other two stops dissolve
-   * into the one after them; this is the last, so it had no exit at all and scrolled out from under the rail
-   * with every element at full opacity, putting the result card over the chapter label at 65%.
-   * The first attempt used the section's own `p`, which is spring-smoothed and lags a real scroll by a fair
-   * fraction of a second, so by the time it reached the fade window the stage had already unpinned: measured
-   * with a continuous wheel rather than a jump, the overlap was still 65%.
-   * usePageProgress reads the document position directly. Anything anchored to the moment a section leaves the
-   * viewport belongs on page progress, not on section progress.
-   */
-  const exit = range(pageP, 0.955, 0.99);
+  const trim = range(p, v(498), v(545));
+  // What had accumulated drains away. It waits for the second control to be up (488 to 516) so that a press can
+  // be seen to do it, then goes anyway, so a reader who never touches the control still gets the resolution.
+  const drain = range(p, v(522), v(582));
+  // The dose comes down to meet the enzyme this person has. Nothing about the enzyme moves on this beat: a
+  // carrier makes less DPD before the test and exactly the same amount after it. What moves is the load.
+  const adjusted = range(p, v(512), v(566));
+  // The story's last line. Full by 566 and held until the stage starts to leave at 588.
+  const lineD = beat(p, v(540), v(566), v(590), v(599));
+  // The scene leaves as a whole, on real scroll position and not on the section's spring-smoothed progress,
+  // which lags a fast scroll: by the time it reached the fade the stage had already unpinned.
+  const exit = range(pageP, whyAt(588), whyAt(599.5));
   /** The in-vessel letter hands over to the report card at the turn. */
-  const handover = range(p, 0.74, 0.82);
+  const handover = range(p, v(465), v(500));
+  /** How far the scene stands back for the ChemoGuard moment. */
+  const aside = 1 - moment * 0.88;
 
   const t = useTime(flow > 0.01);
 
@@ -211,8 +230,9 @@ export function Why() {
   }
   const ph = phase.current;
 
-  // Red while it is accumulating; back to coral once it is clearing again.
-  const drugTone = alarm > 0.5 && drain < 0.5 ? C.red : C.coral;
+  // Coral, always. It used to turn red while it accumulated, the exact red of the variant badge it was piling up
+  // beside, so one colour was saying two things in the same frame. More of the drug is drawn as more of the drug.
+  const drugTone = C.coral;
 
   // A residual survives the turn, about a fifth rather than none. `1 - drain` emptied the vessel completely,
   // which draws "no drug". The treatment does not stop when the dose is adjusted: it is still 5-FU, still
@@ -228,8 +248,7 @@ export function Why() {
   // different, darker character rather than the man from the scene before. Scene two's own fill tops out near
   // 0.70 of the figure; 0.62 here keeps him recognisably himself with the load plainly rising up him.
   const carried = 0.62 * build * (1 - draining * 0.78);
-  const bodyTint =
-    load > 0.01 ? `color-mix(in oklab, ${C.red} ${(load * 100).toFixed(0)}%, ${C.coral})` : C.coral;
+  const bodyTint = C.coral;
   // What does not get cleared, suspended rather than settled. These used to stack in rows on the floor of the
   // vessel, and the client read exactly what that draws: a drug that physically sinks. What happens when DPD
   // activity is reduced is that the concentration in the blood stays high, the same molecules, more of them,
@@ -267,20 +286,14 @@ export function Why() {
     { on: lineA, text: <>Look closer.</> },
     {
       on: lineB,
-      text: (
-        <>
-          So the drug <span style={{ color: C.red }}>stays.</span>
-        </>
-      ),
+      fit: true,
+      text: <>So 5-FU exposure can increase.</>,
     },
     { on: lineC, text: <>What if we knew first?</> },
     {
       on: lineD,
-      text: (
-        <>
-          A safer starting <span style={{ color: C.redDeep }}>dose.</span>
-        </>
-      ),
+      fit: true,
+      text: <>A more informed starting dose.</>,
     },
   ];
 
@@ -288,7 +301,7 @@ export function Why() {
     <section
       id="why"
       ref={ref}
-      style={{ height: "860vh", marginTop: "-100vh" }}
+      style={{ height: `${WHY_TRAVEL + 100}vh`, marginTop: "-100vh" }}
       className="relative"
     >
       {/* --fig3 exists because the figure used to be hidden md:block, which quietly broke the story on phones: this
@@ -296,7 +309,10 @@ export function Why() {
           him, a mobile reader gets a tube floating on a colour. The composition may simplify on a small screen; the
           character and the causal link may not disappear. */}
       <div
-        className="sticky top-0 h-screen overflow-hidden [--fig3:27vh] [--vessel:38vh] md:[--fig3:46vh] md:[--vessel:min(56vh,520px)]"
+        // --floor is where the figure and the vessel stand: above the control and above the key that explains the
+        // drawing. A short window gets a shorter vessel, because the headline over it and the key under it do not
+        // shrink.
+        className="sticky top-0 h-screen overflow-hidden [--fig3:26vh] [--vessel:34vh] [--floor:calc(3vh+128px)] max-md:[@media(max-height:700px)]:[--fig3:20vh] max-md:[@media(max-height:700px)]:[--vessel:22vh] md:[--fig3:46vh] md:[--vessel:min(54vh,520px)] md:[--floor:calc(3vh+100px)] lg:[@media(max-height:700px)]:[--fig3:34vh] lg:[@media(max-height:700px)]:[--vessel:40vh]"
         style={{ opacity: 1 - q(exit), visibility: exit > 0.99 ? "hidden" : "visible" }}
       >
         {/* The chapter label lives in the story rail now — see StoryProgress. */}
@@ -307,6 +323,11 @@ export function Why() {
               className={`text-center font-black ${L.headlineWidth}`}
               style={{
                 ...T.headline,
+                // The longer lines are sized to fit the width a headline is allowed on one line. At the full
+                // headline size the last one wrapped on a short laptop window and came down onto the result card.
+                ...("fit" in b
+                  ? { fontSize: "clamp(1.75rem, min(4.8vw, (100vw - 34rem) / 16.8), 3.8rem)" }
+                  : null),
                 color: C.ink,
                 transform: `translateY(${b.on.y.toFixed(1)}px)`,
               }}
@@ -327,8 +348,8 @@ export function Why() {
           // the card.
           className="absolute inset-x-0 flex flex-row-reverse items-end justify-center gap-[2vw] md:gap-[4vw]"
           style={{
-            bottom: "8vh",
-            opacity: q(enter),
+            bottom: "var(--floor)",
+            opacity: q(enter * aside),
             transform: `translateY(${((1 - enter) * 30).toFixed(1)}px)`,
           }}
         >
@@ -338,7 +359,8 @@ export function Why() {
               height: "var(--fig3)",
               // The same settle-and-tilt scene two uses, on the whole block so the cannula and guides move with the
               // wrist they are drawn on.
-              transform: `translateY(${(load * 7).toFixed(2)}px) rotate(${(load * 1.1).toFixed(2)}deg)`,
+              // a share of his own height, as in the scene before, so a small figure does not sink further
+              transform: `translateY(${(load * 1.5).toFixed(2)}%) rotate(${(load * 1.1).toFixed(2)}deg)`,
               transformOrigin: "50% 100%",
               transition: "transform 180ms ease-out",
             }}
@@ -359,7 +381,7 @@ export function Why() {
               aria-hidden="true"
             >
               <path
-                d="M-70 -160 C -70 300, 10 480, 41 638"
+                d="M-70 -160 C -70 340, 0 560, 39 736"
                 fill="none"
                 stroke={`${C.ink}66`}
                 strokeWidth="9"
@@ -384,7 +406,7 @@ export function Why() {
                   maskRepeat: "no-repeat",
                   WebkitMaskRepeat: "no-repeat",
                   background: `linear-gradient(to top, ${bodyTint} 0%, ${bodyTint} ${(carried * 100).toFixed(1)}%, transparent ${Math.min(100, carried * 100 + 18).toFixed(1)}%)`,
-                  opacity: q(0.3 + load * 0.24),
+                  opacity: q(0.3 + load * 0.14),
                   mixBlendMode: "multiply",
                   transition: "opacity 180ms ease-out",
                 }}
@@ -410,21 +432,24 @@ export function Why() {
               className="pointer-events-none absolute inset-0 z-[2] h-full w-full overflow-visible"
               aria-hidden="true"
             >
+              {/* On the back of the hand, where the scene before left it: 9.5% across the plate and 52% down. It was on
+                  the forearm here, 44 to 46% down, so the same man's line moved between two consecutive scenes. */}
               <rect
-                x="18"
-                y="628"
-                width="46"
-                height="20"
-                rx="10"
+                x="20"
+                y="722"
+                width="38"
+                height="28"
+                rx="8"
                 fill={C.paper}
                 stroke={C.ink}
-                strokeWidth="9"
+                strokeWidth="8"
               />
+              <path d="M33 722 v28 M45 722 v28" stroke={C.ink} strokeWidth="5" />
               {/* The two guides. They start at the cannula, not around it, and open outward to meet the vessel's top and
                   bottom, so the eye is carried from the point of entry to the magnified view along the path the drug takes.
                   Faint and unclosed, because they are a camera move rather than an object in the scene. */}
               <path
-                d="M18 632 L -484 300"
+                d="M20 728 L -484 300"
                 fill="none"
                 stroke={C.ink}
                 strokeWidth="7"
@@ -433,7 +458,7 @@ export function Why() {
                 opacity="0.34"
               />
               <path
-                d="M18 646 L -484 1120"
+                d="M20 744 L -484 1120"
                 fill="none"
                 stroke={C.ink}
                 strokeWidth="7"
@@ -506,21 +531,6 @@ export function Why() {
                 strokeDashoffset={1 - q(link)}
                 opacity={q(link) * (1 - q(handover))}
               />
-              <g
-                transform={`translate(${W / 2 - 15} ${34 - (1 - q(link)) * 12})`}
-                opacity={q(link) * (1 - q(handover))}
-              >
-                <rect width="30" height="32" rx="6" fill={C.red} stroke={C.ink} strokeWidth="2.5" />
-                <text
-                  x="15"
-                  y="23"
-                  textAnchor="middle"
-                  fill="#fff"
-                  style={{ font: "800 18px ui-monospace, monospace" }}
-                >
-                  A
-                </text>
-              </g>
 
               {/* the drug */}
               {flow > 0.01 &&
@@ -569,6 +579,22 @@ export function Why() {
               {held.map((m, i) => (
                 <Hex key={`h${i}`} x={m.x} y={m.y} r={12} tone={drugTone} o={0.92} />
               ))}
+              <g
+                transform={`translate(${W / 2 - 20} ${34 - (1 - q(link)) * 12})`}
+                opacity={q(link) * (1 - q(handover))}
+              >
+                {/* 40 by 42 with a 26-unit letter. At 30 by 32 the letter measured 7.5 to 10px on a phone. */}
+                <rect width="40" height="42" rx="7" fill={C.red} stroke={C.ink} strokeWidth="2.5" />
+                <text
+                  x="20"
+                  y="30.5"
+                  textAnchor="middle"
+                  fill="#fff"
+                  style={{ font: `800 26px ${BODY}` }}
+                >
+                  A
+                </text>
+              </g>
             </svg>
 
             {/* Annotations. The drug label arrives with the first molecules and retires before a single one has settled:
@@ -577,30 +603,148 @@ export function Why() {
                 not only why a letter appeared but how it is causing what happens below. */}
             <Tag
               on={drugLabel}
-              x={62}
-              y={16}
+              x={0.3}
+              y={20}
+              narrowY={-13}
               title="5-FU"
               sub="the chemotherapy drug"
               tone={C.coral}
             />
+            {/* "reduced activity", and no "here". It read "less is made here" with its leader ending in open blood,
+                which says DPD is made in the bloodstream. Where it does act is in the note under the vessel. */}
             <Tag
               on={enzymeLabel}
-              x={64}
-              y={40}
+              x={0.09}
+              y={52.3}
+              narrowY={64}
               title="DPD enzyme"
-              sub="less is made here"
+              sub="activity can be reduced"
               tone={C.green}
             />
             <Tag
               on={variantLabel}
-              x={57}
-              y={2}
+              x={0.44}
+              y={9.6}
+              narrowY={-13}
               title="DPYD variant"
               sub="c.1905+1G>A"
               tone={C.red}
             />
           </div>
         </div>
+
+        {/* What the drawing is, for as long as it is on screen. The dashed enzymes had no key in this scene and the
+            scene had no disclaimer at all, though it is the one where the reader gives a dose.
+            The second sentence answers the science review: DPD is drawn beside the blood it clears 5-FU from, but
+            it does not act there, and the old label said outright that it was made there. */}
+        <div
+          className="pointer-events-none absolute inset-x-0 bottom-[calc(3vh+50px)] z-10 flex flex-col items-center gap-1 px-5 text-center"
+          style={{ opacity: q(enter * aside) }}
+        >
+          <p
+            className="flex w-fit flex-wrap items-center justify-center gap-x-3 gap-y-0.5 rounded px-2.5 py-0.5 text-[12px] font-semibold md:gap-x-4 md:text-[13px]"
+            style={{ color: C.ink, background: NOTE_GROUND, opacity: q(gap) }}
+          >
+            <span className="font-black">DPD enzyme</span>
+            <span className="flex items-center gap-1.5">
+              <Slot made={1} small /> functional
+            </span>
+            <span className="flex items-center gap-1.5">
+              <Slot made={0} small /> may not be produced
+            </span>
+          </p>
+          <p
+            // On a ground of its own. It carries the science review's correction about where DPD acts, and bare, on
+            // the dark pink the scene opens on, it measured 3.8:1.
+            className="w-fit max-w-[62ch] rounded px-2.5 py-0.5 text-[12px] leading-snug md:text-[13px]"
+            style={{ color: C.ink, background: NOTE_GROUND }}
+          >
+            Illustrative simulation, not a clinical prediction. DPD acts inside cells, particularly
+            in the liver.
+          </p>
+        </div>
+
+        {/* ChemoGuard, once, at the turn. Three steps and no more: what goes in, what is looked for, what the answer
+            is for. They carry numbers and not pictures on purpose. The team has not yet published the sample it
+            takes, the method it uses or what its readout looks like, and a drawing of a tube or a strip would be
+            a claim about one of them. The last step is in the science review's words: a result informs a
+            clinical decision, it does not make one. */}
+        {moment > 0.004 && (
+          <div
+            className="pointer-events-none absolute inset-0 z-30 flex items-center justify-center px-5 pt-[68px]"
+            style={{ opacity: q(easeOut(moment)) }}
+          >
+            <div
+              // Sized as a card in the scene, not a second hero: at 900px wide with a full-size headline it filled the frame
+              // and its corner reached the chapter label.
+              className="w-full max-w-[720px] px-5 py-5 text-center md:px-9 md:py-8"
+              style={{
+                background: C.paper,
+                border: `1.5px solid ${C.ink}33`,
+                borderRadius: 10,
+                transform: `translateY(${((1 - easeOut(moment)) * 18).toFixed(1)}px)`,
+              }}
+            >
+              <p
+                className="text-[19px] font-black leading-none md:text-[22px]"
+                style={{ fontFamily: DISPLAY, letterSpacing: "-0.01em", color: C.ink }}
+              >
+                Chemo<span style={{ color: C.red }}>Guard</span>
+              </p>
+              <p className="mt-2.5 font-black md:mt-3" style={{ ...T.sub, color: C.ink }}>
+                Know before the first dose.
+              </p>
+              <ol className="mt-5 flex flex-col items-stretch gap-2 text-left md:mt-7 md:flex-row md:items-stretch md:gap-2.5">
+                {["Patient sample", "DPYD testing", "Result informs clinical decision-making"].map(
+                  (step, i) => (
+                    <li
+                      key={step}
+                      // the first two are as wide as their words and the third, the long one, takes what is left: at equal
+                      // shares it wrapped to four lines
+                      className={`flex flex-col gap-2 md:flex-row md:items-center md:gap-2.5 ${i === 2 ? "md:flex-1" : "md:flex-none md:whitespace-nowrap"}`}
+                    >
+                      {i > 0 && (
+                        // an arrow drawn here, because neither bundled typeface has one
+                        <svg
+                          viewBox="0 0 34 14"
+                          className="h-3 w-7 shrink-0 rotate-90 self-center md:h-3.5 md:w-8 md:rotate-0"
+                          aria-hidden="true"
+                          fill="none"
+                          stroke={C.ink}
+                          strokeWidth="2.6"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <path d="M2 7H31M25 2l6 5-6 5" />
+                        </svg>
+                      )}
+                      <span
+                        className="flex flex-1 items-center gap-2.5 rounded-[6px] px-3 py-2.5 md:px-3.5 md:py-3"
+                        style={{ background: `${C.lavender}26` }}
+                      >
+                        <span
+                          className="grid h-6 w-6 shrink-0 place-items-center rounded-full text-[13px] font-bold leading-none"
+                          style={{ background: C.ink, color: C.paper }}
+                        >
+                          {i + 1}
+                        </span>
+                        <span className="text-[14px] font-bold leading-snug md:text-[15px]">
+                          {step}
+                        </span>
+                      </span>
+                    </li>
+                  ),
+                )}
+              </ol>
+              <p
+                className="mt-4 text-[12px] leading-snug md:mt-5 md:text-[13px]"
+                style={{ color: C.inkBody }}
+              >
+                A conceptual overview: where the test sits, not how it works.
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* The result, and the dose that follows from it. It arrives at the turn and stays for the rest of the scene,
             so the reader can see why the pile below is draining. Drawn only in vocabulary already owned: the red A
@@ -616,15 +760,15 @@ export function Why() {
           // 23vh was 170px on a 740px phone, and once the headline gained its own floor at 140px its two wrapped lines ran
           // to about 236px, so the card and the headline measured 100% overlap at 320 and 360. 248px clears the deepest
           // wrap. On md and up the card moves out of the centre column entirely.
-          className="pointer-events-none absolute inset-x-0 top-[max(248px,33vh)] z-20 flex justify-center px-6 md:inset-x-auto md:right-[3vw] md:top-[184px] md:block md:px-0 lg:right-[6vw]"
+          className="pointer-events-none absolute inset-x-0 top-[max(214px,27vh)] z-20 flex justify-center px-6 md:inset-x-auto md:right-[3vw] md:top-[max(212px,26vh)] md:block md:px-0 lg:right-[6vw]"
           style={{ opacity: q(easeOut(result)) }}
         >
           <div
             className="rounded-[10px] px-4 py-3 md:max-w-[330px] md:px-5 md:py-4"
             style={{
               background: C.paper,
-              border: `2.5px solid ${C.ink}`,
-              boxShadow: `4px 4px 0 ${C.ink}`,
+              // a hairline and no offset shadow: this is a result to read, not a thing to press
+              border: `1.5px solid ${C.ink}47`,
               transform: `translateY(${((1 - easeOut(result)) * 12).toFixed(1)}px)`,
             }}
           >
@@ -636,25 +780,28 @@ export function Why() {
                   y="23"
                   textAnchor="middle"
                   fill="#fff"
-                  style={{ font: "800 17px ui-monospace, monospace" }}
+                  style={{ font: `800 17px ${BODY}` }}
                 >
                   A
                 </text>
               </svg>
               <span>
                 <span
-                  className="block text-[13px] font-black leading-none"
+                  className="block text-[14px] font-black leading-none"
                   style={{ color: C.ink }}
                 >
                   Variant found before treatment
                 </span>
-                <span className={`mt-1 block ${L.sub}`} style={{ color: C.inkNote }}>
+                <span
+                  className="mt-1 block text-[13px] font-semibold leading-snug"
+                  style={{ color: C.inkBody }}
+                >
                   reduced DPD activity expected
                 </span>
               </span>
             </div>
 
-            <div className="mt-3 flex items-center gap-1.5 md:mt-4 md:gap-[7px]">
+            <div className="mt-3 flex items-center gap-1.5 max-md:[@media(max-height:700px)]:hidden md:mt-4 md:gap-[7px]">
               {Array.from({ length: 9 }, (_, i) => {
                 const dropped = i >= 4;
                 const gone = dropped
@@ -674,12 +821,29 @@ export function Why() {
                 );
               })}
             </div>
-            {/* its own line: beside nine molecules it wrapped to two */}
+            {/* What the result is for, in the science review's words: it can inform a dose under guidelines, it
+                does not set one. The source for that is on the Description page, where the wiki's references
+                are, so the claim is one click from its evidence. */}
             <span
-              className={`mt-2 block ${L.note}`}
-              style={{ color: C.ink, opacity: q(easeOut(trim)) * 0.7 }}
+              className="mt-2.5 block text-[12.5px] font-semibold leading-snug md:text-[13px]"
+              style={{ color: C.ink, opacity: q(easeOut(trim)) }}
             >
-              dose reduced per guidelines
+              The result can inform dose adjustment under clinical guidelines.{" "}
+              <Link
+                to="/description"
+                hash="testing"
+                className="pointer-events-auto underline underline-offset-2"
+              >
+                Sources
+              </Link>
+            </span>
+            {/* The enzyme row beside this card is the same before and after, and nothing on screen used to say
+                so, which left room to read the clearing vessel as the enzyme recovering. */}
+            <span
+              className="mt-1.5 block text-[12.5px] leading-snug md:text-[13px]"
+              style={{ color: C.inkBody, opacity: q(easeOut(trim)) }}
+            >
+              DPD activity itself does not change. Illustrative count, not a dose.
             </span>
           </div>
         </div>
@@ -692,15 +856,16 @@ export function Why() {
           className="absolute inset-x-0 bottom-[3vh] z-20 flex justify-center px-6"
           // the hold belongs to act one; once the test arrives it is not the reader's dose to give any more
           style={{
-            opacity: q(easeOut(flow)) * (1 - q(range(p, 0.64, 0.7))),
+            opacity: q(easeOut(flow)) * (1 - q(range(p, v(322), v(344)))),
             // A control at opacity 0 still takes the pointer. Off means off.
-            pointerEvents: q(easeOut(flow)) * (1 - q(range(p, 0.64, 0.7))) > 0.3 ? "auto" : "none",
+            pointerEvents:
+              q(easeOut(flow)) * (1 - q(range(p, v(322), v(344)))) > 0.3 ? "auto" : "none",
           }}
         >
           <span className="relative inline-flex">
             <button
               type="button"
-              className="relative select-none overflow-hidden rounded-full px-5 py-2.5 text-[12px] font-bold tracking-[0.06em] transition-transform active:translate-y-px md:text-[13px]"
+              className="relative select-none overflow-hidden rounded-full px-5 py-2.5 text-[13px] font-bold tracking-[0.04em] transition-transform active:translate-y-px md:text-[14px]"
               style={{
                 background: C.paper,
                 color: C.ink,
@@ -736,11 +901,12 @@ export function Why() {
                 style={{
                   transform: `scaleX(${Math.min(1, extra.current / 0.4).toFixed(3)})`,
                   transformOrigin: "left",
-                  background: C.redDeep,
+                  // the drug's colour: this bar is the dose going in
+                  background: C.coral,
                   transition: "transform 140ms linear",
                 }}
               />
-              <span className="relative">{hot ? "Dosing…" : "Hold — give the standard dose"}</span>
+              <span className="relative">{hot ? "Dosing…" : "Hold to give the standard dose"}</span>
             </button>
           </span>
         </div>
@@ -754,14 +920,14 @@ export function Why() {
         <div
           className="absolute inset-x-0 bottom-[3vh] z-20 flex justify-center px-6"
           style={{
-            opacity: q(easeOut(range(p, 0.73, 0.79))),
-            pointerEvents: q(easeOut(range(p, 0.73, 0.79))) > 0.3 ? "auto" : "none",
+            opacity: q(easeOut(range(p, v(488), v(516)))),
+            pointerEvents: q(easeOut(range(p, v(488), v(516)))) > 0.3 ? "auto" : "none",
           }}
         >
           <span className="relative inline-flex">
             <button
               type="button"
-              className="relative select-none overflow-hidden rounded-full px-5 py-2.5 text-[12px] font-bold tracking-[0.06em] transition-transform active:translate-y-px md:text-[13px]"
+              className="relative select-none overflow-hidden rounded-full px-5 py-2.5 text-[13px] font-bold tracking-[0.04em] transition-transform active:translate-y-px md:text-[14px]"
               style={{
                 background: C.paper,
                 color: C.ink,
@@ -798,7 +964,9 @@ export function Why() {
                   transition: "transform 140ms linear",
                 }}
               />
-              <span className="relative">{hot2 ? "Dosing…" : "Hold — give the adjusted dose"}</span>
+              <span className="relative">
+                {hot2 ? "Dosing…" : "Hold to give the adjusted dose"}
+              </span>
             </button>
           </span>
         </div>

@@ -5,6 +5,30 @@
    direction, an .act-dark inversion for a component that no longer exists. Every name was checked against the
    source before it went. Colour on this site lives in palette.ts, not in CSS variables. */
 
+/* One character, from a bundled file. Neither of the site's two typefaces has the prime used in "5′ splice
+   donor site", so a browser was borrowing it from whatever the reader's machine had. unicode-range limits this
+   face to the prime and double prime, and the file is only fetched by a page that uses one. */
+@font-face {
+  font-family: "ChemoGuard Marks";
+  src: url("../node_modules/@fontsource-variable/inter/files/inter-latin-wght-normal.woff2")
+    format("woff2-variations");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+2032-2033;
+}
+
+/* Tailwind's own font utilities point at the body face. font-sans and font-mono used to resolve to the system's
+   UI and monospace fonts, which put a third and fourth typeface on the page, different on every machine. */
+@theme {
+  --font-sans:
+    "ChemoGuard Marks", "Instrument Sans Variable", "Instrument Sans", ui-sans-serif, system-ui,
+    sans-serif;
+  --font-mono:
+    "ChemoGuard Marks", "Instrument Sans Variable", "Instrument Sans", ui-sans-serif, system-ui,
+    sans-serif;
+}
+
 @layer base {
   body {
     /* Match the story canvas so overscroll rubber-banding doesn't flash white. */
@@ -82,7 +106,8 @@
     /* The variable package registers this exact family name; "Instrument
        Sans" alone matches nothing and falls through to the system stack. */
     font-family:
-      "Instrument Sans Variable", "Instrument Sans", ui-sans-serif, system-ui, sans-serif;
+      "ChemoGuard Marks", "Instrument Sans Variable", "Instrument Sans", ui-sans-serif, system-ui,
+      sans-serif;
     letter-spacing: -0.015em;
   }
 }
@@ -91,4 +116,74 @@
   html {
     scroll-behavior: auto;
   }
+}
+
+/* Try it: a patient arriving on the page and leaving it. */
+@keyframes bench-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.96);
+  }
+}
+@keyframes bench-out {
+  to {
+    opacity: 0;
+    transform: translateY(6px) scale(0.96);
+  }
+}
+.bench-in {
+  animation: bench-in 0.32s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+.bench-out {
+  animation: bench-out 0.22s ease-in both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .bench-in,
+  .bench-out {
+    animation: none;
+  }
+}
+
+/* Try it: the shared dose. The filled part is coral because the dose is the drug. */
+.dose-range {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 28px;
+  background: transparent;
+  cursor: pointer;
+}
+.dose-range::-webkit-slider-runnable-track {
+  height: 10px;
+  border: 2px solid #241c2e;
+  border-radius: 9999px;
+  background: linear-gradient(to right, #f0653c var(--fill, 0%), #fffaf2 var(--fill, 0%));
+}
+.dose-range::-moz-range-track {
+  height: 10px;
+  border: 2px solid #241c2e;
+  border-radius: 9999px;
+  background: linear-gradient(to right, #f0653c var(--fill, 0%), #fffaf2 var(--fill, 0%));
+}
+.dose-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 24px;
+  height: 24px;
+  margin-top: -9px;
+  border: 2.5px solid #241c2e;
+  border-radius: 50%;
+  background: #fbf3e7;
+  box-shadow: 2px 2px 0 #241c2e;
+}
+.dose-range::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border: 2.5px solid #241c2e;
+  border-radius: 50%;
+  background: #fbf3e7;
+  box-shadow: 2px 2px 0 #241c2e;
+}
+.dose-range:focus-visible {
+  outline: 3px solid #7355b4;
+  outline-offset: 3px;
+  border-radius: 9999px;
 }

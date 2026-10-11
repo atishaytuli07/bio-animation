@@ -6,7 +6,8 @@
 // something else.
 //   1. Every sentence she supplied is on the Description page.
 //   2. Every citation mark points at a listed source and lands below the header.
-//   3. No phrase she corrected survives on ANY page.
+//   3. No phrase she corrected survives on ANY page, her October sentences are on the story, and no page shows an
+//      em dash.
 // The story is read across its whole length. It mounts some text only when its scene is reached, so a single read of
 // the document at the top misses it. The first version of this check did exactly that and passed the story without ever
 // having seen the scene-one caption.
@@ -50,6 +51,27 @@ const BANNED = [
   "cannot clear it", // "may not"
   "test that prevents",
   "changes a chemotherapy dose is",
+  // Her October 2026 review of the story. Each of these was replaced by a sentence in STORY_REQUIRED below, or
+  // by a label that says what the picture shows instead of what happens to a patient.
+  "so the drug stays", // "So 5-FU exposure can increase."
+  "safer starting dose", // "A more informed starting dose."
+  "one gene affects how fast", // the hero's sentence
+  "these two letters mark", // "The conserved GT sequence marks the 5′ splice donor site."
+  "standard dose too much", // "…can increase the risk of severe fluoropyrimidine toxicity."
+  "less is made here", // the DPD label that pointed at the bloodstream
+  "dose reduced per guidelines", // the result informs an adjustment, it does not make one
+  "that is the whole idea", // the closing section's old heading
+];
+
+/** Her October 2026 sentences for the story, as they must read on the homepage. Lower case, since some are set in capitals by CSS. */
+const STORY_REQUIRED = [
+  "a variation in the dpyd gene can affect how the body processes fluoropyrimidine chemotherapy, and why the same starting dose may carry very different risks.",
+  "the conserved gt sequence marks the 5′ splice donor site.",
+  "among billions of dna letters, a single change can increase the risk of severe fluoropyrimidine toxicity.",
+  "so 5-fu exposure can increase.",
+  "a more informed starting dose.",
+  "illustrative simulation, not a clinical prediction.",
+  "explore the science behind chemoguard, the engineering decisions that shaped our approach, and the people and research that brought the project to life.",
 ];
 
 const routes = (() => {
@@ -135,6 +157,28 @@ for (const route of routes) {
   seen = norm(seen + " " + (await p.title())).toLowerCase();
   const found = BANNED.filter((b) => seen.includes(b));
   say(found.length === 0, route, found.length ? `found: ${found.join(" | ")}` : "");
+  if (route === "/") {
+    const missing = STORY_REQUIRED.filter((r) => !seen.includes(r));
+    say(missing.length === 0, "the story carries her October sentences", missing.join(" | "));
+  }
+  // The site owner's rule: no em dash in anything a reader sees. Read from what is rendered (innerText), not
+  // textContent, which also holds the page's inline styles and scripts and their comments.
+  const visible =
+    (await p.evaluate(() => document.body.innerText)) +
+    " " +
+    (await p.title()) +
+    " " +
+    (await p.evaluate(() => document.querySelector("meta[name=description]")?.content ?? ""));
+  const dashes = visible.split("\n").filter((l) => l.includes("\u2014"));
+  say(dashes.length === 0, `${route} has no em dash`, dashes.slice(0, 3).join(" | "));
+  // A tab title is a page's name and then the site's. Removing the dashes from them once left every page titled
+  // with the site's name alone, and nothing here noticed.
+  const title = await p.title();
+  say(
+    /^[A-Za-z][^·]* · ChemoGuard$/.test(title) || title.startsWith("ChemoGuard: "),
+    `${route} has a tab title that names the page`,
+    title,
+  );
   await p.close();
 }
 

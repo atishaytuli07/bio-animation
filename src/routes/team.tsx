@@ -7,9 +7,9 @@ import { Awaiting, P, PageLink, PageShell, Section } from "@/components/story/Pa
 // whatever it is given, with visible placeholder cards so a missing entry cannot look like a finished page.
 // Roles matter more than names. "Member" tells a judge nothing; "designed the assay" tells them who to ask.
 
-const TITLE = "Team — ChemoGuard";
+const TITLE = "Team · ChemoGuard";
 const DESCRIPTION =
-  "The NIS Kazakhstan iGEM 2026 team behind ChemoGuard — students, advisors and supervisors, and who did what.";
+  "The NIS Kazakhstan iGEM 2026 team behind ChemoGuard: students, advisors and supervisors, and who did what.";
 
 export const Route = createFileRoute("/team")({
   head: () => ({
@@ -117,7 +117,7 @@ function Team() {
           <Awaiting what="Needs the team: the roster">
             The group photographs are in. Still needed for each member: their name as it should
             appear, one line on what they worked on, and a portrait if the team wants individual
-            cards. Say how many members there are — the eight slots above are a placeholder, not a
+            cards. Say how many members there are: the eight slots above are a placeholder, not a
             count.
           </Awaiting>
         </div>
@@ -131,16 +131,16 @@ function Team() {
         </P>
         <Awaiting what="Needs the team: PIs, instructors and advisors">
           Names, roles and affiliations. Note which advisors gave scientific guidance and which gave
-          practical help — the Attributions page has to draw that line, and it is easier to draw
-          here first.
+          practical help: the Attributions page has to draw that line, and it is easier to draw here
+          first.
         </Awaiting>
       </Section>
 
       <Section id="who-did-what" title="Who did what">
         <P>
-          A short breakdown by area — wet lab, modelling, human practices, design and wiki, outreach
-          — with who led each. This is the page a judge cross-references against Attributions, so
-          the two should agree.
+          A short breakdown by area (wet lab, modelling, human practices, design and wiki, outreach)
+          with who led each. This is the page a judge cross-references against Attributions, so the
+          two should agree.
         </P>
         <Awaiting what="Needs the team: responsibilities by area" />
       </Section>

@@ -13,11 +13,18 @@ import { chromium } from "playwright";
 
 const BASE = process.argv[2] ?? "http://localhost:8080";
 const MARGIN = 14;
-/** Pages whose hero carries a character plate. */
-const PAGES = ["/description", "/engineering"];
+/** Pages whose hero carries a character plate, and the width its piece appears from. */
+const PAGES = [
+  { route: "/description", from: 1280 },
+  { route: "/engineering", from: 1280 },
+  // drawn from the waist up and wider on the plate, so the piece waits for 1600
+  { route: "/human-practices", from: 1600 },
+  { route: "/safety-and-security", from: 1600 },
+];
+const WIDE = [1280, 1366, 1440, 1600, 1920];
 // Pages with no character: the piece sits in the empty band instead, from lg. Each is a different object on purpose —
 // the client asked for fewer, larger, meaningful elements but not four identical heroes.
-const PIECE_ONLY = ["/human-practices", "/safety-and-security"];
+const PIECE_ONLY = [];
 
 let fails = 0;
 const say = (ok, what, detail = "") => {
@@ -27,11 +34,11 @@ const say = (ok, what, detail = "") => {
 
 const browser = await chromium.launch();
 
-for (const route of PAGES) {
+for (const { route, from } of PAGES) {
   console.log(`\n── ${route}`);
 
   // below xl, nothing floats beside the character
-  for (const w of [768, 1024]) {
+  for (const w of [768, 1024, ...WIDE.filter((x) => x < from)]) {
     const page = await browser.newPage({ viewport: { width: w, height: 900 } });
     await page.goto(BASE + route, { waitUntil: "networkidle" });
     const shown = await page.evaluate(() => {
@@ -55,7 +62,7 @@ for (const route of PAGES) {
     await page.close();
   }
 
-  for (const w of [1280, 1366, 1440, 1600, 1920]) {
+  for (const w of WIDE.filter((x) => x >= from)) {
     const page = await browser.newPage({ viewport: { width: w, height: 900 } });
     await page.goto(BASE + route, { waitUntil: "networkidle" });
     await page.waitForTimeout(500);
@@ -134,6 +141,48 @@ for (const route of PAGES) {
     }
     await page.close();
   }
+}
+
+// The two wide characters never stand on the title or the lede, at any width. Painted pixels again, with the
+// margin. Not run on Description and Engineering: at 1024 their figures cross the empty right end of the lede
+// panel, clear of its words, and that arrangement was accepted before this check existed.
+for (const { route } of PAGES.filter((p) => p.from > 1280)) {
+  const bad = [];
+  for (const w of [390, 768, 1024, ...WIDE]) {
+    const page = await browser.newPage({ viewport: { width: w, height: 900 } });
+    await page.goto(BASE + route, { waitUntil: "networkidle" });
+    await page.waitForTimeout(300);
+    const hits = await page.evaluate(async (MARGIN) => {
+      const hero = document.querySelector("section");
+      const img = [...hero.querySelectorAll("img")].find((i) => /hero-/.test(i.src));
+      if (!img) return -1;
+      await img.decode();
+      const ir = img.getBoundingClientRect();
+      const c = document.createElement("canvas");
+      c.width = Math.round(ir.width);
+      c.height = Math.round(ir.height);
+      const g = c.getContext("2d");
+      g.drawImage(img, 0, 0, c.width, c.height);
+      const alpha = g.getImageData(0, 0, c.width, c.height).data;
+      let n = 0;
+      for (const el of [hero.querySelector("h1"), hero.querySelector("p")]) {
+        const r = el.getBoundingClientRect();
+        const y1 = Math.min(c.height, Math.ceil(r.bottom + MARGIN - ir.top));
+        const x1 = Math.min(c.width, Math.ceil(r.right + MARGIN - ir.left));
+        for (let y = Math.max(0, Math.floor(r.top - MARGIN - ir.top)); y < y1; y++)
+          for (let x = Math.max(0, Math.floor(r.left - MARGIN - ir.left)); x < x1; x++)
+            if (alpha[(y * c.width + x) * 4 + 3] > 40) n++;
+      }
+      return n;
+    }, MARGIN);
+    if (hits !== 0) bad.push(hits < 0 ? `${w}px: no character plate` : `${w}px: ${hits} px`);
+    await page.close();
+  }
+  say(
+    bad.length === 0,
+    `${route}: the character clears the title and the lede at every width`,
+    bad.join(", "),
+  );
 }
 
 for (const route of PIECE_ONLY) {
@@ -235,7 +284,7 @@ for (const route of PIECE_ONLY) {
 {
   console.log("\n\u2500\u2500 each hero is its own");
   const seen = new Map();
-  for (const route of [...PAGES, ...PIECE_ONLY]) {
+  for (const route of [...PAGES.map((p) => p.route), ...PIECE_ONLY]) {
     const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
     await page.goto(BASE + route, { waitUntil: "networkidle" });
     await page.waitForTimeout(300);
