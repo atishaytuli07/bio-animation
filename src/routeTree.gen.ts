@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AttributionsRouteImport } from './routes/attributions'
 import { Route as ContributionRouteImport } from './routes/contribution'
 import { Route as DescriptionRouteImport } from './routes/description'
+import { Route as EducationRouteImport } from './routes/education'
 import { Route as EngineeringRouteImport } from './routes/engineering'
 import { Route as HumanPracticesRouteImport } from './routes/human-practices'
 import { Route as PlaygroundRouteImport } from './routes/playground'
@@ -37,6 +38,11 @@ const ContributionRoute = ContributionRouteImport.update({
 const DescriptionRoute = DescriptionRouteImport.update({
   id: '/description',
   path: '/description',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EducationRoute = EducationRouteImport.update({
+  id: '/education',
+  path: '/education',
   getParentRoute: () => rootRouteImport,
 } as any)
 const EngineeringRoute = EngineeringRouteImport.update({
@@ -70,6 +76,7 @@ export interface FileRoutesByFullPath {
   '/attributions': typeof AttributionsRoute
   '/contribution': typeof ContributionRoute
   '/description': typeof DescriptionRoute
+  '/education': typeof EducationRoute
   '/engineering': typeof EngineeringRoute
   '/human-practices': typeof HumanPracticesRoute
   '/playground': typeof PlaygroundRoute
@@ -81,6 +88,7 @@ export interface FileRoutesByTo {
   '/attributions': typeof AttributionsRoute
   '/contribution': typeof ContributionRoute
   '/description': typeof DescriptionRoute
+  '/education': typeof EducationRoute
   '/engineering': typeof EngineeringRoute
   '/human-practices': typeof HumanPracticesRoute
   '/playground': typeof PlaygroundRoute
@@ -93,6 +101,7 @@ export interface FileRoutesById {
   '/attributions': typeof AttributionsRoute
   '/contribution': typeof ContributionRoute
   '/description': typeof DescriptionRoute
+  '/education': typeof EducationRoute
   '/engineering': typeof EngineeringRoute
   '/human-practices': typeof HumanPracticesRoute
   '/playground': typeof PlaygroundRoute
@@ -106,6 +115,7 @@ export interface FileRouteTypes {
     | '/attributions'
     | '/contribution'
     | '/description'
+    | '/education'
     | '/engineering'
     | '/human-practices'
     | '/playground'
@@ -117,6 +127,7 @@ export interface FileRouteTypes {
     | '/attributions'
     | '/contribution'
     | '/description'
+    | '/education'
     | '/engineering'
     | '/human-practices'
     | '/playground'
@@ -128,6 +139,7 @@ export interface FileRouteTypes {
     | '/attributions'
     | '/contribution'
     | '/description'
+    | '/education'
     | '/engineering'
     | '/human-practices'
     | '/playground'
@@ -140,6 +152,7 @@ export interface RootRouteChildren {
   AttributionsRoute: typeof AttributionsRoute
   ContributionRoute: typeof ContributionRoute
   DescriptionRoute: typeof DescriptionRoute
+  EducationRoute: typeof EducationRoute
   EngineeringRoute: typeof EngineeringRoute
   HumanPracticesRoute: typeof HumanPracticesRoute
   PlaygroundRoute: typeof PlaygroundRoute
@@ -175,6 +188,13 @@ declare module '@tanstack/react-router' {
       path: '/description'
       fullPath: '/description'
       preLoaderRoute: typeof DescriptionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/education': {
+      id: '/education'
+      path: '/education'
+      fullPath: '/education'
+      preLoaderRoute: typeof EducationRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/engineering': {
@@ -220,6 +240,7 @@ const rootRouteChildren: RootRouteChildren = {
   AttributionsRoute: AttributionsRoute,
   ContributionRoute: ContributionRoute,
   DescriptionRoute: DescriptionRoute,
+  EducationRoute: EducationRoute,
   EngineeringRoute: EngineeringRoute,
   HumanPracticesRoute: HumanPracticesRoute,
   PlaygroundRoute: PlaygroundRoute,

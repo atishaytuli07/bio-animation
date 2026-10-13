@@ -63,6 +63,13 @@ const BANNED = [
   "that is the whole idea", // the closing section's old heading
 ];
 
+// Pages set from the team's own documents, word for word. A phrase listed here is theirs on that page and is
+// left as they wrote it; it stays banned everywhere else. "drug builds up" on Education is still worth raising
+// with them, since their own science review replaced it on the story.
+const TEAM_TEXT = {
+  "/education": ["drug builds up", "that is the whole idea"],
+};
+
 /** Her October 2026 sentences for the story, as they must read on the homepage. Lower case, since some are set in capitals by CSS. */
 const STORY_REQUIRED = [
   "a variation in the dpyd gene can affect how the body processes fluoropyrimidine chemotherapy, and why the same starting dose may carry very different risks.",
@@ -155,7 +162,8 @@ for (const route of routes) {
     seen += " " + (await p.evaluate(() => document.documentElement.textContent));
   }
   seen = norm(seen + " " + (await p.title())).toLowerCase();
-  const found = BANNED.filter((b) => seen.includes(b));
+  const theirs = TEAM_TEXT[route] ?? [];
+  const found = BANNED.filter((b) => seen.includes(b) && !theirs.includes(b));
   say(found.length === 0, route, found.length ? `found: ${found.join(" | ")}` : "");
   if (route === "/") {
     const missing = STORY_REQUIRED.filter((r) => !seen.includes(r));

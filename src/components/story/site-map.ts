@@ -53,7 +53,14 @@ export const PAGES: Page[] = [
     to: "/human-practices",
     ready: true,
     blurb:
-      "Who this is for, who we asked, and the decisions we made differently because of what they said.",
+      "What patients and four experts told us, where they disagreed, and what we changed because of it.",
+  },
+  {
+    label: "Education",
+    to: "/education",
+    ready: true,
+    blurb:
+      "What we taught, from a kindergarten to a library for the blind, and what each audience taught us back.",
   },
   {
     label: "Safety",

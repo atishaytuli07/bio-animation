@@ -35,3 +35,6 @@ dist-ssr
 assets-src/
 dist-static/
 
+
+# source documents from the team: kept locally, never published
+*.docx

@@ -28,6 +28,7 @@ const ONWARD = PAGES.filter((p) => p.to !== "/" && p.to !== "/attributions");
 const THREE = "lg:col-span-3";
 const TWO = "lg:col-span-2";
 const SPANS: Record<number, string[]> = {
+  8: [THREE, THREE, TWO, TWO, TWO, TWO, TWO, TWO],
   7: [THREE, THREE, TWO, TWO, TWO, THREE, THREE],
   6: [THREE, THREE, THREE, THREE, THREE, THREE],
 };
@@ -60,6 +61,7 @@ const CARD: Record<string, { art: ReactNode }> = {
   },
   "/engineering": { art: <Enzyme s={0.42} tone={C.green} /> },
   "/human-practices": { art: <Cell s={0.4} tone={C.pink} /> },
+  "/education": { art: <Cell s={0.4} tone={C.blue} /> },
   // what was not looked for: the Safety page's own picture
   "/safety-and-security": {
     art: (
