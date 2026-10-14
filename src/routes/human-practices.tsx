@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { C } from "@/components/hero/palette";
 import { CiteMark, SourceList, type Source } from "@/components/story/Cite";
 import { PLATE } from "@/components/story/PageHero";
+import { SECTIONS_OF } from "@/components/story/page-sections";
 import { P, PageLink, PageShell, Section } from "@/components/story/PageShell";
 import { NOTES } from "@/components/story/hp-notes";
 import { Bullets, Changed, Quote, Sub } from "@/components/story/Prose";
@@ -69,22 +70,7 @@ function Cite({ id }: { id: SourceId }) {
 }
 
 /** The index rail; ids match the sections below. */
-const SECTIONS = [
-  { id: "question", label: "Where it began" },
-  { id: "survey", label: "What patients told us" },
-  { id: "why-dpyd", label: "Why DPYD" },
-  { id: "joerger", label: "Markus Joerger" },
-  { id: "pirmohamed", label: "Munir Pirmohamed" },
-  { id: "merritt", label: "Karen Merritt" },
-  { id: "explaining", label: "Explaining it better" },
-  { id: "hertz", label: "Dan Hertz" },
-  { id: "disagreed", label: "Where experts disagreed" },
-  { id: "agreed", label: "What all four said" },
-  { id: "shifted", label: "How our question shifted" },
-  { id: "unresolved", label: "What remains unresolved" },
-  { id: "path", label: "Where our path leads" },
-  { id: "references", label: "References" },
-];
+const SECTIONS = SECTIONS_OF["/human-practices"];
 
 // Professor Pirmohamed's interview was written up by the team in Russian. This is a plain translation of it.
 const PIRMOHAMED_NOTES = [

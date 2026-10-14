@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 import { PLATE } from "@/components/story/PageHero";
+import { SECTIONS_OF } from "@/components/story/page-sections";
 import { Awaiting, P, PageLink, PageShell, Section } from "@/components/story/PageShell";
 import { CiteMark, SourceList, type Source } from "@/components/story/Cite";
 import { Figure } from "@/components/story/Figure";
@@ -67,13 +68,7 @@ function Cite({ id }: { id: SourceId }) {
 }
 
 /** The index rail; ids match the sections below. */
-const SECTIONS = [
-  { id: "problem", label: "The problem" },
-  { id: "letter", label: "What a single letter does" },
-  { id: "testing", label: "Why testing first matters" },
-  { id: "building", label: "What we are building" },
-  { id: "references", label: "References" },
-];
+const SECTIONS = SECTIONS_OF["/description"];
 
 function Description() {
   return (

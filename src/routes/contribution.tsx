@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 
+import { SECTIONS_OF } from "@/components/story/page-sections";
 import { Awaiting, P, PageLink, PageShell, Section } from "@/components/story/PageShell";
 
 // Contribution, Bronze medal criterion 3. The URL must be exactly /contribution: a judge following the
@@ -24,11 +25,7 @@ export const Route = createFileRoute("/contribution")({
 });
 
 /** The index rail; ids match the sections below. */
-const SECTIONS = [
-  { id: "what", label: "What we contribute" },
-  { id: "why", label: "Why it helps future teams" },
-  { id: "use", label: "How to use it" },
-];
+const SECTIONS = SECTIONS_OF["/contribution"];
 
 function Contribution() {
   return (

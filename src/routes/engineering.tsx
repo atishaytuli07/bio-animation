@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import { C, L } from "@/components/hero/palette";
 import { PLATE } from "@/components/story/PageHero";
+import { SECTIONS_OF } from "@/components/story/page-sections";
 import { Awaiting, P, PageLink, PageShell, Section } from "@/components/story/PageShell";
 import { Figure } from "@/components/story/Figure";
 import { CycleFigure } from "@/components/story/diagrams";
@@ -58,12 +59,7 @@ const CYCLE = [
 ];
 
 /** The index rail; ids match the sections below. */
-const SECTIONS = [
-  { id: "cycle", label: "The cycle" },
-  ...CYCLE.map((c) => ({ id: c.phase.toLowerCase(), label: c.phase })),
-  { id: "later", label: "Later passes" },
-  { id: "contribution", label: "Contribution" },
-];
+const SECTIONS = SECTIONS_OF["/engineering"];
 
 function Engineering() {
   return (

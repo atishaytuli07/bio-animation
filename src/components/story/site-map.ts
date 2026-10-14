@@ -85,7 +85,7 @@ export const PAGES: Page[] = [
     label: "Attributions",
     to: "/attributions",
     ready: true,
-    blurb: "Who did which part, what came from elsewhere, and where AI was used.",
+    blurb: "Who did which part, and what came from elsewhere.",
   },
 ];
 
@@ -101,6 +101,30 @@ export const ALIASES = [
   { from: "/new", to: "/" },
 ];
 
-// What the header shows. Contribution and Attributions live in the footer and the closing cards instead: seven
-// items are what the desktop bar holds comfortably at 1024px, and both pages are found by their standard URLs.
-export const NAV = PAGES.filter((p) => p.to !== "/attributions" && p.to !== "/contribution");
+// What the header shows. Six items, three of them menus: each menu's label goes to its first page, and the menu
+// lists the pages in the group. Sections are not listed: the client asked for the main pages only. Grouping is what lets every page, including
+// Contribution and Attributions, be reached from the bar without it running out of room at 1024px.
+export type MenuItem = {
+  label: string;
+  /** Routes in this group, first one being where the label itself goes. */
+  pages: readonly string[];
+};
+
+const page = (to: string) => PAGES.find((p) => p.to === to);
+
+export const MENU: MenuItem[] = (
+  [
+    { label: "The story", pages: ["/"] },
+    { label: "Try it", pages: ["/playground"] },
+    { label: "Project", pages: ["/description", "/engineering", "/contribution"] },
+    { label: "Human Practices", pages: ["/human-practices", "/education"] },
+    { label: "Safety", pages: ["/safety-and-security"] },
+    { label: "Team", pages: ["/team", "/attributions"] },
+  ] satisfies MenuItem[]
+)
+  // a page this wiki does not have is dropped, and a group left empty goes with it
+  .map((item) => ({ ...item, pages: item.pages.filter((to) => page(to)?.ready) }))
+  .filter((item) => item.pages.length > 0);
+
+/** The page behind a route in a menu. */
+export const pageAt = (to: string) => page(to) as Page;

@@ -1082,3 +1082,7 @@ The page was rebuilt around Adina's ten points. Code is in `src/routes/playgroun
 - The chart marks what the reader changed ("dose changed", "DPD changed", "patient added") so a bend in a curve has a cause.
 - The page scrolls when it has to. It is no longer forced into one screen.
 - Open with Adina: green means both the target range and the DPD enzyme on this page.
+
+## Open before publishing (noted 14 October 2026)
+
+- Photo consent, still to be confirmed by the team: the Education photos show kindergarten children, school students and readers of the library for the blind, and the camp feedback screenshot shows five participants' full names.

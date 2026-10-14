@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 
 import { C } from "@/components/hero/palette";
+import { SECTIONS_OF } from "@/components/story/page-sections";
 import { P, PageLink, PageShell, Section } from "@/components/story/PageShell";
 import { Bullets, DataTable, Figure, type Shot } from "@/components/story/Prose";
 
@@ -203,22 +204,8 @@ const SHOTS = {
   ),
 } as const;
 
-const SECTIONS = [
-  { id: "why", label: "Why we teach" },
-  { id: "idea", label: "One idea" },
-  { id: "where", label: "Where we went" },
-  { id: "camp", label: "Summer camp" },
-  { id: "kazygurt", label: "Kazygurt" },
-  { id: "kindergarten", label: "Kindergarten" },
-  { id: "schools", label: "Samgau and Auzhan" },
-  { id: "mun", label: "Model United Nations" },
-  { id: "library", label: "Library for the blind" },
-  { id: "course", label: "YouTube course" },
-  { id: "learned", label: "What we learned" },
-  { id: "numbers", label: "In numbers" },
-  { id: "reuse", label: "Take it and use it" },
-  { id: "references", label: "References" },
-];
+/** The index rail; ids match the sections below. */
+const SECTIONS = SECTIONS_OF["/education"];
 
 const link = "font-semibold underline underline-offset-2";
 
@@ -731,13 +718,11 @@ function Education() {
 
       <Section id="references" title="References">
         <P>
-          Zholdybayeva et al., 2014. Central Asian Journal of Global Health.{" "}
-          <a
-            href="https://cajgh.pitt.edu/ojs/cajgh/article/view/87"
-            className={link}
-            style={{ color: C.ink }}
-          >
-            cajgh.pitt.edu/ojs/cajgh/article/view/87
+          Zholdybayeva E, Iskakova A, Romanova A, Ramanculov E, Momynaliev K, et al. Pharmacogenetic
+          research in Kazakhstan. Central Asian Journal of Global Health. 2013;2(2), published 24
+          January 2014.{" "}
+          <a href="https://doi.org/10.5195/cajgh.2013.87" className={link} style={{ color: C.ink }}>
+            doi:10.5195/cajgh.2013.87
           </a>
         </P>
       </Section>

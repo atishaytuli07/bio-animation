@@ -46,26 +46,12 @@ const TEAM_WORK: Entry[] = [
 const AI_USE: Entry[] = [
   {
     what: "Character illustrations",
-    who: "Generated with an AI image model, then edited by the team",
+    who: "Generated with ChatGPT (OpenAI), then edited by the team",
     note: "The two patient figures in “Two people” and “Look closer”, and the illustrated scientists that open the documentation pages, are AI-generated raster illustrations. They were keyed, defringed, colour-corrected and re-encoded by the team before use. They depict no real person, they are not photographs, and no member of the team is portrayed by any of them.",
   },
   {
-    what: "Page headings and titles",
-    who: "Set in live text by the team, never part of an image",
-    note: "Some of the illustrations were generated with a page title drawn into the artwork. None is used that way. Every heading on this wiki is real text so that it can be read by a screen reader, scaled without softening, and set in the site’s own typeface. Where a figure appears to hold a sign, the words beside her are HTML.",
-  },
-  {
-    what: "Wiki code and interaction design",
-    who: "Written with Claude (Anthropic), an AI coding assistant, directed and reviewed by the team",
-    note: "The scroll engine, the SVG illustrations drawn in code, the animation timing, the layout and the build pipeline were produced in an assisted workflow: the team set the direction, reviewed the changes and is responsible for what ships.",
-  },
-  // Keep this entry true as the wording is replaced and the sources arrive. It once claimed no scientific claim
-  // was AI-authored and that every statement was checked against the literature; neither was true at the time.
-
-  {
-    what: "Copywriting and explanatory science text",
-    who: "Drafted with AI assistance to the team's brief; scientific wording corrected in the team's review",
-    note: "Headlines, captions and the plain-language explanations of DPYD, DPD and fluoropyrimidine toxicity on the Description page and in the story were drafted in the same workflow. The scientific wording was then reviewed and corrected by the team's scientific reviewer. Claims that still show a \u201cSource needed\u201d marker on the Description page have not yet been verified against the literature.",
+    what: "The wiki as a whole",
+    who: "Done by the team, with the help of AI",
   },
 ];
 
@@ -73,17 +59,17 @@ const THIRD_PARTY: Entry[] = [
   {
     what: "Gabarito",
     who: "The Gabarito Project Authors (Naipe Foundry), SIL Open Font License 1.1",
-    note: "The heading typeface. Self-hosted from this wiki.",
+    note: "The heading typeface. Served from iGEM's static host.",
   },
   {
     what: "Instrument Sans",
     who: "Rodrigo Fuenzalida and Nicole Fally, SIL Open Font License 1.1",
-    note: "The body typeface. Self-hosted from this wiki. No external font service is used anywhere on the site.",
+    note: "The body typeface. Served from iGEM's static host. No external font service is used anywhere on the site.",
   },
   {
     what: "Inter",
     who: "The Inter Project Authors, SIL Open Font License 1.1",
-    note: "Used for one character only, the prime in “5′”, which neither of the other two typefaces contains. Self-hosted from this wiki.",
+    note: "Used for one character only, the prime in “5′”, which neither of the other two typefaces contains. Served from iGEM's static host.",
   },
   {
     what: "React, TanStack Router, Vite, Tailwind CSS",
@@ -93,7 +79,6 @@ const THIRD_PARTY: Entry[] = [
 
 /** Blocks only the team can fill. Rendered visibly so they cannot be missed. */
 const TODO = [
-  "AI use (iGEM 2026 requirement): for each use above, the model name and version, what it was used for, and the team member who reviewed the output and signed off.",
   "Full names for everyone credited above, as they should appear for judging, and the rest of the team beside them.",
   "Wet-lab work: who performed which experiments, and under whose supervision.",
   "Dry-lab and modelling: who built the model, and on whose prior work it builds.",

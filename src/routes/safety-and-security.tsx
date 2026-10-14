@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import { C, L } from "@/components/hero/palette";
 import { PLATE } from "@/components/story/PageHero";
+import { SECTIONS_OF } from "@/components/story/page-sections";
 import { Awaiting, P, PageLink, PageShell, Section } from "@/components/story/PageShell";
 
 // Safety. iGEM judges two things here: laboratory safety (organisms, containment, training, waste) and
@@ -27,14 +28,7 @@ export const Route = createFileRoute("/safety-and-security")({
 });
 
 /** The index rail; ids match the sections below. */
-const SECTIONS = [
-  { id: "lab", label: "In the laboratory" },
-  { id: "materials", label: "Biological materials" },
-  { id: "samples", label: "Human samples and data" },
-  { id: "failure", label: "If the test is wrong" },
-  { id: "not", label: "What we did not do" },
-  { id: "forms", label: "iGEM safety forms" },
-];
+const SECTIONS = SECTIONS_OF["/safety-and-security"];
 
 function Safety() {
   return (

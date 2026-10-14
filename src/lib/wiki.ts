@@ -9,6 +9,13 @@ export const WIKI = {
   year: 2026,
   slug: "nis-kazakhstan",
   repo: "https://gitlab.igem.org/2026/nis-kazakhstan",
+  // Where the wiki's images live. iGEM requires images, photos and icons to be uploaded with its uploads tool
+  // and served from static.igem.wiki, not kept in the repository. The team uploaded them into this one folder.
+  media: "https://static.igem.wiki/teams/6493/wiki/website/",
+  // iGEM: AI-generated decorative images are released under CC BY 4.0 with the team's content, and the model is
+  // credited next to each image.
+  aiImageCredit: "Illustration generated with ChatGPT (OpenAI)",
+  aiImagesCredit: "Illustrations generated with ChatGPT (OpenAI)",
   /** Team-authored content, per iGEM's wiki requirements. */
   license: {
     name: "Creative Commons Attribution 4.0",

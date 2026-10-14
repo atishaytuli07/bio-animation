@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 import { C, L, R } from "@/components/hero/palette";
+import { SECTIONS_OF } from "@/components/story/page-sections";
 import { Awaiting, P, PageLink, PageShell, Section } from "@/components/story/PageShell";
 
 // Team. Only the team can write this page, so it is built as an empty shape: a roster grid that renders
@@ -52,13 +53,7 @@ const PHOTOS = [
 const SLOTS = Array.from({ length: 8 }, (_, i) => i);
 
 /** The index rail; ids match the sections below. */
-const SECTIONS = [
-  { id: "students", label: "The team" },
-  { id: "supervisors", label: "Supervisors and advisors" },
-  { id: "who-did-what", label: "Who did what" },
-  { id: "school", label: "About NIS" },
-  { id: "contact", label: "Contact" },
-];
+const SECTIONS = SECTIONS_OF["/team"];
 
 function Team() {
   return (

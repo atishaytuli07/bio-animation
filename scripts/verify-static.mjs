@@ -245,7 +245,8 @@ console.log("\n── the files themselves: no root-absolute or external links")
     }
   };
   await walk(OUT);
-  const publicFiles = (await readdir(join(ROOT, "public"))).map((f) =>
+  // the folder is gone once every image is on iGEM's host, and then there is no such path to look for
+  const publicFiles = (await readdir(join(ROOT, "public")).catch(() => [])).map((f) =>
     f.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
   );
   const barePublic = new RegExp(`["'(]/(${publicFiles.join("|")})["')]`, "g");
@@ -266,7 +267,8 @@ console.log("\n── the files themselves: no root-absolute or external links")
         for (const [, key, v] of attrs.matchAll(attr)) {
           if (v.startsWith("/") && !v.startsWith("//") && BASE !== "/" && !v.startsWith(BASE))
             found.push(`${rel}: <${el} ${key}> root-absolute "${v}"`);
-          const external = /^(https?:)?\/\//.test(v);
+          // static.igem.wiki is iGEM's own host, and where its rules say images must be served from
+          const external = /^(https?:)?\/\//.test(v) && !v.startsWith("https://static.igem.wiki/");
           const loads =
             el !== "a" &&
             !(el === "link" && /rel="(canonical|license)"/.test(attrs)) &&
@@ -275,7 +277,7 @@ console.log("\n── the files themselves: no root-absolute or external links")
         }
       }
     }
-    if (BASE !== "/")
+    if (BASE !== "/" && publicFiles.length)
       for (const m of text.matchAll(barePublic)) found.push(`${rel}: bare public path ${m[0]}`);
   }
   say(

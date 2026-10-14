@@ -33,30 +33,44 @@ export function PageShell({
   /** Photographs for the hero to open on, in place of the purple field. */
   slides?: readonly Slide[] | undefined;
   /** Ids and labels for the index rail; must match the <Section id>s below. */
-  sections: { id: string; label: string }[];
+  sections: readonly { id: string; label: string }[];
   children: ReactNode;
 }) {
   const [active, setActive] = useState(sections[0]?.id ?? "");
 
-  // Which section the reader is in. An IntersectionObserver rather than a scroll handler, so it costs nothing
-  // per frame: the browser reports when a section crosses the line instead of us asking on every pixel.
+  // Which section the reader is in: the last one whose heading has passed a line a little under the header.
+  // It was an IntersectionObserver choosing the section with the largest share of itself in view, which was
+  // wrong for long sections: a section three screens tall never has a large share in view, so the one before
+  // it stayed marked. Read on scroll instead, once per frame at most.
   useEffect(() => {
-    const seen = new Map<string, number>();
-    const io = new IntersectionObserver(
-      (entries) => {
-        for (const e of entries) seen.set(e.target.id, e.intersectionRatio);
-        let best = "";
-        let top = -1;
-        for (const [id, ratio] of seen) if (ratio > top) [best, top] = [id, ratio];
-        if (best && top > 0) setActive(best);
-      },
-      { rootMargin: "-25% 0px -60% 0px", threshold: [0, 0.5, 1] },
-    );
-    for (const s of sections) {
-      const el = document.getElementById(s.id);
-      if (el) io.observe(el);
-    }
-    return () => io.disconnect();
+    let frame = 0;
+    const read = () => {
+      frame = 0;
+      const line = 150;
+      let current = sections[0]?.id ?? "";
+      for (const s of sections) {
+        const el = document.getElementById(s.id);
+        if (el && el.getBoundingClientRect().top <= line) current = s.id;
+      }
+      // at the very end of the page the last section may be too short to reach the line
+      if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2) {
+        const last = sections[sections.length - 1];
+        const el = last && document.getElementById(last.id);
+        if (el && el.getBoundingClientRect().top < window.innerHeight) current = last.id;
+      }
+      setActive(current);
+    };
+    const onScroll = () => {
+      if (!frame) frame = requestAnimationFrame(read);
+    };
+    read();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    };
   }, [sections]);
 
   return (
@@ -65,11 +79,14 @@ export function PageShell({
 
       <PageHero title={title} lede={lede} plate={plate} piece={piece} slides={slides} />
 
-      <div className="mx-auto flex max-w-[92rem] gap-12 px-6 pb-24 pt-12 md:px-10 md:pt-16">
+      <div className="mx-auto flex max-w-[92rem] gap-8 px-6 pb-24 pt-12 md:px-10 md:pt-16 xl:gap-12">
         {/* The section index. On a long documentation page it is the difference between a reader finding the part
             they came for and scrolling past it. Sticky, and it marks where they are rather than only offering links. */}
-        <aside className="hidden w-[15rem] shrink-0 xl:block">
-          <nav aria-label="On this page" className="sticky top-28">
+        <aside className="hidden w-[12.5rem] shrink-0 lg:block xl:w-[15rem]">
+          <nav
+            aria-label="On this page"
+            className="sticky top-28 max-h-[calc(100dvh-8.5rem)] overflow-y-auto pr-1"
+          >
             <span className={L.note} style={{ color: C.inkNote }}>
               On this page
             </span>
@@ -81,12 +98,19 @@ export function PageShell({
                     <a
                       href={`#${s.id}`}
                       aria-current={on ? "true" : undefined}
-                      className="flex items-center gap-2.5 py-1.5 text-[14px] font-semibold transition-colors"
-                      style={{ color: on ? C.redDeep : C.inkNote }}
+                      className="flex items-center gap-2.5 rounded-[6px] px-2 py-1.5 text-[14px] transition-colors"
+                      style={{
+                        color: on ? C.ink : C.inkNote,
+                        fontWeight: on ? 800 : 600,
+                        background: on ? `${C.lavender}38` : "transparent",
+                      }}
                     >
                       <span
                         className="block h-[2px] shrink-0 transition-all"
-                        style={{ width: on ? 18 : 9, background: on ? C.red : `${C.ink}44` }}
+                        style={{
+                          width: on ? 18 : 9,
+                          background: on ? C.lavenderDeep : `${C.ink}44`,
+                        }}
                       />
                       {s.label}
                     </a>
@@ -244,6 +268,9 @@ export function ClosingBand() {
           </span>
           <span className={L.note} style={{ color: C.inkBody }}>
             NIS Kazakhstan · iGEM 2026
+          </span>
+          <span className="text-[12px] leading-none" style={{ color: C.inkBody }}>
+            {WIKI.aiImagesCredit}
           </span>
         </div>
         <img

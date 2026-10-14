@@ -1,3 +1,5 @@
+import { WIKI } from "@/lib/wiki";
+
 // The ChemoGuard visual system, in one place. The rule from the Production Brief is that a colour means the
 // same thing on every screen: lavender is genetics, coral is the drug, green is the DPD enzyme, and red is
 // only ever the variant, plus the brand mark. A colour that is decorative on one screen and meaningful on
@@ -200,7 +202,7 @@ export const HTOP = 40;
 export const HBOT = 720;
 export const HR = 132;
 
-// Resolve a file in public/ against the wiki's base path. An iGEM wiki is served from /<team-slug>/, so a
-// literal "/logo.webp" points outside it. Rewriting the SSR HTML is not enough, because React re-renders on
-// hydration and puts the literal path back. BASE_URL is "/" in development and for root-hosted deploys.
-export const asset = (path: string) => `${import.meta.env.BASE_URL}${path.replace(/^\//, "")}`;
+// Where an image is served from: iGEM's static host, in the team's one upload folder. The folder is flat, so
+// only the file's own name is used; a path such as "outreach/felt-cover" says where it sat in this repository
+// before the images were moved out of it.
+export const asset = (path: string) => `${WIKI.media}${path.split("/").pop() ?? path}`;

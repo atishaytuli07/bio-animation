@@ -2,6 +2,7 @@ import type { CSSProperties, ReactNode } from "react";
 
 import { Cell, Enzyme, Molecule } from "@/components/hero/elements";
 import { asset, C, L, T } from "@/components/hero/palette";
+import { WIKI } from "@/lib/wiki";
 import { SlideBackdrop, SlideFrame, type Slide } from "@/components/story/HeroCarousel";
 import { useCarousel } from "@/hooks/use-carousel";
 import { useTime } from "@/hooks/use-scroll-progress";
@@ -332,6 +333,8 @@ export function PageHero({
           )}
           <img
             src={asset(plate.src)}
+            // the host allows it, and without it a check that reads the picture's pixels is refused
+            crossOrigin="anonymous"
             alt={plate.alt ?? ""}
             draggable={false}
             className="h-full w-auto select-none object-contain object-bottom"
@@ -342,6 +345,15 @@ export function PageHero({
             }}
           />
         </div>
+      )}
+
+      {plate && (
+        <span
+          className="absolute bottom-1.5 right-2 z-10 rounded px-1.5 py-0.5 text-[12px] leading-none"
+          style={{ background: `${C.ink}a6`, color: C.paper }}
+        >
+          {WIKI.aiImageCredit}
+        </span>
       )}
 
       {/* No character: the object sits in the empty right band, from lg. At 768 the copy fills the width. */}

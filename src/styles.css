@@ -5,12 +5,68 @@
    direction, an .act-dark inversion for a component that no longer exists. Every name was checked against the
    source before it went. Colour on this site lives in palette.ts, not in CSS variables. */
 
+/* The two typefaces, Gabarito for headings and Instrument Sans for text, both under the SIL Open Font Licence.
+   iGEM requires fonts to be served from static.igem.wiki, so the files are the team's uploads there and are not
+   kept in this repository. The ranges are the ones the fonts were published with. */
+/* gabarito-latin-ext-wght-normal */
+@font-face {
+  font-family: "Gabarito Variable";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400 900;
+  src: url("https://static.igem.wiki/teams/6493/wiki/fonts/gabarito-latin-ext-wght-normal.woff2")
+    format("woff2-variations");
+  unicode-range:
+    U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329,
+    U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F,
+    U+A720-A7FF;
+}
+
+/* gabarito-latin-wght-normal */
+@font-face {
+  font-family: "Gabarito Variable";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400 900;
+  src: url("https://static.igem.wiki/teams/6493/wiki/fonts/gabarito-latin-wght-normal.woff2")
+    format("woff2-variations");
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
+    U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* instrument-sans-latin-ext-wght-normal */
+@font-face {
+  font-family: "Instrument Sans Variable";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400 700;
+  src: url("https://static.igem.wiki/teams/6493/wiki/fonts/instrument-sans-latin-ext-wght-normal.woff2")
+    format("woff2-variations");
+  unicode-range:
+    U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329,
+    U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F,
+    U+A720-A7FF;
+}
+
+/* instrument-sans-latin-wght-normal */
+@font-face {
+  font-family: "Instrument Sans Variable";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400 700;
+  src: url("https://static.igem.wiki/teams/6493/wiki/fonts/instrument-sans-latin-wght-normal.woff2")
+    format("woff2-variations");
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
+    U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
 /* One character, from a bundled file. Neither of the site's two typefaces has the prime used in "5′ splice
    donor site", so a browser was borrowing it from whatever the reader's machine had. unicode-range limits this
    face to the prime and double prime, and the file is only fetched by a page that uses one. */
 @font-face {
   font-family: "ChemoGuard Marks";
-  src: url("../node_modules/@fontsource-variable/inter/files/inter-latin-wght-normal.woff2")
+  src: url("https://static.igem.wiki/teams/6493/wiki/fonts/inter-latin-wght-normal.woff2")
     format("woff2-variations");
   font-weight: 100 900;
   font-style: normal;
@@ -186,4 +242,25 @@
   outline: 3px solid #7355b4;
   outline-offset: 3px;
   border-radius: 9999px;
+}
+
+/* A header menu opening. */
+@keyframes menu-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+}
+.menu-in {
+  animation: menu-in 0.16s ease-out both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .menu-in {
+    animation: none;
+  }
+}
+
+.menu-row:hover,
+.menu-row:focus-visible {
+  background: color-mix(in oklab, #a084dd 26%, transparent);
 }

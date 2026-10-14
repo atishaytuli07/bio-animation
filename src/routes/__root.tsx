@@ -8,13 +8,7 @@ import {
 } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 
-// The heading face and the body face, both self-hosted (OFL, so shipping them inside the wiki is allowed). A
-// third file, for the prime character alone, is declared in styles.css. Each package publishes one
-// stylesheet per axis, and each face carries a unicode-range, so a reader downloads only the subset in use.
-import "@fontsource-variable/gabarito/wght.css";
-import "@fontsource-variable/instrument-sans/wght.css";
-
-import { C, R, T } from "@/components/hero/palette";
+import { asset, C, R, T } from "@/components/hero/palette";
 import { PageLink, SiteFooter } from "@/components/story/PageShell";
 import { SiteHeader } from "@/components/story/SiteHeader";
 
@@ -120,8 +114,8 @@ export const Route = createRootRoute({
         rel: "stylesheet",
         href: appCss,
       },
-      { rel: "icon", href: "/favicon.svg", type: "image/svg+xml" },
-      { rel: "alternate icon", href: "/favicon.ico", type: "image/x-icon" },
+      { rel: "icon", href: asset("favicon.svg"), type: "image/svg+xml" },
+      { rel: "alternate icon", href: asset("favicon.ico"), type: "image/x-icon" },
     ],
   }),
   shellComponent: RootShell,
