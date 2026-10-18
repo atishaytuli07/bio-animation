@@ -12,9 +12,10 @@ import { ClosingBand, SiteFooter } from "@/components/story/PageShell";
 import { SiteHeader } from "@/components/story/SiteHeader";
 import { World } from "@/components/story/World";
 import { usePageProgress } from "@/hooks/use-page-progress";
+import { fromStory } from "@/lib/story-map";
 import { band, easeOut, range, useSmoothProgress } from "@/hooks/use-scroll-progress";
 import { Cell, Enzyme, Molecule } from "@/components/hero/elements";
-import { C, L, R, T } from "@/components/hero/palette";
+import { C, ENZYME_PATH, L, R, T } from "@/components/hero/palette";
 
 // The story, and the wiki's front door. Everything is drawn in code as SVG. No three.js: the old WebGL helix was slow to
 // load, read as generic, and could not morph or recolour.
@@ -96,38 +97,138 @@ const CHAPTERS = [
 // variant inside the story, and a progress bar is none of them.
 // Positioned from the bottom of the bar row: -mt-[8px] with the 7px pad puts the 3px fill 1px above the row's
 // end, covering the header's 2px border at both header heights, and centres the 17px row of marks on it.
+/** How far down the page the story's end is: the scroll travel progress is measured against. */
+function storySpan() {
+  const end = document.getElementById("story-end");
+  return (end ? end.offsetTop : document.documentElement.scrollHeight) - window.innerHeight;
+}
+
+/** Scroll to a point in the story, given in story coordinates. */
+function scrollToStory(at: number, smooth: boolean) {
+  const top = fromStory(Math.min(1, Math.max(0, at))) * storySpan();
+  window.scrollTo({ top, behavior: smooth ? "smooth" : "instant" });
+}
+
+// The progress rail, along the header's lower edge. The fill says how far the reader has come and the marks are
+// the chapters. Its handle is the DPD enzyme, the site's lock shape, riding the end of the fill: drag it to move
+// through the story, press a mark to jump to a chapter, or use the arrow keys on the handle. The client asked for
+// the rail to be something the reader can use, not only read.
 function ProgressRail() {
-  const p = usePageProgress(200);
+  const p = usePageProgress(400);
+  const bar = useRef<HTMLDivElement>(null);
+  /** Where the handle is being dragged to, while it is; otherwise it follows the page. */
+  const [dragAt, setDragAt] = useState<number | null>(null);
+  const at = dragAt ?? p;
+  const current = [...CHAPTERS].reverse().find((c) => at >= c.at) ?? CHAPTERS[0];
+  const index = CHAPTERS.indexOf(current);
+  // a chapter's own position is where its label changes; a hair past it, so arriving names it
+  const toChapter = (i: number) => {
+    const c = CHAPTERS[Math.min(CHAPTERS.length - 1, Math.max(0, i))];
+    if (c) scrollToStory(c.at + 0.003, true);
+  };
+  const fromPointer = (x: number) => {
+    const r = bar.current?.getBoundingClientRect();
+    return r && r.width > 0 ? Math.min(1, Math.max(0, (x - r.left) / r.width)) : 0;
+  };
+  const where = (v: number) => `clamp(12px, ${(v * 100).toFixed(2)}%, calc(100% - 12px))`;
+
   return (
-    <div className="relative -mt-[8px] pt-[7px]">
+    <div ref={bar} className="relative -mt-[8px] pt-[7px]">
       {/* No track. Drawing the untravelled part put the unfinished part of the story across the top of every
           frame. The fill and the marks say where you are; the remainder does not need painting. */}
-      <div className="h-[3px] w-full">
+      <div aria-hidden="true" className="h-[3px] w-full">
         <div
           className="h-full origin-left"
-          style={{ width: `${(p * 100).toFixed(1)}%`, background: C.ink }}
+          style={{ width: `${(at * 100).toFixed(1)}%`, background: C.ink }}
         />
       </div>
-      <svg
-        aria-hidden="true"
-        className="absolute inset-x-0 top-0 h-[17px] w-full overflow-visible"
-        style={{ opacity: q(range(p, 0, 0.015)) }}
-      >
+
+      {/* The chapter marks: each one goes to its chapter. The visible dot is small; what can be pressed is not. */}
+      <div style={{ opacity: q(range(p, 0, 0.015)) }}>
         {CHAPTERS.slice(1).map((c) => {
-          const reached = p >= c.at;
+          const reached = at >= c.at;
           return (
-            <circle
+            <button
               key={c.n}
-              cx={`${(c.at * 100).toFixed(1)}%`}
-              cy="8.5"
-              r={reached ? 4.2 : 3.6}
-              fill={reached ? C.ink : C.paper}
-              stroke={C.ink}
-              strokeWidth="1.6"
-            />
+              type="button"
+              tabIndex={-1}
+              title={`${c.n} · ${c.name}`}
+              aria-label={`Go to chapter ${c.n}, ${c.name}`}
+              onClick={() => scrollToStory(c.at + 0.003, true)}
+              className="pointer-events-auto absolute top-[-3.5px] grid h-6 w-6 -translate-x-1/2 place-items-center"
+              style={{ left: `${(c.at * 100).toFixed(1)}%` }}
+            >
+              <span
+                aria-hidden="true"
+                className="block rounded-full transition-transform duration-200"
+                style={{
+                  width: reached ? 8.4 : 7.2,
+                  height: reached ? 8.4 : 7.2,
+                  background: reached ? C.ink : C.paper,
+                  border: `1.6px solid ${C.ink}`,
+                }}
+              />
+            </button>
           );
         })}
-      </svg>
+      </div>
+
+      {/* The handle. A 32px target around a 20px drawing, centred on the line. */}
+      <div
+        role="slider"
+        tabIndex={0}
+        aria-label="Story progress"
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={Math.round(at * 100)}
+        aria-valuetext={`${current.n} · ${current.name}`}
+        onPointerDown={(e) => {
+          e.currentTarget.setPointerCapture(e.pointerId);
+          setDragAt(at);
+        }}
+        onPointerMove={(e) => {
+          if (dragAt === null) return;
+          const v = fromPointer(e.clientX);
+          setDragAt(v);
+          scrollToStory(v, false);
+        }}
+        onPointerUp={() => setDragAt(null)}
+        onPointerCancel={() => setDragAt(null)}
+        onKeyDown={(e) => {
+          const go = {
+            ArrowRight: index + 1,
+            ArrowDown: index + 1,
+            PageDown: index + 1,
+            ArrowLeft: index - 1,
+            ArrowUp: index - 1,
+            PageUp: index - 1,
+            Home: 0,
+            End: CHAPTERS.length - 1,
+          }[e.key];
+          if (go === undefined) return;
+          e.preventDefault();
+          toChapter(go);
+        }}
+        className={`rail-handle pointer-events-auto absolute top-[-6.5px] grid h-8 w-8 -translate-x-1/2 touch-none select-none place-items-center ${dragAt === null ? "cursor-grab" : "cursor-grabbing"}`}
+        style={{ left: where(at), opacity: q(0.55 + range(p, 0, 0.015) * 0.45) }}
+      >
+        <svg
+          width="20"
+          height="22"
+          viewBox="10 9 58 66"
+          aria-hidden="true"
+          className="overflow-visible"
+        >
+          <path
+            d={ENZYME_PATH}
+            fill={C.green}
+            stroke={C.ink}
+            strokeWidth="5"
+            strokeLinejoin="round"
+          />
+          <circle cx="40" cy="34" r="5" fill={C.paper} stroke={C.ink} strokeWidth="3.5" />
+        </svg>
+      </div>
     </div>
   );
 }

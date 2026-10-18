@@ -224,9 +224,8 @@ export function SiteHeader({
           </button>
         </div>
         {rail && (
-          <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-full z-[1]">
-            {rail}
-          </div>
+          // the rail says itself which of its parts can be used: the handle and the chapter marks
+          <div className="pointer-events-none absolute inset-x-0 top-full z-[1]">{rail}</div>
         )}
       </div>
 

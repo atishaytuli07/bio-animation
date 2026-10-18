@@ -1,5 +1,4 @@
 import { Link } from "@tanstack/react-router";
-import { WIKI } from "@/lib/wiki";
 import { useEffect, useRef, useState } from "react";
 
 import { asset, BODY, C, DISPLAY, L, T } from "@/components/hero/palette";
@@ -661,7 +660,7 @@ export function Why() {
             style={{ color: C.ink, background: NOTE_GROUND }}
           >
             Illustrative simulation, not a clinical prediction. DPD acts inside cells, particularly
-            in the liver. {WIKI.aiImageCredit}.
+            in the liver.
           </p>
         </div>
 

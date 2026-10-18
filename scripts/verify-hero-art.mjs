@@ -14,17 +14,18 @@ import { chromium } from "playwright";
 const BASE = process.argv[2] ?? "http://localhost:8080";
 const MARGIN = 14;
 /** Pages whose hero carries a character plate, and the width its piece appears from. */
-const PAGES = [
-  { route: "/description", from: 1280 },
-  { route: "/engineering", from: 1280 },
-  // drawn from the waist up and wider on the plate, so the piece waits for 1600
-  { route: "/human-practices", from: 1600 },
-  { route: "/safety-and-security", from: 1600 },
-];
+const PAGES = [];
 const WIDE = [1280, 1366, 1440, 1600, 1920];
 // Pages with no character: the piece sits in the empty band instead, from lg. Each is a different object on purpose —
 // the client asked for fewer, larger, meaningful elements but not four identical heroes.
-const PIECE_ONLY = [];
+// Every page now carries a drawn cast instead of a generated character plate.
+const PIECE_ONLY = [
+  "/description",
+  "/engineering",
+  "/contribution",
+  "/human-practices",
+  "/safety-and-security",
+];
 
 let fails = 0;
 const say = (ok, what, detail = "") => {
@@ -292,7 +293,8 @@ for (const route of PIECE_ONLY) {
       const p = document.querySelector("section [data-piece]");
       if (!p) return "none";
       // what it is made of and what it says, not where it sits
-      const kinds = [...p.querySelectorAll("svg, img, span")].map((e) => e.tagName).join(",");
+      // every element of the drawing, in order: two casts drawn in one svg each still differ in what they draw
+      const kinds = [...p.querySelectorAll("svg *, img, span")].map((e) => e.tagName).join(",");
       const text = [...p.querySelectorAll("[data-piece-label]")]
         .map((e) => e.textContent)
         .join("|");

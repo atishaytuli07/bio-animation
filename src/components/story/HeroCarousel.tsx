@@ -1,4 +1,4 @@
-import { asset, C, L, R } from "@/components/hero/palette";
+import { asset, C, R } from "@/components/hero/palette";
 import { HOLD, type Carousel } from "@/hooks/use-carousel";
 
 // A hero made of photographs instead of the purple field. The Team page uses it: the team's own pictures are
@@ -41,18 +41,7 @@ export function SlideBackdrop({ slides, at }: { slides: readonly Slide[]; at: nu
 }
 
 export function SlideFrame({ slides, show }: { slides: readonly Slide[]; show: Carousel }) {
-  const { at, playing, canPlay, go, toggle, hold } = show;
-  const current = slides[at];
-  const control =
-    "grid h-9 w-9 shrink-0 place-items-center text-[15px] font-bold leading-none transition-transform active:translate-y-[1px]";
-  const controlStyle = {
-    background: C.paper,
-    color: C.ink,
-    border: `2.5px solid ${C.ink}`,
-    borderRadius: R.sm,
-    boxShadow: `3px 3px 0 ${C.ink}`,
-  } as const;
-
+  const { at, playing, canPlay, toggle, hold } = show;
   return (
     <div
       role="group"
@@ -77,7 +66,7 @@ export function SlideFrame({ slides, show }: { slides: readonly Slide[]; show: C
             key={s.file}
             src={asset(`${s.file}-1280.webp`)}
             srcSet={`${asset(`${s.file}-800.webp`)} 800w, ${asset(`${s.file}-1280.webp`)} 1280w`}
-            sizes="(min-width: 1024px) 640px, 100vw"
+            sizes="(min-width: 1024px) 780px, 100vw"
             width={1280}
             height={960}
             alt={i === at ? s.alt : ""}
@@ -96,56 +85,19 @@ export function SlideFrame({ slides, show }: { slides: readonly Slide[]; show: C
             }}
           />
         ))}
-      </div>
-
-      <div className="mt-4 flex items-center gap-3">
-        {slides.length > 1 && (
-          <>
-            <button
-              type="button"
-              onClick={() => go(at - 1)}
-              aria-label="Previous photograph"
-              className={control}
-              style={controlStyle}
-            >
-              ←
-            </button>
-            <button
-              type="button"
-              onClick={() => go(at + 1)}
-              aria-label="Next photograph"
-              className={control}
-              style={controlStyle}
-            >
-              →
-            </button>
-          </>
-        )}
+        {/* The one control left. The photographs change on their own every six seconds, and anything that moves
+            for longer than five seconds must be possible to stop (WCAG 2.2.2), so pause stays, small, in the corner. */}
         {canPlay && (
           <button
             type="button"
             onClick={toggle}
             aria-label={playing ? "Pause the photographs" : "Play the photographs"}
-            className={control}
-            style={controlStyle}
+            className="absolute bottom-3 right-3 grid h-9 w-9 place-items-center rounded-full text-[12px] leading-none"
+            style={{ background: `${C.ink}b3`, color: C.paper, border: `2px solid ${C.paper}99` }}
           >
-            <span aria-hidden="true" className="text-[12px]">
-              {playing ? "❚❚" : "▶"}
-            </span>
+            <span aria-hidden="true">{playing ? "❚❚" : "▶"}</span>
           </button>
         )}
-        <p
-          // announced only when the reader changed it; while it plays on its own a screen reader is left alone
-          aria-live={playing ? "off" : "polite"}
-          // its own dark backing: the ground behind it is a photograph, lighter in some than in others
-          className="min-w-0 flex-1 rounded-[6px] px-2.5 py-1.5 text-[14px] leading-snug md:text-[15px]"
-          style={{ color: C.paper, background: `${C.ink}99` }}
-        >
-          <span className={`${L.note} mr-2`} style={{ color: `${C.paper}cc` }}>
-            {at + 1} / {slides.length}
-          </span>
-          {current?.caption}
-        </p>
       </div>
     </div>
   );

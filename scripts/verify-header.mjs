@@ -118,10 +118,12 @@ for (const [w, h] of [
   const r = await page.evaluate(() => {
     const hd = document.querySelector("header");
     // the rail's wrapper specifically: the nav underline also uses origin-left
-    const rail = hd.querySelector(":scope > div > [aria-hidden='true'].pointer-events-none");
+    const rail = hd.querySelector(":scope > div > .top-full.pointer-events-none");
     const fill = rail?.querySelector(".h-full.origin-left");
-    const knob = rail?.querySelector("svg");
-    if (!fill || !knob) return null;
+    // the handle (the DPD enzyme) and every chapter mark must sit on the line
+    const knob = rail?.querySelector("[role='slider'] svg");
+    const marks = [...(rail?.querySelectorAll("button > span") ?? [])];
+    if (!fill || !knob || !marks.length) return null;
     const b = hd.getBoundingClientRect();
     const border = parseFloat(getComputedStyle(hd).borderBottomWidth);
     const f = fill.getBoundingClientRect();
@@ -133,17 +135,23 @@ for (const [w, h] of [
       fBottom: f.bottom,
       fillW: f.width,
       kMid: (k.top + k.bottom) / 2,
+      marksOff: Math.max(
+        ...marks.map((m) => {
+          const b = m.getBoundingClientRect();
+          return Math.abs((b.top + b.bottom) / 2 - (f.top + f.bottom) / 2);
+        }),
+      ),
     };
   });
   if (!r) {
-    say(false, `${w}px: rail found inside the header`, "no fill or knob inside <header>");
+    say(false, `${w}px: rail found inside the header`, "no fill, handle or marks inside <header>");
   } else {
     const covers = r.fTop <= r.bottom - r.border + 0.5 && r.fBottom >= r.bottom - 0.5;
-    const centred = Math.abs(r.kMid - (r.fTop + r.fBottom) / 2) <= 1;
+    const centred = Math.abs(r.kMid - (r.fTop + r.fBottom) / 2) <= 1.5 && r.marksOff <= 1;
     say(
       covers && centred && r.fillW > 0,
-      `${w}px: fill covers the ${r.border}px border and the chapter marks are centred on it`,
-      `header ends ${r.bottom}px · fill ${r.fTop}→${r.fBottom} · marks centre ${r.kMid}`,
+      `${w}px: fill covers the ${r.border}px border, and the handle and chapter marks are centred on it`,
+      `header ends ${r.bottom}px · fill ${r.fTop}→${r.fBottom} · handle centre ${r.kMid} · marks off by ${r.marksOff.toFixed(1)}px`,
     );
   }
   await page.close();

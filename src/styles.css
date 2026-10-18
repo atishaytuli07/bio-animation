@@ -264,3 +264,56 @@
 .menu-row:focus-visible {
   background: color-mix(in oklab, #a084dd 26%, transparent);
 }
+
+/* The drawn cast: each bobs on its own clock and blinks now and then. */
+@keyframes critter-bob {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-5px) rotate(-1.6deg);
+  }
+}
+@keyframes critter-blink {
+  0%,
+  92%,
+  100% {
+    transform: scaleY(1);
+  }
+  95% {
+    transform: scaleY(0.1);
+  }
+}
+.critter-bob {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: critter-bob 3.8s ease-in-out infinite;
+}
+.critter-blink {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: critter-blink 5.4s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .critter-bob,
+  .critter-blink {
+    animation: none;
+  }
+}
+
+/* The progress rail's handle: it grows a little under the pointer, and shows a ring when reached by keyboard. */
+.rail-handle > svg {
+  transition: transform 160ms ease-out;
+}
+.rail-handle:hover > svg,
+.rail-handle:active > svg {
+  transform: scale(1.18);
+}
+.rail-handle:focus-visible {
+  outline: none;
+}
+.rail-handle:focus-visible > svg {
+  filter: drop-shadow(0 0 0 #241c2e) drop-shadow(0 0 3px #7355b4);
+  transform: scale(1.18);
+}

@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 
-import { WIKI } from "@/lib/wiki";
 import { asset, C, L, R, T } from "@/components/hero/palette";
 import { Slot } from "@/components/story/EnzymeSlot";
 import { usePageProgress } from "@/hooks/use-page-progress";
@@ -631,7 +630,7 @@ export function TwoPeople() {
           style={{ background: `${C.ink}cc`, color: C.paper, opacity: q(enter * (1 - card)) }}
         >
           Illustrative simulation, not a clinical prediction. The two differ in DPD activity, not
-          because of their sex. {WIKI.aiImagesCredit}.
+          because of their sex.
         </p>
 
         {/* The slider: one dose, two people. It arrives only after the two have visibly diverged, because before that

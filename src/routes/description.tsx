@@ -1,6 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import { PLATE } from "@/components/story/PageHero";
 import { SECTIONS_OF } from "@/components/story/page-sections";
 import { Awaiting, P, PageLink, PageShell, Section } from "@/components/story/PageShell";
 import { CiteMark, SourceList, type Source } from "@/components/story/Cite";
@@ -76,7 +75,6 @@ function Description() {
       title="Description"
       lede="Two patients can receive the same fluoropyrimidine treatment at the same dose, yet experience very different toxicity because of differences in drug metabolism."
       piece="dock"
-      plate={PLATE.description}
       sections={SECTIONS}
     >
       <Section id="problem" title="The problem">

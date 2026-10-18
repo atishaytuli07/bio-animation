@@ -3,7 +3,6 @@ import type { ReactNode } from "react";
 
 import { C } from "@/components/hero/palette";
 import { CiteMark, SourceList, type Source } from "@/components/story/Cite";
-import { PLATE } from "@/components/story/PageHero";
 import { SECTIONS_OF } from "@/components/story/page-sections";
 import { P, PageLink, PageShell, Section } from "@/components/story/PageShell";
 import { NOTES } from "@/components/story/hp-notes";
@@ -130,7 +129,6 @@ function HumanPractices() {
     <PageShell
       title="Human Practices"
       lede="From human to test and back to human. We did not start with the thought, &ldquo;Let's make a DPYD test.&rdquo; We started with an observation that was hard to ignore, and with the people who had already gone through treatment."
-      plate={PLATE.humanPractices}
       piece="voices"
       sections={SECTIONS}
     >

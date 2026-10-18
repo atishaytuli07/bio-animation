@@ -17,6 +17,13 @@ const WHY_WAS = 760;
 /** A position inside the last scene, in vh from its start, as a story coordinate. */
 export const whyAt = (vh: number) => (BEFORE + (vh * WHY_WAS) / WHY_TRAVEL) / (BEFORE + WHY_WAS);
 
+/** A story coordinate back to real progress through the story's scroll: what to scroll to, to reach it. */
+export function fromStory(p: number) {
+  const then = p * (BEFORE + WHY_WAS);
+  const vh = then <= BEFORE ? then : BEFORE + ((then - BEFORE) * WHY_TRAVEL) / WHY_WAS;
+  return vh / (BEFORE + WHY_TRAVEL);
+}
+
 /** Real progress through the story's scroll, 0 to 1, as a story coordinate. */
 export function toStory(raw: number) {
   const vh = raw * (BEFORE + WHY_TRAVEL);

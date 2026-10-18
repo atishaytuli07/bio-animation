@@ -1,266 +1,77 @@
-import type { CSSProperties, ReactNode } from "react";
+import type { ReactNode } from "react";
 
-import { Cell, Enzyme, Molecule } from "@/components/hero/elements";
-import { asset, C, L, T } from "@/components/hero/palette";
-import { WIKI } from "@/lib/wiki";
+import { C, L, T } from "@/components/hero/palette";
+import {
+  CycleCast,
+  DockCast,
+  DropCast,
+  HandoffCast,
+  VoicesCast,
+} from "@/components/story/Critters";
 import { SlideBackdrop, SlideFrame, type Slide } from "@/components/story/HeroCarousel";
 import { useCarousel } from "@/hooks/use-carousel";
 import { useTime } from "@/hooks/use-scroll-progress";
 
-// The hero every documentation page opens with: badge, title, two rules, lede panel, and one drawn object.
+// The hero every documentation page opens with: badge, title, two rules, lede panel, and one drawn cast.
 // It uses the story's own shapes and colours so the pages read as one site.
 
-// The one object a page carries. Each page gets a different one, because the client asked for fewer and
-// larger elements but not four heroes that look the same.
-//   dock     Description       DPD with 5-FU in its cleft
-//   cycle    Engineering       the enzyme inside a loop: design, build, test, learn
-//   voices   Human Practices   three people of different sizes around one test
-//   result   Safety            a variant screened, beside what the test never looked at
-//   handoff  Contribution      one built thing and its dashed twin, for the next team
-// With a character it hangs beside the figure; without one it sits in the empty right band.
+// The cast a page carries: the project's own actors with faces, each about what its page is about. They replaced
+// the generated scientist figures, which the client found generic: a cartoon scientist could open any team's wiki.
+//   dock     Description       DPD holding 5-FU in its cleft
+//   cycle    Engineering       the chromosome inside an open loop: design, build, test, learn, again
+//   voices   Human Practices   three cells of different sizes, the people a test reaches
+//   result   Safety            a drop of the medicine behind a shield
+//   handoff  Contribution      our enzyme and its dashed twin, for the next team
 export type Piece = "dock" | "cycle" | "voices" | "result" | "handoff";
 
-// An illustrated character for a page hero. Never use a plate with the page name drawn into the artwork:
-// image text cannot be read by a screen reader, blurs when scaled and cannot follow the site's typeface.
-// Plates are cutouts with real transparency, so they stand on the purple field instead of sitting in a box.
-export type Plate = {
-  /** Path in public/, resolved through asset() for the wiki's base path. */
-  src: string;
-  // Empty: the picture is decorative and the heading beside it carries the meaning.
-  alt?: string;
-  // Where the figure's painted pixels start, as a fraction of the image width. The piece beside it is placed from this.
-  lead?: number;
-  // A figure that reaches well past the middle of its plate leaves no room for the piece at 1280.
-  // Its piece waits for a wider screen.
-  wide?: boolean;
+/** The drawing's box, so the layout can keep it clear of the copy. */
+const SIZE: Record<Piece, { w: number; h: number }> = {
+  dock: { w: 300, h: 278 },
+  cycle: { w: 286, h: 286 },
+  voices: { w: 320, h: 265 },
+  result: { w: 246, h: 268 },
+  handoff: { w: 340, h: 230 },
 };
 
-// The character each page opens with. A plate has to say something about its own page: a scientist holding
-// a DNA strand belongs on Description, whose subject is what one letter of it does.
-export const PLATE = {
-  description: { src: "hero-description.webp", lead: 0.5 },
-  // lead 0.5, not 0.55: he holds the device out in front of him. At 0.55 the piece overlapped his hands by 237px.
-  engineering: { src: "hero-engineering.webp", lead: 0.5 },
-  // Both are drawn from the waist up and gesture towards the copy, so they fill more of the plate than the two above.
-  safety: { src: "hero-safety.webp", lead: 0.357, wide: true },
-  humanPractices: { src: "hero-human-practices.webp", lead: 0.315, wide: true },
-} satisfies Record<string, Plate>;
-
-// Description: DPD with 5-FU in its cleft. Labels are plain text on a thin line, not boxes, because a box
-// with an offset shadow means "pressable" everywhere else on this site.
-// The enzyme is drawn at 1.8x, so its cleft sits at (117, 103) and the molecule centre 40px right, 5px up.
-function Dock() {
-  const label = `${L.note} absolute whitespace-nowrap leading-none`;
-  return (
-    <div data-piece className="relative" style={{ width: 230, height: 250 }}>
-      <div
-        className="absolute"
-        style={{ left: 0, top: 28, filter: "drop-shadow(0 8px 14px rgba(36,28,46,0.26))" }}
-      >
-        <Enzyme s={1.8} tone={C.green} />
-      </div>
-      <div
-        className="absolute"
-        style={{ left: 110, top: 78, filter: "drop-shadow(0 6px 10px rgba(36,28,46,0.24))" }}
-      >
-        <Molecule s={0.95} tone={C.coral} />
-      </div>
-
-      {/* 5-FU, above the molecule. */}
-      <span data-piece-label className={label} style={{ left: 142, top: 30, color: C.paper }}>
-        5-FU
-      </span>
-      <span
-        className="absolute block w-[1.5px]"
-        style={{ left: 157, top: 46, height: 38, background: `${C.paper}b3` }}
-      />
-
-      {/* DPD, below the enzyme. */}
-      <span
-        className="absolute block w-[1.5px]"
-        style={{ left: 91, top: 196, height: 20, background: `${C.paper}b3` }}
-      />
-      <span data-piece-label className={label} style={{ left: 76, top: 222, color: C.paper }}>
-        DPD
-      </span>
-    </div>
-  );
-}
-
-// A label for a piece: paper-coloured text on a thin line.
-function Tag({ children, style }: { children: ReactNode; style: CSSProperties }) {
+/** A label on the drawing: paper text on a thin line. Only Description has them, because there they name science. */
+function Tag({ children, x, y }: { children: ReactNode; x: string; y: string }) {
   return (
     <span
       data-piece-label
       className={`${L.note} absolute whitespace-nowrap leading-none`}
-      style={{ color: C.paper, ...style }}
+      style={{ left: x, top: y, color: C.paper }}
     >
       {children}
     </span>
   );
 }
 
-function Leader({ style }: { style: CSSProperties }) {
-  return (
-    <span
-      aria-hidden="true"
-      className="absolute block w-[1.5px]"
-      style={{ background: `${C.paper}b3`, ...style }}
-    />
-  );
-}
-
-// Engineering: the enzyme inside a loop. The page is judged on going round the cycle more than once, so the
-// arrow is left open rather than closed: a closed ring reads as a logo, an open one as motion coming back.
-function Cycle() {
-  return (
-    <div data-piece className="relative" style={{ width: 230, height: 230 }}>
-      <svg
-        viewBox="0 0 230 230"
-        className="absolute inset-0 h-full w-full"
-        aria-hidden="true"
-        style={{ filter: "drop-shadow(0 8px 14px rgba(36,28,46,0.26))" }}
-      >
-        <defs>
-          <marker
-            id="hero-cycle-head"
-            viewBox="0 0 10 10"
-            refX="8"
-            refY="5"
-            markerWidth="5"
-            markerHeight="5"
-            orient="auto-start-reverse"
-          >
-            <path d="M0 0 L10 5 L0 10 z" fill={C.paper} />
-          </marker>
-        </defs>
-        <path
-          d="M 187 84 A 78 78 0 1 1 84 43"
-          fill="none"
-          stroke={C.paper}
-          strokeOpacity="0.92"
-          strokeWidth="4"
-          strokeLinecap="round"
-          markerEnd="url(#hero-cycle-head)"
-        />
-      </svg>
-      <div className="absolute" style={{ left: 50, top: 50 }}>
-        <Enzyme s={1.3} tone={C.green} />
-      </div>
-      <Leader style={{ left: 115, top: 182, height: 20 }} />
-      <Tag style={{ left: 74, top: 208 }}>again</Tag>
-    </div>
-  );
-}
-
-// Human Practices: three cells at three sizes, overlapping like a group rather than spaced like a diagram.
-// The page is about who the test reaches: the patient, the clinician who acts on the result, the lab that runs it.
-function Voices() {
-  return (
-    <div data-piece className="relative" style={{ width: 250, height: 210 }}>
-      <div
-        className="absolute"
-        style={{ left: 0, top: 22, filter: "drop-shadow(0 8px 14px rgba(36,28,46,0.24))" }}
-      >
-        <Cell s={1.15} tone={C.pink} />
-      </div>
-      <div
-        className="absolute"
-        style={{ left: 96, top: 0, filter: "drop-shadow(0 6px 12px rgba(36,28,46,0.22))" }}
-      >
-        <Cell s={0.82} tone={C.blue} />
-      </div>
-      <div
-        className="absolute"
-        style={{ left: 120, top: 84, filter: "drop-shadow(0 6px 12px rgba(36,28,46,0.22))" }}
-      >
-        <Cell s={0.62} tone={C.lavender} />
-      </div>
-      {/* Centred under the group: off to one side it looked like a label for one cell. */}
-      <Leader style={{ left: 96, top: 152, height: 22 }} />
-      <Tag style={{ left: 42, top: 182 }}>who it reaches</Tag>
-    </div>
-  );
-}
-
-// Safety: the red base tile from the story beside an empty dashed one. It is the page's own sentence as a
-// picture: screening a set of variants tells you about those variants and nothing else.
-function Result() {
-  const tile = {
-    width: "3.6rem",
-    height: "3.9rem",
-    fontSize: "2rem",
-  } as const;
-  return (
-    <div data-piece className="relative" style={{ width: 250, height: 200 }}>
-      <span
-        className="absolute inline-flex items-center justify-center rounded-[6px] font-mono font-bold"
-        style={{
-          ...tile,
-          left: 24,
-          top: 40,
-          background: C.red,
-          color: "#fff",
-          border: `3px solid ${C.ink}`,
-          boxShadow: `4px 4px 0 ${C.ink}`,
-        }}
-      >
-        A
-      </span>
-      <span
-        className="absolute inline-flex items-center justify-center rounded-[6px] font-mono font-bold"
-        style={{
-          ...tile,
-          left: 118,
-          top: 40,
-          color: `${C.paper}66`,
-          border: `3px dashed ${C.paper}80`,
-        }}
-      >
-        ?
-      </span>
-      {/* One baseline for both: staggered, they read as a layout accident rather than a comparison. */}
-      <Leader style={{ left: 53, top: 110, height: 22 }} />
-      <Tag style={{ left: 12, top: 140 }}>screened</Tag>
-      <Leader style={{ left: 160, top: 110, height: 22 }} />
-      <Tag style={{ left: 108, top: 140 }}>not screened</Tag>
-    </div>
-  );
-}
-
-// Contribution: solid is what this team made, dashed is the same thing in a future team's hands.
-function Handoff() {
-  return (
-    <div data-piece className="relative" style={{ width: 240, height: 200 }}>
-      <div
-        className="absolute"
-        style={{ left: 0, top: 24, filter: "drop-shadow(0 8px 14px rgba(36,28,46,0.26))" }}
-      >
-        <Enzyme s={1.15} tone={C.green} />
-      </div>
-      <div className="absolute" style={{ left: 104, top: 24, opacity: 0.55 }}>
-        <Enzyme s={1.15} tone="transparent" line={`${C.paper}cc`} />
-      </div>
-      <Leader style={{ left: 58, top: 150, height: 20 }} />
-      <Tag style={{ left: 20, top: 178 }}>ours</Tag>
-      <Leader style={{ left: 162, top: 150, height: 20 }} />
-      <Tag style={{ left: 120, top: 178 }}>theirs to reuse</Tag>
-    </div>
-  );
-}
-
 function PieceArt({ piece }: { piece: Piece }) {
-  if (piece === "handoff") return <Handoff />;
-  if (piece === "cycle") return <Cycle />;
-  if (piece === "voices") return <Voices />;
-  if (piece === "result") return <Result />;
-  return <Dock />;
+  const { w, h } = SIZE[piece];
+  return (
+    <div data-piece className="relative" style={{ width: w, height: h }}>
+      {piece === "dock" && (
+        <>
+          <DockCast />
+          <Tag x="40%" y="101%">
+            DPD
+          </Tag>
+          <Tag x="71%" y="80%">
+            5-FU
+          </Tag>
+        </>
+      )}
+      {piece === "cycle" && <CycleCast />}
+      {piece === "voices" && <VoicesCast />}
+      {piece === "result" && <DropCast />}
+      {piece === "handoff" && <HandoffCast />}
+    </div>
+  );
 }
 
 export function PageHero({
   title,
   lede,
-  plate,
   piece,
   slides,
 }: {
@@ -268,11 +79,8 @@ export function PageHero({
   lede: string;
   // Photographs to open on instead of the purple field. See HeroCarousel.
   slides?: readonly Slide[] | undefined;
-  // The one drawn object this page carries. See Piece above.
+  // The cast this page carries. See Piece above. `| undefined` because exactOptionalPropertyTypes is on.
   piece?: Piece | undefined;
-  // `| undefined` is explicit because exactOptionalPropertyTypes is on: a caller passing an absent plate
-  // is passing undefined, not leaving the key out.
-  plate?: Plate | undefined;
 }) {
   // A slow drift, the only motion on a documentation page. Small on purpose: alive, but not distracting.
   const t = useTime(true);
@@ -305,62 +113,11 @@ export function PageHero({
         />
       )}
 
-      {/* The character, anchored bottom-right and running to the floor of the section, so she stands in the
-          hero rather than in a box on it. No mask over her: a blend gradient was tried and it ate the DNA
-          strand she is holding. She shows on phones too, smaller, with the copy padded clear of her. */}
-      {plate && (
-        <div
-          aria-hidden={plate.alt ? undefined : "true"}
-          // Tablets put her in the corner like phones do. At full height on 768px she reached x 446 against a
-          // lede ending at 651, so her arm crossed the text. Side by side only from lg.
-          // A wide figure stays in the corner one step longer: at 1024 it stood on the title and the lede.
-          className={`pointer-events-none absolute bottom-0 right-0 block md:h-[250px] ${plate.wide ? "h-[136px] xl:h-[92%]" : "h-[152px] lg:h-[92%]"}`}
-        >
-          {piece && (
-            // Placed from `lead`, so it follows the figure at any width instead of landing on her.
-            // From xl only: the gap between the copy and the figure is 288px at 1280, 445 at 1440, 700 at 1920,
-            // and nothing below 1280.
-            <div
-              className={`absolute hidden ${plate.wide ? "min-[1600px]:block" : "xl:block"}`}
-              style={{
-                right: `calc(${((1 - (plate.lead ?? 0.5)) * 100).toFixed(1)}% + 28px)`,
-                top: "26%",
-                transform: `translateY(${(Math.sin(t * 0.32 + 1.7) * 6).toFixed(2)}px) rotate(${(Math.sin(t * 0.22) * 1.6).toFixed(2)}deg)`,
-              }}
-            >
-              <PieceArt piece={piece} />
-            </div>
-          )}
-          <img
-            src={asset(plate.src)}
-            // the host allows it, and without it a check that reads the picture's pixels is refused
-            crossOrigin="anonymous"
-            alt={plate.alt ?? ""}
-            draggable={false}
-            className="h-full w-auto select-none object-contain object-bottom"
-            style={{
-              // The same drift as the object beside her, so she is not a sticker on a moving background.
-              transform: `translateY(${(Math.sin(t * 0.26) * 4).toFixed(2)}px)`,
-              filter: "drop-shadow(0 18px 26px rgba(36,28,46,0.28))",
-            }}
-          />
-        </div>
-      )}
-
-      {plate && (
-        <span
-          className="absolute bottom-1.5 right-2 z-10 rounded px-1.5 py-0.5 text-[12px] leading-none"
-          style={{ background: `${C.ink}a6`, color: C.paper }}
-        >
-          {WIKI.aiImageCredit}
-        </span>
-      )}
-
-      {/* No character: the object sits in the empty right band, from lg. At 768 the copy fills the width. */}
-      {piece && !plate && (
+      {/* The cast sits in the empty right band from lg, a little smaller until xl. At 768 the copy fills the width. */}
+      {piece && (
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute right-[6%] top-1/2 hidden lg:block xl:right-[10%]"
+          className="pointer-events-none absolute right-[5%] top-1/2 hidden origin-right scale-[0.8] lg:block xl:right-[9%] xl:scale-100"
           style={{
             transform: `translateY(-50%) translateY(${(Math.sin(t * 0.32 + 1.7) * 6).toFixed(2)}px) rotate(${(Math.sin(t * 0.22) * 1.4).toFixed(2)}deg)`,
           }}
@@ -371,10 +128,10 @@ export function PageHero({
 
       {/* Below lg it stands in the corner instead, under the copy, the way a character does. Without this a
           phone got an empty purple hero. Scaled from the bottom-right corner so the drawing keeps its shape. */}
-      {piece && !plate && (
+      {piece && (
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute bottom-5 right-5 origin-bottom-right scale-[0.6] md:scale-[0.78] lg:hidden"
+          className="pointer-events-none absolute bottom-5 right-5 origin-bottom-right scale-[0.56] md:scale-[0.64] lg:hidden"
           style={{
             // Tailwind v4 scales with the `scale` property, so this sets only the drift.
             transform: `translateY(${(Math.sin(t * 0.32 + 1.7) * 4).toFixed(2)}px)`,
@@ -386,7 +143,7 @@ export function PageHero({
 
       {/* Extra bottom padding when something stands in the corner, so the lede does not share it. */}
       <div
-        className={`relative mx-auto max-w-[92rem] px-6 pt-14 md:px-10 md:py-20 ${plate ? "pb-40 md:pb-[17rem]" : piece ? "pb-[11rem] md:pb-[13rem]" : "pb-14 md:pb-20"} ${plate?.wide ? "xl:pb-20" : "lg:pb-20"} ${slides ? "lg:flex lg:items-center lg:gap-14" : ""}`}
+        className={`relative mx-auto max-w-[92rem] px-6 pt-14 md:px-10 md:py-20 ${piece ? "pb-[11rem] md:pb-[14rem]" : "pb-14 md:pb-20"} lg:pb-20 ${slides ? "lg:flex lg:items-center lg:gap-14" : ""}`}
       >
         <div className="max-w-[46rem] lg:flex-1">
           {/* The badge, in the site's paper and ink language. */}
@@ -437,7 +194,7 @@ export function PageHero({
 
         {/* The photographs: beside the copy on a wide screen, under it on a narrow one. */}
         {slides && (
-          <div className="mt-10 lg:mt-0 lg:w-[46%] lg:max-w-[640px] lg:shrink-0">
+          <div className="mt-10 lg:mt-0 lg:w-[52%] lg:max-w-[780px] lg:shrink-0">
             <SlideFrame slides={slides} show={show} />
           </div>
         )}

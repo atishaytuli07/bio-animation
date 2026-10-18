@@ -4,7 +4,8 @@ import { useEffect, useState, type ReactNode } from "react";
 import { Cell, Enzyme, Molecule } from "@/components/hero/elements";
 import { asset, C, DISPLAY, L, R, T } from "@/components/hero/palette";
 import type { Slide } from "@/components/story/HeroCarousel";
-import { PageHero, type Piece, type Plate } from "@/components/story/PageHero";
+import { ClosingCast } from "@/components/story/Critters";
+import { PageHero, type Piece } from "@/components/story/PageHero";
 import { SiteHeader } from "@/components/story/SiteHeader";
 import { PAGES } from "@/components/story/site-map";
 import { WIKI } from "@/lib/wiki";
@@ -18,7 +19,6 @@ import { WIKI } from "@/lib/wiki";
 export function PageShell({
   title,
   lede,
-  plate,
   piece,
   slides,
   sections,
@@ -26,8 +26,6 @@ export function PageShell({
 }: {
   title: string;
   lede: string;
-  /** Optional illustrated character for the hero. See PLATE in PageHero. */
-  plate?: Plate | undefined;
   /** The one composed object this page's hero carries. See Piece in PageHero. */
   piece?: Piece | undefined;
   /** Photographs for the hero to open on, in place of the purple field. */
@@ -77,7 +75,7 @@ export function PageShell({
     <div className="min-h-screen" style={{ background: C.paper, color: C.ink }}>
       <SiteHeader />
 
-      <PageHero title={title} lede={lede} plate={plate} piece={piece} slides={slides} />
+      <PageHero title={title} lede={lede} piece={piece} slides={slides} />
 
       <div className="mx-auto flex max-w-[92rem] gap-8 px-6 pb-24 pt-12 md:px-10 md:pt-16 xl:gap-12">
         {/* The section index. On a long documentation page it is the difference between a reader finding the part
@@ -213,12 +211,12 @@ export function Awaiting({ what, children }: { what: string; children?: ReactNod
   );
 }
 
-// The band that closes a content page, above the footer. Two figures lean in from the left and right edges and
+// The band that closes a content page, above the footer. The cast leans in from the left and right edges and
 // the page's last words sit in the gap between them. It is the one place on a documentation page where the
 // illustration is the loudest thing, because the reader has finished the content by then.
 // They are cropped by the edges on purpose: a figure fully contained in a box reads as an illustration placed on
 // the page, one walking in from off-screen reads as a world that continues past it.
-// The plate is a single wide cutout containing both figures and the gap, so this costs one 98 kB image, not two.
+// They are drawn in code, so the band costs no image at all.
 export function ClosingBand() {
   return (
     <section
@@ -231,17 +229,14 @@ export function ClosingBand() {
         background: `linear-gradient(180deg, ${C.paper}, color-mix(in oklab, ${C.lavender} 16%, ${C.paper}))`,
       }}
     >
-      {/* Two separate crops, one anchored to each edge. The source is a single wide plate with both figures and a
-          gap; used whole it puts them side by side in the middle with empty space either side. Cut in two and pinned
-          to opposite edges, each leans in from off-screen and the page's own width becomes the gap. */}
+      {/* One group pinned to each edge, so the page's own width becomes the gap between them. */}
       <div className="relative flex h-[150px] items-center justify-center md:h-[210px]">
-        <img
-          src={asset("figure-left.webp")}
-          alt=""
-          draggable={false}
-          className="pointer-events-none absolute bottom-0 left-0 h-[118%] w-auto max-w-none select-none md:left-[2vw]"
-          style={{ transform: "translateX(-14%)" }}
-        />
+        <div
+          // on a phone they stand smaller and further out, so the name between them stays clear
+          className="pointer-events-none absolute bottom-0 left-0 h-[62%] -translate-x-[52%] md:h-[74%] md:-translate-x-[46%] lg:left-[2vw] lg:h-[112%] lg:-translate-x-[16%]"
+        >
+          <ClosingCast side="left" />
+        </div>
         {/* The sign-off sits in the gap the two of them leave. Measured, that gap is 1047px at 1440 and 1489px at
             1900, 73% and 78% of the viewport, so whatever goes here has to be big enough to hold it.
             It used to be invisible: the wordmark was ink at 12% alpha, rgb(216,207,208) on the band's rgb(243,234,231),
@@ -269,17 +264,10 @@ export function ClosingBand() {
           <span className={L.note} style={{ color: C.inkBody }}>
             NIS Kazakhstan · iGEM 2026
           </span>
-          <span className="text-[12px] leading-none" style={{ color: C.inkBody }}>
-            {WIKI.aiImagesCredit}
-          </span>
         </div>
-        <img
-          src={asset("figure-right.webp")}
-          alt=""
-          draggable={false}
-          className="pointer-events-none absolute bottom-0 right-0 h-[118%] w-auto max-w-none select-none md:right-[2vw]"
-          style={{ transform: "translateX(14%)" }}
-        />
+        <div className="pointer-events-none absolute bottom-0 right-0 h-[62%] translate-x-[52%] md:h-[74%] md:translate-x-[46%] lg:right-[2vw] lg:h-[112%] lg:translate-x-[16%]">
+          <ClosingCast side="right" />
+        </div>
       </div>
       {/* No fade into the footer. A soft ink wash along the base was meant to sit the figures on the dark band, but
           a gradient ending at quarter-strength ink still meets a full-strength ink footer: the seam stays and a grey

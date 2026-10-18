@@ -45,9 +45,9 @@ const TEAM_WORK: Entry[] = [
 
 const AI_USE: Entry[] = [
   {
-    what: "Character illustrations",
+    what: "Patient illustrations",
     who: "Generated with ChatGPT (OpenAI), then edited by the team",
-    note: "The two patient figures in “Two people” and “Look closer”, and the illustrated scientists that open the documentation pages, are AI-generated raster illustrations. They were keyed, defringed, colour-corrected and re-encoded by the team before use. They depict no real person, they are not photographs, and no member of the team is portrayed by any of them.",
+    note: "The two patient figures in “Two people” and “Look closer” are AI-generated raster illustrations, keyed, colour-corrected and re-encoded before use. They depict no real person. The other characters on this wiki (the DPD enzyme, the 5-FU molecule, the chromosome, the cells and the drop of medicine) are drawn in code for it, and are not generated images.",
   },
   {
     what: "The wiki as a whole",
