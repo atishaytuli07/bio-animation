@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 
-import { C, L, T } from "@/components/hero/palette";
+import { asset, C, L, T } from "@/components/hero/palette";
 import {
   CycleCast,
   DockCast,
@@ -74,17 +74,20 @@ export function PageHero({
   lede,
   piece,
   slides,
+  photo,
 }: {
   title: string;
   lede: string;
   // Photographs to open on instead of the purple field. See HeroCarousel.
   slides?: readonly Slide[] | undefined;
+  // Photographs as the whole hero: full width, sharp, one after another, the title over them. See Team.
+  photo?: readonly Slide[] | undefined;
   // The cast this page carries. See Piece above. `| undefined` because exactOptionalPropertyTypes is on.
   piece?: Piece | undefined;
 }) {
   // A slow drift, the only motion on a documentation page. Small on purpose: alive, but not distracting.
   const t = useTime(true);
-  const show = useCarousel(slides?.length ?? 0);
+  const show = useCarousel(slides?.length ?? photo?.length ?? 0);
 
   return (
     // Named by its own h1: the hero sits outside <main>, so without a name a screen reader finds no landmark here.
@@ -92,17 +95,58 @@ export function PageHero({
       aria-labelledby="page-hero-title"
       className="relative overflow-hidden"
       style={{
-        background: slides
-          ? C.ink
-          : `linear-gradient(158deg, ${C.lavenderDeep}, color-mix(in oklab, ${C.lavenderDeep} 76%, ${C.ink}))`,
+        background:
+          slides || photo
+            ? C.ink
+            : `linear-gradient(158deg, ${C.lavenderDeep}, color-mix(in oklab, ${C.lavenderDeep} 76%, ${C.ink}))`,
       }}
     >
       {slides && <SlideBackdrop slides={slides} at={show.at} />}
+
+      {/* The photographs are the hero, one after another. They are anchored a little right of centre so the people stay in view beside the
+          copy, and a dark fade from the left, and from below on a phone, keeps the title and lede readable on it. */}
+      {photo && (
+        <>
+          {photo.map((ph, i) => (
+            <img
+              key={ph.file}
+              src={asset(`${ph.file}-1280.webp`)}
+              srcSet={`${asset(`${ph.file}-800.webp`)} 800w, ${asset(`${ph.file}-1280.webp`)} 1280w`}
+              sizes="100vw"
+              alt={i === show.at ? ph.alt : ""}
+              aria-hidden={i === show.at ? undefined : "true"}
+              width={1280}
+              height={936}
+              // the first is the page's opening picture; the rest are not seen for six seconds
+              loading={i === 0 ? "eager" : "lazy"}
+              decoding="async"
+              data-hero-photo=""
+              className="absolute inset-0 h-full w-full object-cover transition-opacity duration-1000 ease-out motion-reduce:transition-none"
+              style={{ objectPosition: "62% 42%", opacity: i === show.at ? 1 : 0 }}
+            />
+          ))}
+          <div
+            aria-hidden="true"
+            className="absolute inset-0 lg:hidden"
+            style={{
+              background: `linear-gradient(180deg, ${C.ink}33 0%, ${C.ink}66 35%, ${C.ink}e6 100%)`,
+            }}
+          />
+          <div
+            aria-hidden="true"
+            className="absolute inset-0 hidden lg:block"
+            style={{
+              // the copy sits at the foot of the picture, so the fade runs up from the bottom-left corner
+              background: `linear-gradient(90deg, ${C.ink}cc 0%, ${C.ink}80 32%, ${C.ink}00 62%), linear-gradient(0deg, ${C.ink}d9 0%, ${C.ink}66 30%, ${C.ink}00 55%)`,
+            }}
+          />
+        </>
+      )}
       {/* The stripes from the story's field, so this reads as the same place. The pattern itself is declared in
           styles.css, beside the drifting copy the story uses. */}
-      {!slides && <div aria-hidden="true" className="hero-stripes absolute inset-0" />}
+      {!slides && !photo && <div aria-hidden="true" className="hero-stripes absolute inset-0" />}
       {/* Light from above, the same as the story's ground. */}
-      {!slides && (
+      {!slides && !photo && (
         <div
           aria-hidden="true"
           className="absolute inset-0"
@@ -143,9 +187,9 @@ export function PageHero({
 
       {/* Extra bottom padding when something stands in the corner, so the lede does not share it. */}
       <div
-        className={`relative mx-auto max-w-[92rem] px-6 pt-14 md:px-10 md:py-20 ${piece ? "pb-[11rem] md:pb-[14rem]" : "pb-14 md:pb-20"} lg:pb-20 ${slides ? "lg:flex lg:items-center lg:gap-14" : ""}`}
+        className={`relative mx-auto max-w-[92rem] px-6 pt-14 md:px-10 md:py-20 ${piece ? "pb-[11rem] md:pb-[14rem]" : "pb-14 md:pb-20"} lg:pb-20 ${photo ? "flex min-h-[86vh] flex-col justify-end pt-[38vh] lg:min-h-[84vh] lg:pb-14 lg:pt-20" : ""} ${slides ? "lg:flex lg:items-center lg:gap-14" : ""}`}
       >
-        <div className="max-w-[46rem] lg:flex-1">
+        <div className={`max-w-[46rem] ${photo ? "" : "lg:flex-1"}`}>
           {/* The badge, in the site's paper and ink language. */}
           <span
             className={`inline-block rounded-[6px] px-3 py-1.5 ${L.note}`}
@@ -183,7 +227,7 @@ export function PageHero({
             className="mt-7 max-w-[54ch] rounded-[10px] px-5 py-4 text-[15px] leading-relaxed md:mt-9 md:text-[17px]"
             style={{
               // over a photograph the panel does more of the work, because the ground behind it is not one colour
-              background: `${C.ink}${slides ? "8c" : "3d"}`,
+              background: `${C.ink}${slides || photo ? "8c" : "3d"}`,
               border: `2px solid ${C.paper}3d`,
               color: C.paper,
             }}
@@ -199,6 +243,18 @@ export function PageHero({
           </div>
         )}
       </div>
+      {/* The photographs change on their own every six seconds, so they must be possible to stop (WCAG 2.2.2). */}
+      {photo && show.canPlay && (
+        <button
+          type="button"
+          onClick={show.toggle}
+          aria-label={show.playing ? "Pause the photographs" : "Play the photographs"}
+          className="absolute bottom-4 right-4 z-10 grid h-9 w-9 place-items-center rounded-full text-[12px] leading-none md:bottom-6 md:right-6"
+          style={{ background: `${C.ink}b3`, color: C.paper, border: `2px solid ${C.paper}99` }}
+        >
+          <span aria-hidden="true">{show.playing ? "\u275a\u275a" : "\u25b6"}</span>
+        </button>
+      )}
     </section>
   );
 }

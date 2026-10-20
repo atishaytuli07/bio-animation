@@ -68,7 +68,7 @@ export function SourceList({ sources }: { sources: readonly Source[] }) {
             ) : (
               <span style={{ color: C.inkNote }}>
                 <span
-                  className="mr-2 inline-block rounded-[6px] px-1.5 text-[10px] font-bold uppercase leading-[1.6] tracking-[0.14em]"
+                  className="mr-2 inline-block rounded-[6px] px-1.5 text-[12px] font-bold uppercase leading-[1.5] tracking-[0.1em]"
                   style={{ color: C.redDeep, border: `1.5px dashed ${C.red}88` }}
                 >
                   needed

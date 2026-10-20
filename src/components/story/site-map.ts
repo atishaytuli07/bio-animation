@@ -53,7 +53,7 @@ export const PAGES: Page[] = [
     to: "/human-practices",
     ready: true,
     blurb:
-      "What patients and four experts told us, where they disagreed, and what we changed because of it.",
+      "Behind every statistic there is a human story: who we listened to, from patients to regulators, and how each conversation changed ChemoGuard.",
   },
   {
     label: "Education",
@@ -108,6 +108,10 @@ export type MenuItem = {
   label: string;
   /** Routes in this group, first one being where the label itself goes. */
   pages: readonly string[];
+  /** A group, shown as a menu even while only one of its pages exists. */
+  group?: boolean;
+  /** What a page is called inside this menu, where its own label would repeat the group's. */
+  names?: Readonly<Record<string, string>>;
 };
 
 const page = (to: string) => PAGES.find((p) => p.to === to);
@@ -117,7 +121,15 @@ export const MENU: MenuItem[] = (
     { label: "The story", pages: ["/"] },
     { label: "Try it", pages: ["/playground"] },
     { label: "Project", pages: ["/description", "/engineering", "/contribution"] },
-    { label: "Human Practices", pages: ["/human-practices", "/education"] },
+    // The two groups the team's teacher asked for. SDGs and Look Book go into them once their pages exist:
+    // add the page to PAGES and its route here, and the menu shows it.
+    {
+      label: "Human Practices",
+      pages: ["/human-practices"],
+      group: true,
+      names: { "/human-practices": "Integrated Human Practices" },
+    },
+    { label: "Engagement", pages: ["/education"], group: true },
     { label: "Safety", pages: ["/safety-and-security"] },
     { label: "Team", pages: ["/team", "/attributions"] },
   ] satisfies MenuItem[]

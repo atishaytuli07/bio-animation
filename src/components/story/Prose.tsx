@@ -15,7 +15,7 @@ export type Shot = {
 };
 
 /** One photograph, or two side by side, over one caption. */
-export function Figure({ shots, caption }: { shots: readonly Shot[]; caption: string }) {
+export function Figure({ shots, caption }: { shots: readonly Shot[]; caption?: string }) {
   const pair = shots.length > 1;
   return (
     <figure className="my-6 md:my-8">
@@ -35,12 +35,14 @@ export function Figure({ shots, caption }: { shots: readonly Shot[]; caption: st
           />
         ))}
       </div>
-      <figcaption
-        className="mt-2.5 max-w-[62ch] text-[13.5px] leading-snug md:text-[14.5px]"
-        style={{ color: C.inkNote }}
-      >
-        {caption}
-      </figcaption>
+      {caption && (
+        <figcaption
+          className="mt-2.5 max-w-[62ch] text-[13.5px] leading-snug md:text-[14.5px]"
+          style={{ color: C.inkNote }}
+        >
+          {caption}
+        </figcaption>
+      )}
     </figure>
   );
 }

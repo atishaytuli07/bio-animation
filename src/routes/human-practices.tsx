@@ -1,20 +1,18 @@
 import { createFileRoute } from "@tanstack/react-router";
-import type { ReactNode } from "react";
 
 import { C } from "@/components/hero/palette";
 import { CiteMark, SourceList, type Source } from "@/components/story/Cite";
-import { SECTIONS_OF } from "@/components/story/page-sections";
 import { P, PageLink, PageShell, Section } from "@/components/story/PageShell";
-import { NOTES } from "@/components/story/hp-notes";
-import { Bullets, Changed, Quote, Sub } from "@/components/story/Prose";
+import { SECTIONS_OF } from "@/components/story/page-sections";
+import { Bullets, Figure, Sub, type Shot } from "@/components/story/Prose";
 
-// Human Practices. The text is the team's own essay, "From Human to Test and Back to Human", set without
-// rewording: only its dashes were changed to the site's punctuation. The claims it makes about the world outside
+// Human Practices. The text is the team's own, from their document for this page, set without rewording: only
+// spaced hyphens used as dashes were changed to the site's punctuation. The claims it makes about the world outside
 // the project are marked with the sources the team still has to supply.
 
 const TITLE = "Human Practices · ChemoGuard";
 const DESCRIPTION =
-  "From human to test and back to human: what patients, an oncologist, a pharmacogeneticist, a clinical pharmacist and a patient advocate told the team, and what changed because of it.";
+  "Behind every statistic there is a human story: who the team listened to, from patients and advocates to doctors, laboratories and regulators, and how each conversation changed ChemoGuard.";
 
 export const Route = createFileRoute("/human-practices")({
   head: () => ({
@@ -32,33 +30,19 @@ export const Route = createFileRoute("/human-practices")({
 // Sources, in the order they are first cited. The team supplies them: we name no reference for them.
 const SOURCES = [
   {
-    id: "who",
+    id: "who-list",
     supports:
-      "That fluoropyrimidines are on the WHO Model List of Essential Medicines and are among the most frequently prescribed chemotherapy drugs for solid tumours.",
-  },
-  {
-    id: "dpd",
-    supports:
-      "That most administered 5-fluorouracil is broken down by dihydropyrimidine dehydrogenase, encoded by DPYD, and that reduced activity leads to accumulation and severe toxicity.",
-  },
-  {
-    id: "cpic",
-    supports:
-      "The CPIC guideline describing the standard panel of clinically significant DPYD variants and the dose adjustment rules.",
-  },
-  {
-    id: "ema",
-    supports:
-      "The European regulators' recommendation to assess DPD status before starting fluoropyrimidine therapy.",
-  },
-  {
-    id: "fda",
-    supports: "The FDA boxed warning on fluoropyrimidine labels recommending testing.",
+      "That fluoropyrimidines are on the WHO Model List of Essential Medicines and are among the most commonly prescribed chemotherapy drugs for solid tumors.",
   },
   {
     id: "guide",
     supports:
-      "The Guide for Implementing DPYD Genotyping for Systemic Fluoropyrimidines into Clinical Practice, by Dr. Hertz and colleagues.",
+      "The Guide for Implementing DPYD Genotyping for Systemic Fluoropyrimidines into Clinical Practice.",
+  },
+  {
+    id: "who-children",
+    supports:
+      "The WHO figures: more than 80% of children with cancer cured in high income countries, below 30% in many low and middle income countries.",
   },
 ] as const satisfies readonly Source[];
 
@@ -71,645 +55,930 @@ function Cite({ id }: { id: SourceId }) {
 /** The index rail; ids match the sections below. */
 const SECTIONS = SECTIONS_OF["/human-practices"];
 
-// Professor Pirmohamed's interview was written up by the team in Russian. This is a plain translation of it.
-const PIRMOHAMED_NOTES = [
-  "The interview followed the standard format: the team joined online, there was first a short presentation of the project, then questions, first from the team leader, and at the end the other members joined in. Professor Pirmohamed (University of Liverpool) gave detailed and practically applicable answers.",
-  "On the choice of DPYD variants, the professor advised starting with the standard CPIC panel of 4 variants and then gradually adding new ones as local data accumulates, noting that the genetics of the Kazakhstani population may overlap with other Asian populations (for example, South Asian) rather than being entirely unique. About MOLGEN he said that his team has already found something, but the results are not yet published. On sample type he gave a clear recommendation in favour of blood: saliva is more prone to contamination and is generally less effective for reliable genotyping.",
-  "The professor named clinician engagement as the main barrier to scaling testing in the NHS: in his words, any promotion of the test is useless if clinicians themselves are not ready to use it. Asked what makes a diagnostic test credible, he answered that an important indicator of readiness is approval by a regulatory body (an equivalent of the MHRA).",
-  "He gave a separate, useful piece of advice on presenting the product itself: it is more logical to build communication with the patient around a specific drug, capecitabine (by analogy with the wording of an “allergy” to a drug), rather than around genetic terms, because this gives patients a more understandable confidence in the result. For patient information materials he advised presenting everything as simply as possible, guided by what the target audience can understand.",
-  "In the final part, one of the team members asked about the target turnaround time. The professor recommended aiming for up to 5 days, noting that a faster result does not give substantial additional clinical meaning.",
-  "Overall, the interview gave several concrete reference points for the project: keep to the standard 4-variant panel as the base, prioritise blood as the sample type, build work with doctors and future regulatory approval into the roadmap, use a drug-oriented (rather than gene-oriented) frame in communication with patients, and aim for a turnaround time of up to 5 days.",
-];
+// The document's photographs and screenshots, uploaded to iGEM's server. Two are the same pictures the Education
+// page already shows, and use those files.
+const shot = (file: string, w: number, h: number, alt: string): Shot => ({ file, w, h, alt });
 
-/** The team's own write-up of one interview, folded away under the account of it. */
-function Notes({ title, children }: { title: string; children: ReactNode }) {
-  return (
-    <details
-      className="max-w-[62ch] px-4 py-3"
-      style={{ border: `2px solid ${C.ink}26`, borderRadius: 10, background: "#fffaf2" }}
-    >
-      <summary
-        className="cursor-pointer text-[15px] font-bold md:text-[16px]"
-        style={{ color: C.ink }}
-      >
-        {title}
-      </summary>
-      <div
-        className="mt-3 space-y-3 text-[14px] leading-relaxed md:text-[15px]"
-        style={{ color: C.inkBody }}
-      >
-        {children}
-      </div>
-    </details>
-  );
-}
+const SHOTS = {
+  surveyAge: shot(
+    "ihp-survey-age",
+    1055,
+    444,
+    "A pie chart of survey answers to the question of age, in Russian, Kazakh and English, from three responses.",
+  ),
+  surveyGender: shot(
+    "ihp-survey-gender",
+    1091,
+    459,
+    "A pie chart of survey answers to the question of gender, in Russian, Kazakh and English, from three responses.",
+  ),
+  merritt: shot(
+    "ihp-merritt-call",
+    1400,
+    1050,
+    "A laptop screen showing an online call, with a slide reading Q&A Time beside the video of the interviewee.",
+  ),
+  pirmohamed: shot(
+    "ihp-pirmohamed-call",
+    1400,
+    565,
+    "A screenshot of an online call with a slide titled Population Variants and the video tiles of the participants.",
+  ),
+  hertz: shot(
+    "ihp-hertz-call",
+    1400,
+    1050,
+    "A laptop screen showing an online call, with the interviewee's video filling the screen and team members in small tiles above.",
+  ),
+  lab: shot(
+    "ihp-ncb-lab",
+    1280,
+    960,
+    "Team members in white lab coats posing together in a laboratory.",
+  ),
+  meditor: shot(
+    "ihp-meditor-call",
+    1400,
+    722,
+    "A screenshot of an online call with five participants in video tiles.",
+  ),
+  oncology: shot(
+    "ihp-oncology-center",
+    1170,
+    634,
+    "Team members presenting to children around a white table in a bright classroom with a world map on the wall.",
+  ),
+  kindergarten: shot(
+    "ihp-kindergarten",
+    411,
+    532,
+    "Team members speaking to children seated at a round table in a classroom with a screen.",
+  ),
+  hospital: shot(
+    "ihp-childrens-hospital",
+    868,
+    488,
+    "Children at a white table cutting out paper shapes, helped by team members.",
+  ),
+  library: shot(
+    "outreach/library-handover",
+    1280,
+    960,
+    "Four team members standing with a woman who is holding two handmade felt books.",
+  ),
+  workshop: shot(
+    "ihp-school-workshop",
+    720,
+    1280,
+    "Team members presenting on a screen at the front of a classroom of seated students.",
+  ),
+  schoolGroup: shot(
+    "ihp-school-group",
+    1280,
+    720,
+    "A group of students and team members standing in a line at the front of a classroom.",
+  ),
+  munWho: shot(
+    "outreach/mun-who",
+    1280,
+    960,
+    "Students seated around a horseshoe of desks in a committee room during a debate.",
+  ),
+  munCommittee: shot(
+    "ihp-mun-committee",
+    1280,
+    960,
+    "Students seated at desks arranged in a square in a classroom, some with laptops.",
+  ),
+  camp: shot(
+    "ihp-camp-poster",
+    989,
+    1400,
+    "A poster reading NIS Kazakhstan Summer Camp, Synthetic Biology and Personalized Medicine, 20.07.2026 to 31.07.2026.",
+  ),
+  jaryqTeam: shot(
+    "ihp-jaryq-team",
+    1400,
+    788,
+    "The team and performers posing together on a stage lit in red and green.",
+  ),
+  jaryqAudience: shot("ihp-jaryq-audience", 589, 1280, "A full audience seated in a school hall."),
+  concertMagic: shot(
+    "ihp-hospital-concert-magic",
+    1280,
+    720,
+    "A magician in a red shirt performing a trick with a child in a hospital hall.",
+  ),
+  concertDance: shot(
+    "ihp-hospital-concert-dance",
+    1280,
+    960,
+    "Dancers in polka-dot dresses performing for children and parents seated in a hall.",
+  ),
+  denmark: shot(
+    "ihp-bk-denmark-call",
+    1280,
+    960,
+    "A laptop showing an online call, with a book page reading The End shared on screen beside the participants' video tiles.",
+  ),
+  youtube: shot(
+    "ihp-youtube-channel",
+    750,
+    1280,
+    "The team's YouTube channel page, iGEM&NIS-KAZAKHSTAN, with its latest videos listed.",
+  ),
+  incubator: shot(
+    "ihp-startup-incubator",
+    1280,
+    800,
+    "A screenshot of a large online meeting with many participants' tiles.",
+  ),
+} as const;
 
-function Lines({ of }: { of: readonly string[] }) {
-  return (
-    <>
-      {of.map((t) => (
-        <p key={t}>{t}</p>
-      ))}
-    </>
-  );
-}
-
-function Numbered({ of }: { of: readonly string[] }) {
-  return (
-    <ol className="list-decimal space-y-2 pl-5">
-      {of.map((t) => (
-        <li key={t}>{t}</li>
-      ))}
-    </ol>
-  );
-}
+const link = "font-semibold underline underline-offset-2";
 
 function HumanPractices() {
   return (
     <PageShell
       title="Human Practices"
-      lede="From human to test and back to human. We did not start with the thought, &ldquo;Let's make a DPYD test.&rdquo; We started with an observation that was hard to ignore, and with the people who had already gone through treatment."
+      lede={"“Behind every statistic there is a human story.”"}
       piece="voices"
       sections={SECTIONS}
     >
-      <Section id="question" title="A question born outside the laboratory">
+      <Section id="prologue" title="Prologue: Where It All Started">
         <P>
-          We did not start with the thought, &ldquo;Let&rsquo;s make a DPYD test.&rdquo; We started
-          with an observation that was hard to ignore.
+          It all started not in the laboratory. It all started on social media, with the stories of
+          people who had gone through chemotherapy and with one word that kept appearing again and
+          again: DPYD. We did not know what it meant. We knew only one thing: behind it were real
+          people whose treatment, which was supposed to save them, had instead caused them harm.
         </P>
         <P>
-          An oncology diagnosis stopped being something distant. It appeared in conversations about
-          acquaintances, in classmates&rsquo; families, and in stories told at home. In almost every
-          such story, a familiar plot repeated: a person undergoes grueling treatment, takes strong
-          medications, hopes for recovery, and the side effects of the treatment itself turn out to
-          be the main ordeal.
-        </P>
-        <P>For us, this stopped being statistics. These were people we knew.</P>
-        <P>
-          Yet we understood something else: personal impressions are easily confused with
-          regularities. Therefore, the first step was neither a literature search nor looking for a
-          ready-made technical solution. The first step was talking to those who had already gone
-          through the treatment.
-        </P>
-      </Section>
-
-      <Section id="survey" title="Survey: what patients told us">
-        <P>
-          We conducted a survey among people with a history of cancer treatment. We were interested
-          in three things: whether they had heard that a genetic test could be done before starting
-          chemotherapy; whether anyone had offered them such testing; and what side effects they
-          faced.
-        </P>
-        <P>The responses shifted our picture of the problem.</P>
-        <P>
-          For most respondents, the very idea of genetic testing before therapy was news. Not a
-          rejected opportunity, not a service they couldn&rsquo;t afford or wait for, but simply a
-          blank spot. Later, in conversations with experts, we learned an important detail: major
-          medical centers in Kazakhstan are generally capable of performing DPYD testing. This meant
-          the issue wasn&rsquo;t just a lack of technology. The test exists, but it is not a
-          standard part of the patient pathway, and a person going through that pathway simply
-          doesn&rsquo;t know about it.
+          We could have started with a hypothesis. Instead, we started with a question and decided
+          not to answer it ourselves, but to ask people.
         </P>
         <P>
-          The patients we spoke with described something else: a diagnosis already subjects a person
-          to dozens of procedures, and they have neither the strength nor the reasons to
-          additionally figure out something no one mentioned.
+          We prepared a questionnaire for people who were undergoing or had already undergone
+          chemotherapy and shared it through our own networks. We expected to receive data. Instead,
+          we encountered silence.
         </P>
         <P>
-          Here we first formulated what later became the project&rsquo;s axis: you cannot ask for
-          something whose existence you do not suspect. A patient cannot demand safety regarding a
-          mechanism they do not know. Consequently, the responsibility for this does not lie with
-          them.
+          For many participants, it was physically difficult to answer. People refused to talk about
+          how they felt after treatment and what complications they experienced. Some asked to skip
+          the most painful questions. Others closed the form without completing it.
+        </P>
+        <Figure shots={[SHOTS.surveyAge]} />
+        <Figure shots={[SHOTS.surveyGender]} />
+        <P>
+          This became our first real lesson in this project, long before we read our first
+          scientific paper about the DPYD gene. Chemotherapy toxicity affects not only the body but
+          also the mind. The topic that we planned to study as a biological problem turned out to be
+          a deeply human wound that is not easy to open even through an anonymous questionnaire.
         </P>
         <P>
-          And we had a question: if there is a way to know in advance that a specific person&rsquo;s
-          organism is especially sensitive to a certain drug, why do so few people know about it?
+          At the same time, the survey confirmed what we had expected: side effects seriously affect
+          patients&rsquo; everyday lives, and doctors sometimes have to change the treatment regimen
+          or even stop the therapy altogether.
+        </P>
+        <P>
+          We turned to international experience, studying publications, stories from patient
+          organizations, and initiatives focused on fluoropyrimidine safety. We were especially
+          impressed by the Advocates for Universal DPD/DPYD Testing (AUDT), an organization working
+          to make DPYD genetic testing a mandatory step before treatment begins. The stories they
+          collect clearly show that without timely testing, people can face consequences that could
+          have been avoided.
+        </P>
+        <P>
+          This was how ChemoGuard was born, not as a ready-made solution, but as a question that we
+          decided to explore together with people, rather than for them.
         </P>
       </Section>
 
-      <Section id="why-dpyd" title="Why DPYD">
+      <Section
+        id="chapter-1"
+        title="Chapter 1. The Perspective of Those Who Have Already Been Through It"
+      >
+        <P>Before talking to science, we decided to talk to people.</P>
         <P>
-          We went looking for the answer in scientific publications, and rather quickly landed on
-          one specific point.
+          Before this conversation, ChemoGuard was primarily a technical challenge for us: which
+          primer would work, which variant panel would be optimal, how many hours would it take to
+          get a result. We knew that patients were behind all of this, but, to be completely honest,
+          we knew it more in our minds than in reality.
         </P>
         <P>
-          Fluoropyrimidines, primarily 5-fluorouracil and capecitabine, are included in treatment
-          regimens for colorectal cancer, stomach cancer, breast cancer, and head and neck cancer.
-          These are among the most frequently prescribed chemotherapy drugs for solid tumors, and
-          they are on the WHO Model List of Essential Medicines.
-          <Cite id="who" /> Most of the administered 5-fluorouracil is broken down by the enzyme
-          dihydropyrimidine dehydrogenase, which is encoded by the DPYD gene. If enzyme activity is
-          reduced, the drug is eliminated slower and accumulates.
-          <Cite id="dpd" /> A standard dose for the majority is no longer standard for such a
-          person.
+          This changed when we spoke with Karen Merritt. She is a co-founder of Advocates for
+          Universal DPD/DPYD Testing. Karen lost her mother due to fluoropyrimidine toxicity caused
+          by an undetected DPYD variant. She was not just another &ldquo;stakeholder from the
+          list&rdquo; for us. She was a person who had literally paid the price for the absence of
+          the test that we are now trying to make a reality.
         </P>
         <P>
-          Clinically, this looks like severe mucositis, neutropenia, diarrhea, and skin damage. In
-          rare cases, it results in patient death from the treatment rather than the disease.
+          We asked her what she considered to be the main barrier to making DPYD testing a standard
+          practice. Her answer was direct, without any softening: lack of awareness, education, and
+          access to testing. She reminded us of something that we, immersed in the laboratory
+          details, had almost forgotten: fluoropyrimidines are included in the WHO Model List of
+          Essential Medicines and remain among the most commonly prescribed chemotherapy drugs for
+          solid tumors.
+          <Cite id="who-list" /> This is not a rare, exotic case on the margins of oncology. It
+          happens to a huge number of people every day, and almost none of them know about it.
         </P>
         <P>
-          The longer we read, the clearer it became that we were looking at more than just another
-          genetic marker. This is one of the few cases in oncology where risk can be assessed before
-          the first dose: not reacting to a complication, but preventing it.
+          It made us uncomfortable to realize how ordinary and &ldquo;normal&rdquo; this threat was.
+          What we had been working on for months as a scientific problem was, for her, a personal
+          loss that happened because no one had asked the system in time: &ldquo;Are you sure this
+          particular person can receive this drug at the standard dose?&rdquo;
         </P>
         <P>
-          Moreover, the regulatory framework for this already exists. CPIC describes a standard
-          panel of clinically significant DPYD variants and dose adjustment rules.
-          <Cite id="cpic" /> European regulators recommended assessing enzyme status before starting
-          fluoropyrimidine therapy.
-          <Cite id="ema" /> And the FDA relatively recently added a boxed warning to
-          fluoropyrimidine labels recommending testing, which effectively brought the US position
-          closer to Europe&rsquo;s.
-          <Cite id="fda" />
+          She also told us about the economic barrier in the United States, how the healthcare
+          system was initially reluctant to cover the cost of testing until Karen&rsquo;s advocacy
+          and the accumulated data showed the obvious: testing is ultimately cheaper than treating
+          the severe toxicity it can prevent. She also pointed out the generational gap within
+          medicine, namely that young doctors who had already been trained with pharmacogenetics in
+          mind tend to see testing as something natural, while some older doctors remain skeptical.
+          We realized that we are fighting not only the cost of the test and not only genetics. We
+          are fighting the inertia of an entire system, and this will have to be addressed as
+          consciously as the PCR protocol itself.
         </P>
         <P>
-          That is, the drug is on the WHO list, the risk is known, the test exists, and the
-          guidelines are written. And yet, a person undergoing treatment has never heard of such an
-          option.
-        </P>
-        <P>This means the real problem does not lie in science.</P>
-        <P>
-          Thus, our question changed a second time. We stopped asking &ldquo;can such a test be
-          made?&rdquo; and began asking: why does a test that already exists not reach the patient?
+          It was from Karen that we heard perhaps the most practical and, at the same time, most
+          unexpected advice throughout the entire interview, and it literally changed how we think
+          about implementing the test in Kazakhstan. She said that the test should not be something
+          that the patient has to ask for themselves. It should be offered as a standard part of the
+          initial examination in advance, calmly, as a routine safety measure, rather than as
+          another frightening procedure among an already difficult diagnosis.
         </P>
         <P>
-          Next came questions that articles do not answer. Will the doctor order it? Will the result
-          arrive before therapy begins? Will the hospital be able to integrate this into its
-          workflow? Will the result from the laboratory reach a real clinical decision? We realized
-          we couldn&rsquo;t answer these ourselves and began looking at people who had already
-          walked this path.
+          Before this conversation, to be honest, we imagined the implementation of ChemoGuard as
+          something like an option on a menu: a doctor could prescribe the test if they wanted to.
+          After speaking with Karen, we realized that the idea of choice itself can become a
+          barrier. If the test is not built into the standard protocol, it simply may not be
+          offered, especially where doctors are not yet accustomed to pharmacogenetics. We started
+          thinking not only about how to make the test cheap and fast, but also about how to
+          integrate it into the standard patient pathway so that it would not require a separate
+          effort from either the doctor or the patient.
+        </P>
+        <P>
+          She also shared an observation that directly shaped our educational strategy: ordinary
+          people often do not understand the simple fact that we are all biologically different and
+          can respond differently to the same medicines. Her advice was very practical: use simple
+          language and interactive materials, because games engage people and help them understand
+          complex ideas in a way that dry text cannot. It was after this conversation that our
+          decision to create a VR game and a board game stopped being just a &ldquo;nice addition to
+          the project&rdquo;. We began to see them as an essential part of making sure the message
+          actually reaches people rather than remaining as a beautiful presentation in a project
+          folder.
+        </P>
+        <P>
+          There was also a moment that touched us perhaps more than anything else in this
+          conversation. We told Karen about Kazakhstan and about the fact that major medical centers
+          are technically capable of performing DPYD testing, but it has still not become common
+          practice. We also told her that patients we had spoken to admitted that they felt
+          overwhelmed by the number of procedures they already face after an oncology diagnosis. We
+          asked her: how can we present testing so that it feels like support rather than another
+          burden? Her answer was very simple and for that reason especially memorable: present the
+          test as part of the initial examination from the very beginning, in advance, before the
+          patient even has time to become afraid, rather than as something they have to ask for in
+          the middle of an already difficult treatment.
+        </P>
+        <P>
+          Beyond the interview, Karen gave us something that no scientific paper could have given
+          us: she introduced us to Dr. Dan Hertz, a medical advisor to AUDT, and shared the Guide
+          for Implementing DPYD Genotyping for Systemic Fluoropyrimidines into Clinical Practice, a
+          practical guide written by her colleagues.
+          <Cite id="guide" /> This gesture was not simply about passing on a contact. Personally
+          guiding us further along the chain was the first moment when we felt that we were not
+          speaking to a &ldquo;source for the project&rdquo;, but to a person who genuinely wanted
+          us to succeed in taking this work to the end.
+        </P>
+        <P>
+          We left this conversation with a different ChemoGuard in our minds from the one we had
+          brought with us. Not because the biological protocol itself had changed, but because for
+          the first time throughout the project, we truly understood who we were doing all of this
+          for.
+        </P>
+        <Figure shots={[SHOTS.merritt]} />
+      </Section>
+
+      <Section id="chapter-2" title="Chapter 2. The Voice of Science">
+        <P>
+          Next, we came to Dr. Markus Jörger with a question that seemed almost technical to us:
+          what do researchers miss when they focus exclusively on genetic data? We did not expect
+          the answer to make us rethink the very purpose of our project.
+        </P>
+        <P>
+          Personalized medicine in oncology, he explained, comes down to two things: maximizing
+          treatment effectiveness and minimizing toxicity. For DPYD testing, the second is
+          especially important, particularly for vulnerable patients who may face the most serious
+          consequences from severe toxicity. It was a simple statement, but it made us admit that,
+          until that moment, we had implicitly thought of ChemoGuard as a way to &ldquo;find a
+          genetic variant&rdquo;, as if finding it was already the goal. After this conversation, we
+          began to think about it differently, as a clinical decision-making tool that helps a
+          doctor develop a safer strategy for a particular patient, rather than simply recording a
+          result in a genetic report.
+        </P>
+        <P>
+          Dr. Jörger also explained why testing does not automatically become standard practice,
+          even when it is already included in clinical guidelines: doctors and hospitals need time
+          to integrate a new approach into their internal protocols and understand where to send
+          samples, how long to wait for the result, and how to receive it before treatment begins.
+          He emphasized the difficult imbalance: preventing toxicity is much less visible and
+          &ldquo;marketable&rdquo; than developing a new drug. Pharmaceutical companies actively
+          promote new medicines, while diagnostic tests usually do not receive the same support,
+          without a promotional budget or someone coming to the clinic to explain them.
+        </P>
+        <P>
+          This became a turning point for us that changed not the biology of the project, but its
+          boundaries: we realized that it was not enough to create an accessible test and
+          demonstrate its accuracy. Educational materials and professional communication with
+          doctors stopped being a &ldquo;supplement&rdquo; to the project for us. They became an
+          essential part of the implementation process, equally important as the PCR protocol
+          itself.
+        </P>
+        <P>
+          He also drew our attention to the role of reimbursement: if a hospital or patient has to
+          pay for the test themselves, this becomes an additional barrier. This means that the
+          accessibility of a test is determined not only by its laboratory cost, but also by the
+          economic and organizational environment in which it is used. We heard a direct reflection
+          of our own pricing model in this, because $30 per test sounds inexpensive only until you
+          ask who exactly will pay for it and at what point in the treatment.
+        </P>
+        <P>
+          When we asked what could accelerate the implementation of DPYD testing specifically in
+          Kazakhstan, he suggested a concrete approach: organize meetings and workshops for doctors,
+          present the evidence, and explain practical aspects such as reimbursement, sample
+          processing, and timelines. Even an interview like ours, he said, already helps make the
+          new technology more recognizable. His final advice directly influenced the scientific
+          direction of the project: to pay attention specifically to the genetic variants that are
+          relevant to our population, since significant DPYD variants may differ between
+          populations. This became not just a general recommendation, but a specific direction for
+          our further scientific work.
+        </P>
+        <P>
+          After this, we had a meeting with Professor Munir Pirmohamed (University of Liverpool). He
+          spoke with us as if we were already colleagues working on the same problem, in a detailed
+          and very practical way, without looking down on the fact that we were a school team.
+        </P>
+        <P>
+          Regarding the selection of DPYD variants, he advised us to start with the standard
+          4-variant CPIC panel and then gradually expand it as local data accumulates, noting that
+          the genetics of the Kazakh population may overlap with other Asian populations rather than
+          being completely unique. This both simplified our plan and made us more realistic: we
+          realized that we could not simply take an existing Western panel and call it universal. We
+          would have to honestly check how well it fits our population. Regarding the sample type,
+          he gave a clear recommendation in favor of blood, as saliva is more prone to contamination
+          and is less reliable for genotyping.
+        </P>
+        <P>
+          He identified the involvement of doctors as the main barrier to scaling testing within the
+          NHS: any information campaign is useless if clinicians themselves are not ready to use the
+          test. This echoed what we had already heard from Karen, but from the perspective of the
+          healthcare system rather than patient advocacy. It finally convinced us that this was not
+          a one-time observation from one person, but a systematic issue that would have to be
+          considered in any country, including ours.
+        </P>
+        <P>
+          When asked what makes a diagnostic test trustworthy, he answered briefly: regulatory
+          approval. This phrase, spoken even before our conversation with MEDITOR, prepared us for
+          the idea that the regulatory pathway is not simply a bureaucratic formality at the end of
+          the project, but part of what makes a test a &ldquo;working test&rdquo;.
+        </P>
+        <P>
+          Another piece of advice concerned communication with the patient: it would be more logical
+          to build the explanation around the specific drug capecitabine, similar to describing an
+          &ldquo;allergy&rdquo; to a medication, rather than around abstract genetic terms. This
+          gives the patient a clearer and more confident understanding of what is happening, instead
+          of frightening them with the word &ldquo;mutation&rdquo;.
+        </P>
+        <P>
+          When asked about the target testing time, he recommended aiming for 5 days, noting that a
+          faster result does not add significant clinical value. Hearing this was somewhat
+          unexpected, considering that we are developing a test that takes 6 hours, but we did not
+          see it as a reason to give up on speed. Instead, we saw it as confirmation that our
+          advantage lies not only in clinical necessity, but also in organizational flexibility: a
+          test that is ready during one patient visit, rather than requiring another visit, can
+          itself reduce the burden on an already overloaded system.
+        </P>
+        <Figure shots={[SHOTS.pirmohamed]} />
+        <P>
+          Dr. Dan Hertz, a clinical pharmacist and medical advisor to AUDT, whom Karen referred us
+          to, began the conversation by challenging one of our own assumptions. We thought that the
+          main reason doctors did not follow dose reduction recommendations for intermediate
+          metabolizers was the fear of losing treatment effectiveness. He told us that the data
+          showed the opposite: the real problem was not this, but the fact that clinicians were
+          simply not familiar enough with the basic pharmacology behind the issue. Hearing this was
+          somewhat sobering. We had been preparing to convince doctors of the effectiveness of dose
+          adjustment, but it turned out that the first step was simply to educate them. He suggested
+          using a familiar analogy, such as dose reduction in cases of renal or hepatic impairment,
+          to explain this logic to doctors in terms they already understand.
+        </P>
+        <P>
+          He told us that before the FDA warning was added to drug labels, their approach was to
+          work directly with clinics where tragic patient deaths had occurred, together with quality
+          improvement and personalized medicine teams. Now, the focus has shifted entirely towards
+          education and information campaigns, and, according to him, these efforts should primarily
+          focus on educating doctors, not only the general public. This became an important
+          correction for us. Before this conversation, we had focused a lot on educational materials
+          for patients and children, but had hardly considered that doctors themselves could be an
+          equally, and sometimes even more, important audience for education.
+        </P>
+        <P>
+          The most practical advice concerned implementation in a system without developed
+          infrastructure, such as in the United States. He suggested prioritizing the development of
+          an affordable, rapid point-of-care test that could be performed directly at any clinic,
+          providing a result within a few hours or a day. Hearing this from a medical advisor of an
+          international patient organization, without him knowing our specific numbers beforehand,
+          gave us direct confirmation of the direction we were already taking with ChemoGuard.
+        </P>
+        <Figure shots={[SHOTS.hertz]} />
+      </Section>
+
+      <Section id="chapter-3" title="Chapter 3. From an Idea to the Kazakh Reality">
+        <P>
+          Our conversations with international experts confirmed the value of the idea. But the next
+          question we asked ourselves was different and much more difficult: could we actually do
+          this here, in Kazakhstan, and not only in theory?
+        </P>
+        <P>
+          Until this point, ChemoGuard existed mainly as a scientific hypothesis supported by
+          interviews and literature. We understood the protocol on paper, but we did not have an
+          answer to a simple question: who in the country could actually produce it?
+        </P>
+        <P>
+          We found the answer when we started working with National Center for Biotechnology, a
+          leading scientific institution in the field of biology in the country, specifically with
+          the Molecular Diagnostics Laboratory under the leadership of Ilyas Amirkhanovich
+          Akhmetollayev, Candidate of Biological Sciences, a specialist in molecular biology and the
+          development of diagnostic test systems, and the author of more than 25 scientific
+          publications and three patents.
+        </P>
+        <P>
+          The moment when we realized that ChemoGuard had not only an idea, but also a real
+          laboratory, real equipment, and a real specialist behind its production, became one of
+          those quiet but important turning points in the project. Before this, we could talk as
+          much as we wanted about an accessible test for Kazakhstan, but it was still abstract,
+          without evidence that someone in the country could actually produce the reagents and carry
+          out validation. This partnership moved ChemoGuard from being an &ldquo;interesting student
+          project&rdquo; to something that could physically be produced inside the country by a
+          domestic manufacturer. This was a point that, as we later learned during our conversation
+          with MEDITOR, was also important from the perspective of the product&rsquo;s regulatory
+          classification.
+        </P>
+        <Figure shots={[SHOTS.lab]} />
+        <P>
+          With this foundation, ChemoGuard took its current form: a multiplex PCR test for 4 key
+          DPYD gene variants based on the CPIC panel, with a result available within 6 hours
+          compared with 4–16 days for existing alternatives on the market, a cost of around 13
+          dollars, and a target patient price of around 30 dollars compared with 70–80 dollars for
+          individual foreign testing options.
+        </P>
+        <P>
+          To understand how realistic this was not only from a scientific perspective, but also from
+          a production and market perspective, we turned to professionals in the laboratory
+          industry, namely InVivo and Gemotest, preparing detailed questions about production
+          adaptation, logistics across the regions of Kazakhstan, realistic production costs,
+          quality requirements, and how to properly organize informed consent for genetic testing.
+        </P>
+        <P>
+          Our conversation with Gemotest gave us the first concrete answers about the market. We
+          learned that the most realistic first customers for ChemoGuard would be private oncology
+          clinics and laboratory networks rather than individual patients, since sample collection
+          still needs to take place in a clinical setting. We also learned that the main reason an
+          existing DPYD test is not routinely prescribed is not only limited awareness, but also
+          reimbursement. Around 80% of chemotherapy in the region is covered through the state
+          medical insurance system, while DPYD testing is not included in this coverage.
+        </P>
+        <P>
+          The interview also confirmed that our 6 hour turnaround could be a real clinical
+          advantage. According to the oncologist we spoke with, a same day result can allow doctors
+          to make treatment decisions without delaying chemotherapy. At the same time, we learned
+          that ChemoGuard should be presented as a screening test covering the most clinically
+          significant variants, rather than as a complete genetic profile.
+        </P>
+        <P>
+          The experts also helped us rethink how the test should be communicated to patients.
+          Instead of presenting genetic testing as another complicated procedure, they suggested
+          explaining it as a normal part of treatment preparation, similar to checking liver or
+          kidney function before chemotherapy. This helped us see that accessibility is not only
+          about price and speed, but also about whether the test can fit naturally into the existing
+          clinical workflow.
+        </P>
+        <P>
+          Gemotest also shared anonymized market data showing that DPYD testing in Kazakhstan is
+          already growing. Testing volume doubled in 2025 compared with 2024, and during the first
+          nine months of 2026 it was already 50% higher than the total volume for 2025. For us, this
+          was important evidence that the need for DPYD testing already exists in Kazakhstan, even
+          before a faster and more affordable domestic alternative is available.
+        </P>
+        <P>
+          The discussion with InVivo is still ongoing, so we are waiting for their answers before
+          drawing conclusions about production adaptation, regional logistics, quality requirements
+          and informed consent. We decided not to fill these gaps with assumptions. Instead, we will
+          add their findings once the interview is complete, keeping our development plan based on
+          evidence rather than speculation.
         </P>
       </Section>
 
-      <Section id="joerger" title="Markus Joerger: the bottleneck wasn't the test">
+      <Section id="chapter-4" title="Chapter 4. From the Laboratory to Medical Reality">
         <P>
-          First was Dr. Markus Joerger, a medical oncologist with experience implementing DPYD
-          testing in Switzerland.
+          A good test is not yet a ready medical product. This became clear to us during our meeting
+          with regulatory specialists from the consulting company MEDITOR in Almaty, namely Sofia
+          and Kamilla.
         </P>
         <P>
-          We asked him what a researcher should keep in mind when developing personalized
-          diagnostics, easily getting bogged down in genetic data and laboratory results. He replied
-          that personalization is especially needed in two situations: when you have a vulnerable
-          patient (weakened, elderly, a child) whom you cannot harm, and when there is a very large
-          individual variability in response among people. DPYD falls into both categories.
-        </P>
-        <P>He formulated the general goal of treatment as follows:</P>
-        <Quote by="Dr. Markus Joerger">
-          &ldquo;In medicine, we have two main goals: a good response to treatment and as little
-          toxicity as possible.&rdquo;
-        </Quote>
-        <P>
-          At the same time, he immediately separated them: most personalized approaches in oncology
-          work on the first half of the formula, on efficacy. DPYD testing works on the second, on
-          preventing severe toxicity. And precisely the second half, according to him, always
-          advances with more difficulty. Preventing a complication is less noticeable and less
-          attractive than a new drug with better activity.
-        </P>
-        <P>Then he said something that truly stopped us in our tracks.</P>
-        <P>
-          Behind a new drug stands a company. It hires people who go to clinicians, show data,
-          explain, and persuade. Behind a diagnostic test, there is no such company. He told us
-          straight out: you are developing a test, which means you will have to promote it
-          yourselves. In medicine, it is easy to think that data will reach everyone on its own and
-          everyone will start doing what is best for the patient, but that is not how it works.
+          We wanted to understand the real path that a product like ChemoGuard has to go through to
+          enter the market in Kazakhstan, not just according to the law, but based on the experience
+          of professionals.
         </P>
         <P>
-          And he described what it looked like in Switzerland. The test was available everywhere.
-          The bottleneck was not the test. The bottleneck was that clinicians needed time to be
-          convinced of its usefulness and to integrate it into their daily routine: determine
-          timelines, blood shipping procedures, turnaround time. He added that it is worth checking
-          the payment question in advance: if a doctor knows the patient will have to pay for the
-          test themselves, they will prescribe it more cautiously.
+          Before we even had a chance to ask about registration timelines, the specialists asked us
+          to clearly classify the product: whether it was software or a physical device, what its
+          risk level was, and where it was produced. This was an important lesson in itself. Until
+          that moment, we had considered registration as one single process, but we learned that the
+          pathway depends on this classification.
         </P>
         <P>
-          When we asked what from the Swiss experience would be useful for Kazakhstan, he advised a
-          concrete action: gather clinicians, in person or via a call like ours, show them data,
-          present the test itself, and immediately answer practical questions: how much it costs,
-          how to handle the sample, in how many days the result will arrive. He honestly said they
-          hadn&rsquo;t done this themselves and that in hindsight, it looks like an omission.
+          When we described ChemoGuard as a physical device that detects genetic mutations and is
+          produced domestically by a manufacturer from the National Center for Biotechnology, we
+          were told that it would likely be classified as a Class 2B risk device, and that such
+          devices are subject to genetic testing. The registration period would be around 8–11
+          months, provided that the full documentation package is prepared and the production site
+          successfully passes inspection. This became one of the most valuable concrete figures in
+          our roadmap, not a guess, but a real reference point around which we could finally build
+          an actual plan rather than approximate expectations.
         </P>
         <P>
-          Separately, we asked how to communicate a genetic test result to a patient without
-          frightening them. He pointed out a distinction we hadn&rsquo;t made before: DPYD is
-          germline genetics, but it is not the same as testing for hereditary cancer syndromes like
-          Lynch syndrome. Here, it is not about a disease or a predisposition to it, but only about
-          sensitivity to a specific group of drugs. Informing the patient before the test is
-          necessary, but this conversation is fundamentally different and much less frightening.
+          We asked what most often becomes a surprise for new applications and causes delays. The
+          answer was reassuring in one way: MEDITOR reviews the documentation before submission to
+          help prevent delays. If the National Expert Center has comments, the applicant is given
+          several opportunities to correct them rather than just one. We were also given three
+          specific reasons for direct rejection: missing the deadline for correcting comments, being
+          unable to provide the necessary documents, and failing the production site inspection.
+          However, we learned that the inspection plan is sent one week in advance, which reduces
+          this risk.
         </P>
         <P>
-          And at the end, he gave advice we would return to later: check which hot spots in the gene
-          are significant specifically for our population, because the four variants described for
-          Europeans might work differently in Asian populations.
+          We asked about cold chain risks and scaling from one pilot to different regions. The
+          answer revealed something we had not fully understood: after obtaining the registration
+          certificate, distribution across regions is essentially unrestricted, without additional
+          barriers. The logistical limitation concerns only the laboratory testing stage itself. The
+          samples must meet the specified temperature storage conditions, otherwise they risk being
+          rejected.
         </P>
-        <Changed>
-          We stopped describing the project as a genetic test and began describing it as a clinical
-          decision tool: the test itself changes nothing; the change happens at the moment when the
-          result timely reaches the doctor. From this followed a practical step: working with
-          clinicians is not &ldquo;external communication,&rdquo; but part of the project itself,
-          and we baked seminars for doctors into the roadmap following the scheme described by Dr.
-          Joerger, with a mandatory block on cost, sample handling, and turnaround time.
-        </Changed>
-        <Notes title="Interview notes: Dr. Markus Joerger">
-          <p className="font-bold" style={{ color: C.ink }}>
-            {NOTES.joergerTitle}
-          </p>
-          <Lines of={NOTES.joerger} />
-        </Notes>
+        <P>
+          The most unexpected and useful question was one that the specialists asked us rather than
+          the other way around: whether our software/algorithm came from a foreign manufacturer or
+          was an original development. We explained that ChemoGuard is not a completely new test,
+          but an improvement of existing approaches, and we learned about a requirement we had not
+          known about: for a domestic manufacturer, the software/algorithm must be registered
+          separately in the software registry before the registration of the medical device itself
+          begins. We would also need ISO certification of the production site because of the higher
+          risk class. This was new information that had not been included in our initial questions,
+          and it directly affected our development plan. Now we know that we need another type of
+          expertise in our team, one that we had not even realized we would need a month earlier.
+        </P>
+        <P>
+          At the same time, we did not receive answers to questions about typical wholesale markups,
+          distributors&rsquo; willingness to work with the product at the RUO stage before full
+          certification, or estimated sales volumes. The specialists honestly explained that these
+          questions were outside their area of expertise. This became a useful, although unexpected,
+          boundary: for questions about margins and sales volumes, we need a different type of
+          contact, a real wholesale distributor rather than a regulatory consultant.
+        </P>
+        <Figure shots={[SHOTS.meditor]} />
       </Section>
 
-      <Section id="pirmohamed" title="Munir Pirmohamed: whose test is it?">
+      <Section id="chapter-5" title="Chapter 5. Meeting the People Behind the Statistics">
         <P>
-          We went to Professor Munir Pirmohamed from the University of Liverpool with a different
-          mindset. We didn&rsquo;t want to just repeat a solution that works in another country. We
-          wanted to understand how well it fits our population at all.
+          Science explains the mechanism. But behind every percentage in a toxicity table there is a
+          real person and we wanted to see this side of the problem with our own eyes.
         </P>
-        <P>The conversation turned out to be the most concrete from the scientific side.</P>
+        <Sub>Oncology Center</Sub>
         <P>
-          Regarding the choice of variants, he advised starting with the standard CPIC panel of four
-          variants and expanding it gradually as local data accumulates. But he added a
-          clarification that turned out to be more important to us than the recommendation itself:
-          the genetics of the Kazakhstani population are likely not unique; they may overlap with
-          other Asian populations, such as South Asian. That means we shouldn&rsquo;t search for
-          &ldquo;our own special set of variants from scratch,&rdquo; but understand which already
-          studied populations we are closest to.
+          We visited an oncology center and conducted a social and educational activity for
+          patients. The atmosphere was noticeably different from what we would later see in the
+          kindergarten: despite the similar format of our work the environment was much more tense,
+          we were talking to children around 7-9 years old who were undergoing treatment themselves
+          rather than simply learning about science in an abstract way.
         </P>
+        <Figure shots={[SHOTS.oncology]} />
         <P>
-          This connected with Dr. Joerger&rsquo;s advice about hot spots in Asian populations. Two
-          independent experts told us the same thing from different angles, and we stopped treating
-          the CPIC panel as a finished answer. Now it is our foundation, not the final
-          configuration.
-        </P>
-        <P>
-          Regarding sample type, he gave an unambiguous recommendation in favor of blood: saliva is
-          more prone to contamination and generally less reliable for genotyping.
+          To make the statistics feel human and tangible not only for ourselves but also for our
+          audience, we collected and adapted stories of people who had faced the consequences of a
+          non personalized approach to chemotherapy from publicly available sources, including
+          materials from the AUDT community and stories that people had shared publicly themselves.
+          This is how the book &ldquo;The Hidden Code&rdquo; was created, &ldquo;Real Stories.
+          Genetic Truths. A Stronger Future.&rdquo;, as written on its cover.
         </P>
         <P>
-          For us, this turned out to be more than just a laboratory question. Blood means a medical
-          institution, personnel, collection, transportation. Saliva means a sample can be collected
-          where the lab is far away. The choice between them is a choice between reliability of the
-          result and coverage. We adopted reliability as a priority: someone will believe a result
-          that cannot be trusted anyway and change the dose based on it. But the coverage question
-          wasn&rsquo;t closed by this, and we would return to it.
+          We intentionally did not build the narrative around individual people as the central
+          figures of the book. There are around ten stories in it, and each one is difficult in its
+          own way. What was more important to us was to bring these stories together and make the
+          book accessible to as many people as possible. We translated and recorded it in five
+          languages, namely Russian, Kazakh, English, Vietnamese and Chinese, using TTSMaker speech
+          synthesis technology, so that it could also be heard by people who are blind or visually
+          impaired and by those who simply find it easier to receive information through audio.
         </P>
         <P>
-          The professor called clinicians&rsquo; engagement the main barrier when scaling testing in
-          the NHS. His phrasing was harsh: any advocacy for the test is useless if clinicians
-          themselves are not ready to use it. And to the question of what makes a diagnostic test
-          trustworthy, he replied that the key indicator is regulatory approval.
+          <a
+            href="https://heyzine.com/flip-book/c91329e4a4.html"
+            className={link}
+            style={{ color: C.ink }}
+          >
+            heyzine.com/flip-book/c91329e4a4.html
+          </a>
+        </P>
+
+        <Sub>School for Blind Students</Sub>
+        <P>
+          Therefore, we later visited a boarding school for blind students, where we presented our
+          project and talked about DNA, genetics, enzymes and personalized medicine. To make the
+          explanation more accessible, we used bracelets as a tactile model of DNA, which allowed
+          the students to explore its structure themselves. We also discussed pharmacogenetics and
+          explained why the same medicine can affect different people differently.
         </P>
         <P>
-          He also gave communication advice we didn&rsquo;t expect. It is better to talk to the
-          patient around the drug rather than the gene: not &ldquo;you have a DPYD variant,&rdquo;
-          but &ldquo;we are checking how you tolerate capecitabine,&rdquo; by analogy with how
-          people talk about drug allergies. Such a framework gives a person understandable
-          confidence, while genetic terminology only adds anxiety. Information materials, he said,
-          should be made as simple as possible, focusing on the real audience rather than how things
-          are customarily written in science.
+          A special part of the meeting was giving them our book The Hidden Code in an audio format
+          in Kazakh and a story printed in Braille. We also gave them a felt book so that they could
+          have an idea of medicine. It was important for us not only to talk about personalized
+          medicine but also to make this information accessible to people with visual impairments.
         </P>
         <P>
-          At the end, one of us asked about the target turnaround time for the assay. He recommended
-          aiming for up to five days and noted that a faster result does not carry significant
-          additional clinical meaning.
+          The meeting left us with very warm impressions. We saw the students&rsquo; genuine
+          interest and felt that our work was truly going beyond the laboratory. This visit reminded
+          us that accessibility in science is not only about the cost of a technology but also about
+          every person&rsquo;s ability to understand and receive information about their own health.
         </P>
-        <Changed>
-          The CPIC four-variant panel became our starting base, and a separate item was added to the
-          work plan: compare the Kazakhstani population with already described Asian populations and
-          decide how to expand the panel based on that. Blood was fixed as the sample type. A
-          timeframe of up to five days was adopted as a project requirement rather than a wish.
-          Regulatory approval was added to the roadmap as a condition of clinical applicability
-          rather than a formality at the end. And all our patient materials were rewritten from the
-          gene to the drug.
-        </Changed>
-        <Notes title="Interview notes: Professor Munir Pirmohamed">
-          <Lines of={PIRMOHAMED_NOTES} />
-        </Notes>
+        <Figure shots={[SHOTS.library]} />
+
+        <Sub>Kindergarten and Children&rsquo;s Hospital</Sub>
+        <P>
+          At the kindergarten, we conducted a &ldquo;World of DNA&rdquo; program for fifteen
+          children aged 5-7, including an icebreaker game in a circle, a 3D DNA model, building DNA
+          models from marshmallows and toothpicks, short educational cartoons and team DNA puzzles.
+          The children were interested in discussing why everyone is different, and at the end they
+          received sweets and felt a little like real scientists.
+        </P>
+        <P>
+          We also conducted a similar but more condensed program at the Regional Children&rsquo;s
+          Hospital of Shymkent with children aged 8-12 who were undergoing treatment. Due to the
+          limited time, the program was reduced to one interactive activity: the children cut out
+          colored templates of DNA fragments and attached them to a model of a bacterium, learning
+          visually how scientists use bacteria to create medicines. Following the doctor&rsquo;s
+          recommendation, we did not bring sweets and instead gave the children a paper template for
+          assembling a 3D DNA model at home. The hospital staff noted that the children enjoyed this
+          format of learning.
+        </P>
+        <Figure shots={[SHOTS.kindergarten, SHOTS.hospital]} />
+
+        <Sub>School Workshops: Kazygurt, Samgau, Auzhan</Sub>
+        <P>
+          For older students, specifically fifth and sixth graders and later eighth and ninth
+          graders from Kazygurt Intellectual School, Samgau and Auzhan, we conducted bilingual
+          educational workshops about DNA, genes and the connection between genetics and medicine,
+          with an interactive &ldquo;True or False&rdquo; game and a team activity called
+          &ldquo;Save the Patient through the DNA Pathway.&rdquo;
+        </P>
+        <P>
+          Our first workshop at Kazygurt showed us that even for this age group, DNA can be a
+          difficult topic. This directly influenced how we simplified our approach for preschool
+          children at the kindergarten: we removed the lecture part and added more games and
+          creative activities. At Auzhan School, we also presented the idea of our 2026 project
+          directly to the students and introduced the book &ldquo;The Hidden Code&rdquo; together
+          with its audio version.
+        </P>
+        <Figure shots={[SHOTS.workshop, SHOTS.schoolGroup]} />
       </Section>
 
-      <Section id="merritt" title="Karen Merritt: a human, not a variable">
+      <Section id="chapter-6" title="Chapter 6. From Conversation to Public Dialogue">
         <P>
-          By this point, we saw the gap between the laboratory and the patient. But we lacked the
-          voice of someone who knows this problem not from an article.
+          Personalized medicine is not only about science. It also raises questions of inequality in
+          healthcare, access to diagnostics, international cooperation and the distribution of
+          medical innovations. We realized that a regular lecture could not capture all this
+          complexity and chose the Model United Nations (MUN) format.
         </P>
         <P>
-          Karen Merritt is the co-founder of Advocates for Universal DPD/DPYD Testing (AUDT) and a
-          patient advocate. She came to this topic after losing her mother to fluoropyrimidine
-          toxicity caused by an undetected DPYD variant. AUDT arose precisely like this: families
-          who lost loved ones to the same cause united so that this would stop happening.
-        </P>
-        <P>
-          Before talking to her, we freely operated with words like &ldquo;toxicity,&rdquo;
-          &ldquo;genetic variant,&rdquo; &ldquo;pharmacogenetics,&rdquo; and &ldquo;clinical
-          guidelines.&rdquo; These words are convenient because no one is visible behind them.
-        </P>
-        <P>
-          She named awareness, education, and test accessibility as the main barriers. And she
-          emphasized what we later put at the beginning of our text: fluoropyrimidines are on the
-          WHO Model List of Essential Medicines and belong to the most frequently prescribed
-          chemotherapy drugs for solid tumors. The preventable risk of severe toxicity is associated
-          not with a rare experimental drug, but with one of the most common.
-        </P>
-        <P>
-          She also spoke about the economic barrier in the US: the system initially reluctantly paid
-          for testing. This barrier was largely removed, not by arguments, but by evidence that the
-          test is cost-effective when comparing its cost with the cost of treating severe
-          complications. For us, this became a direct indication of what argument would be needed in
-          conversation with the healthcare system, not just the doctor.
-        </P>
-        <P>
-          Separately, she described the generational gap. Younger physicians perceive DPYD testing
-          noticeably better: they studied fluoropyrimidine toxicity during training and are familiar
-          with pharmacogenetics. Some more experienced clinicians remain skeptical. This is not a
-          matter of goodwill, but a matter of what a person was taught.
-        </P>
-        <P>
-          We asked her about what bothered us the most. A person has just received a diagnosis, is
-          under huge pressure, and faces a dozen procedures. How at such a moment to tell them about
-          pharmacogenetics as well without adding panic?
-        </P>
-        <P>
-          Her answer was simple and changed our logic: present testing as part of the initial
-          examination, before treatment starts, as a regular safety measure. Do not make the patient
-          ask for the test.
-        </P>
-        <P>
-          For us, this was a turnaround. Until then, we designed communication as if the task was to
-          make the patient want the test. But the task is different: to make sure the patient never
-          has to want it. The way the test is introduced into conversation is no less important than
-          the test itself: as a separate procedure it looks like a burden, as part of preparation
-          for treatment, protection.
-        </P>
-        <P>
-          Another of her thoughts we initially underestimated. She said that integrating DPYD
-          testing into clinical protocols makes it part of the institution&rsquo;s risk management,
-          not just a matter of patient safety. This changes motivation: the doctor gets not only an
-          ethical but also a professional basis to follow the recommendation.
-        </P>
-        <P>Regarding myths around genetics, she said:</P>
-        <Quote by="Karen Merritt, co-founder of AUDT">
-          &ldquo;General public doesn&rsquo;t understand that all people are different, we all
-          process medications differently.&rdquo;
-        </Quote>
-        <P>
-          And her advice on materials was practical: simple language, low text complexity level, and
-          interactive formats, because a game engages and explains complex things better than text.
-        </P>
-        <P>
-          She didn&rsquo;t just give advice. She connected us with Dr. Dan Hertz, AUDT medical
-          advisor, and passed on a practical guide to implementing DPYD genotyping into clinical
-          practice written by him and his colleagues.
-          <Cite id="guide" />
-        </P>
-        <Changed>
-          In all our materials, the test is now described as part of pre-treatment examination
-          rather than an additional service. We added an economic line to the argumentation for the
-          healthcare system: test cost versus the cost of treating severe toxicity. And we
-          completely rebuilt the educational part of the project following her advice.
-        </Changed>
-        <Notes title="Interview notes: Karen Merritt">
-          <Lines of={NOTES.merritt} />
-          <Lines of={NOTES.merrittSummary} />
-          <p className="font-bold" style={{ color: C.ink }}>
-            Questions for Karen Merritt, advocate for DPYD testing
-          </p>
-          <Numbered of={NOTES.merrittQuestions} />
-          <p className="font-bold" style={{ color: C.ink }}>
-            Q&amp;A session questions
-          </p>
-          <Numbered of={NOTES.merrittFollowUps} />
-        </Notes>
-      </Section>
-
-      <Section id="explaining" title="If a person didn't understand, we didn't explain well enough">
-        <P>We took Karen&rsquo;s advice about simple language and interactive formats literally.</P>
-        <P>
-          We are developing a VR game where a person learns about oncology and personalized medicine
-          through personal experience rather than text on a screen. We made a card-based board game
-          that turns complex medical information into a conversation between players: they have to
-          explain things to each other themselves, which works better than a lecture. We hold
-          educational classes for children and a training session in Kazygurt, a rural area where
-          the gap in access to diagnostics and information is especially noticeable. That is why we
-          went there instead of staying in the city.
-        </P>
-        <P>
-          And we are writing a book of ten patient stories, for the same reason our conversation
-          with Karen changed our view. Behind medical statistics, there are always specific people,
-          and a text where they are visible reaches where a percentage cannot.
-        </P>
-        <P>
-          None of these projects were planned at the beginning. All of them appeared as a direct
-          response to what we heard.
-        </P>
-      </Section>
-
-      <Section id="hertz" title="Dan Hertz: how to fit it into a doctor's ordinary day">
-        <P>
-          We already understood why the test is needed and why doctors don&rsquo;t start using it
-          immediately. One last question remained: how to practically make it part of routine
-          treatment?
-        </P>
-        <P>
-          To Dr. Dan Hertz, a clinical pharmacist and medical advisor for AUDT, we posed an
-          objection that seemed like the main obstacle: if patients with intermediate enzyme
-          activity have their dose reduced, won&rsquo;t tumor control suffer?
-        </P>
-        <P>
-          He replied that data shows otherwise. This is not the main concern of oncologists. The
-          problem is that guidelines are not followed due to weak understanding of basic
-          pharmacology.
-        </P>
-        <P>
-          And he suggested explaining this through an analogy familiar to any clinician: doses are
-          reduced in liver or kidney insufficiency, and no one considers this refusing treatment.
-          The logic is the same: the dose is tailored to how a specific person&rsquo;s body manages
-          drug elimination.
-        </P>
-        <P>
-          We asked how AUDT works with doctors, hospital administrations, and decision-makers. He
-          shared that before the FDA warning appeared, they would travel to places where a patient
-          death occurred and work directly with quality of care and personalized medicine teams. Now
-          that the labeling is in place, the focus has completely shifted to education and outreach.
-        </P>
-        <P>
-          When we told him about our educational projects and asked what myths are worth debunking,
-          he answered not what we expected to hear.
-        </P>
-        <Quote by="Dr. Dan Hertz, clinical pharmacist and AUDT medical advisor">
-          &ldquo;Patients do what clinicians recommend, so I think all of this should focus on the
-          clinicians side.&rdquo;
-        </Quote>
-        <P>
-          He said educational efforts should not be aimed solely at the general public: the main
-          addressee is clinicians.
-        </P>
-        <P>
-          And to the question of how to transition hospitals from &ldquo;can be considered&rdquo; to
-          mandatory screening before treatment starts where there is no US infrastructure, he
-          advised betting on an inexpensive, rapid point-of-care test so results arrive in a few
-          hours or a day.
-        </P>
-        <Changed>
-          We built materials for doctors around the analogy with renal and hepatic insufficiency:
-          this proved more effective than explaining pharmacogenetics from scratch. And we added
-          something to the project that wasn&rsquo;t there before: a separate educational track for
-          clinicians, not just patients and schoolchildren.
-        </Changed>
-        <Notes title="Interview notes: Dr. Dan Hertz">
-          <Lines of={NOTES.hertz} />
-        </Notes>
-      </Section>
-
-      <Section id="disagreed" title="Where the experts disagreed">
-        <P>
-          The most useful thing for us was not where the experts agreed, but where they disagreed.
-        </P>
-        <Sub>How long the test can take</Sub>
-        <P>
-          Professor Pirmohamed said: up to five days, faster without additional clinical meaning.
-          Dr. Hertz said: an inexpensive rapid point-of-care test is needed, with results in hours
-          or a day.
-        </P>
-        <P>
-          At first, this looked like a contradiction. Then we realized they were answering different
-          questions. Pirmohamed speaks about what is clinically acceptable when the laboratory
-          pathway is already established, as in the NHS. Hertz speaks about what to do where such a
-          pathway doesn&rsquo;t exist: if a sample needs to be driven hundreds of kilometers,
-          &ldquo;five days&rdquo; on paper easily turns into two weeks in practice, and the doctor
-          starts treatment without waiting for the result.
-        </P>
-        <P>
-          Both are true for Kazakhstan. We adopted five days as a clinical requirement for
-          turnaround time and simultaneously recorded simplicity and low cost of the format as a
-          condition without which this timeframe is unattainable outside major centers. This also
-          partially answers our unresolved question about blood and saliva: coverage is achieved not
-          by using a less reliable sample, but by making the test available closer to the patient.
-        </P>
-        <Sub>Who to target with outreach</Sub>
-        <P>
-          Karen Merritt advised simple language and interactive formats for a broad audience. Dr.
-          Hertz said the main addressee is doctors.
-        </P>
-        <P>
-          Here, too, we didn&rsquo;t choose just one. We kept everything we do for patients and
-          schoolchildren and added a track for clinicians that wasn&rsquo;t there before. These are
-          different tasks: a patient needs to understand why a test is offered, and a doctor needs
-          to understand why dose reduction does not mean undertreatment.
-        </P>
-      </Section>
-
-      <Section id="agreed" title="What all four said the same thing about">
-        <P>
-          We spoke with an oncologist, a pharmacogeneticist, a clinical pharmacist, and a patient
-          advocate. They have different backgrounds, different countries, and different healthcare
-          systems. And all four independently named the exact same bottleneck.
+          We organized a one day MUN conference for more than 50 participants, lasting from 8:00 to
+          17:00, with three committees in three different languages:
         </P>
         <Bullets
           items={[
-            "Dr. Joerger: in Switzerland, the test was available everywhere, but clinicians needed time to be convinced of its usefulness.",
-            "Professor Pirmohamed: any test advocacy is useless if doctors aren't ready to use it.",
-            "Karen Merritt: guidelines and labeling are already in place, now oncologists need to follow them.",
-            "Dr. Hertz: the problem is not the fear of doing harm, but that guidelines are not followed.",
+            "UNGA, in Kazakh, with the agenda: “Ensuring Equal Access to Personalized Medicine and Reducing Global Inequality in Healthcare”",
+            "WHO, in Russian, with the agenda: “Improving International Cooperation in Genetic Research and the Exchange of Medical Innovations”",
+            "UNICEF, in English, with the agenda: “Ensuring Equal Access to Diagnosis and Treatment of Childhood Cancer in Resource Limited Countries”",
           ]}
         />
         <P>
-          This is the main result of our work in Human Practices, and it is an uncomfortable one. We
-          started the project thinking we were creating a missing technology. It turned out that
-          technology is not what is missing. What&rsquo;s missing is people actually starting to use
-          it.
+          We intentionally chose childhood cancer as one of the topics because it clearly
+          demonstrates the consequences of inequality in healthcare: a child&rsquo;s access to
+          diagnosis and treatment should not depend on where they were born. According to the WHO,
+          more than 80% of children with cancer are cured in high income countries, while in many
+          low and middle income countries this figure is below 30%.
+          <Cite id="who-children" />
         </P>
         <P>
-          Everything else follows from this. If we simply made a good test and stopped, we would
-          repeat the situation all four describe in their countries: the test exists, but the
-          patient doesn&rsquo;t get it. Therefore, working with doctors, the economic argument for
-          the system, a simple framework for talking to patients, and the requirement for turnaround
-          time are not project appendages. This is the project.
+          The conference went through the full cycle of the policy making process: research →
+          position paper → debate → negotiation → resolution. Participants defended not their
+          personal opinions but the positions of their assigned countries or stakeholders, which
+          required them to find compromises between competing priorities.
         </P>
         <P>
-          And one more coincidence we didn&rsquo;t notice right away. Professor Pirmohamed advised
-          talking to the patient not about the gene, but about the drug, by analogy with an allergy.
-          Dr. Joerger separately explained that DPYD is not the same as testing for hereditary
-          cancer syndromes, and the conversation with the patient here is fundamentally different.
-          Dr. Hertz suggested an analogy with kidneys and livers for doctors. Three different
-          people, three different audiences, and one common conclusion: to make a new idea take
-          root, you don&rsquo;t need to invent a new language. You need to find a place in what a
-          person already knows where it fits without explanation.
+          The discussion in the UNGA committee changed our own understanding of the sustainability
+          of the project: developing the technology is only part of the solution; its accessibility,
+          affordability and real world implementation are equally important. We realized that if a
+          new technology remains available only to those who already have financial or geographical
+          access to healthcare, it will not solve the original problem but simply move it elsewhere.
         </P>
-      </Section>
-
-      <Section id="shifted" title="Where our question shifted">
-        <ol className="max-w-[62ch] space-y-3">
-          {[
-            ["At the beginning, we had the question:", "How to create a DPYD test?"],
-            ["After initial research, another appeared:", "How to make it clinically useful?"],
-            ["After conversations with doctors:", "How to make sure it is actually used?"],
-            [
-              "After talking to Karen:",
-              "How to make sure the patient gets this opportunity on time and understands why it's needed?",
-            ],
-            [
-              "And now our question sounds broader:",
-              "What needs to happen for our test result to reach a specific person and change their treatment?",
-            ],
-          ].map(([when, question]) => (
-            <li
-              key={when}
-              className="px-4 py-3"
-              style={{ border: `2px solid ${C.ink}1f`, borderRadius: 10, background: "#fffaf2" }}
-            >
-              <span
-                className="block text-[12px] font-bold uppercase tracking-[0.12em]"
-                style={{ color: C.inkNote }}
-              >
-                {when}
-              </span>
-              <span
-                className="mt-1 block text-[16px] font-semibold leading-snug md:text-[18px]"
-                style={{ color: C.ink }}
-              >
-                {question}
-              </span>
-            </li>
-          ))}
-        </ol>
-      </Section>
-
-      <Section id="unresolved" title="What remains unresolved">
-        <P>We don&rsquo;t want to end as if everything was neatly wrapped up.</P>
+        <Figure shots={[SHOTS.munWho]} />
+        <Figure shots={[SHOTS.munCommittee]} />
         <P>
-          We still don&rsquo;t know which DPYD variants are significant specifically for the
-          Kazakhstani population. We have a direction (comparing ourselves with already described
-          Asian populations, as Professor Pirmohamed advised) but data is not yet available, and we
-          have yet to obtain it.
+          However, one day of MUN was not enough to cover all the questions that arose around
+          personalized medicine. Therefore, we also continued the discussion in the format of an
+          educational camp, where participants could not simply hear about the problem but explore
+          it more deeply through teamwork, discussions and interactive activities.
         </P>
         <P>
-          We haven&rsquo;t checked the payment question Dr. Joerger warned about: who in Kazakhstan
-          will pay for the test and won&rsquo;t that become the very factor preventing a doctor from
-          ordering it?
+          At the camp, we continued discussing genetics, personalized medicine, access to
+          diagnostics and the role of technology in healthcare. Participants worked together,
+          discussed different sides of medical issues and tried to look at the same situation from
+          the perspectives of different stakeholders.
         </P>
         <P>
-          And most importantly: all our interviewees described how it is arranged in their systems.
-          None of them works in ours. The next conversation we need is not another international
-          interview, but a conversation with a practicing Kazakhstani oncologist who will tell us
-          what out of all this will withstand a collision with a real ward. The seminar for
-          clinicians that Dr. Joerger advised is our next step.
+          For us, this format was especially valuable because the dialogue was not limited to ready
+          made answers. Participants asked their own questions, debated, proposed solutions and
+          faced the need to choose between an ideal solution and one that could actually be
+          implemented in specific conditions.
+        </P>
+        <Figure shots={[SHOTS.camp]} />
+        <P>
+          The camp continued the same idea that we brought to MUN: medical innovation does not exist
+          separately from society. Its success depends not only on how well the technology works,
+          but also on whether people understand it, whether healthcare professionals are ready to
+          use it and whether the healthcare system can provide equal access to it.
         </P>
         <P>
-          We do not consider this question closed. And perhaps this is the most honest result of our
-          work.
+          The discussion in the UNGA committee and the experience of the camp changed our own
+          understanding of the sustainability of the project: developing the technology is only part
+          of the solution; its accessibility, affordability and real world implementation are
+          equally important. We realized that if a new technology remains available only to those
+          who already have financial or geographical access to healthcare, it will not solve the
+          original problem but simply move it elsewhere.
+        </P>
+        <P>
+          That is why after this stage we began to see ChemoGuard not simply as a test, but as part
+          of a broader system, from informing the patient and educating doctors to accessible
+          diagnostics and clinical decision making.
         </P>
       </Section>
 
-      <Section id="path" title="Where our path leads">
+      <Section id="chapter-7" title="Chapter 7. When Science Meets Compassion">
         <P>
-          We started with test development. Gradually we realized that the real result is not a test
-          tube with a sample, not a genetic variant, or even a line in a lab report.
+          A project dedicated to preventing harm from chemotherapy could not remain limited to
+          scientific work.
+        </P>
+        <Sub>JARYQ: Light</Sub>
+        <P>
+          Jaryq means &ldquo;light&rdquo; in Kazakh. This was the image we wanted to convey through
+          our first charity concert on September 11 at NIS Karatau, a small ray of light and hope
+          for a person going through a difficult period.
         </P>
         <P>
-          The real result is the moment when a doctor receives information on time, understands it,
-          and makes a safer decision for a specific person because of it.
+          The program brought together dance performances, a traditional Kazakh orchestra with ten
+          dombra players and one kobyz player, a theatrical performance, a professional magic show
+          and a vocal performance with a choir, violin and guitar. During the concert, we also
+          explained the DPYD problem to the audience in simple language.
         </P>
         <P>
-          Therefore, our path does not go from science to the test. It goes from human to science,
-          from science to the clinic, and from the clinic back to the human.
+          The concert brought together around 200 students, teachers and school staff and helped
+          raise 400,000 tenge (~$850) for the treatment of Inabat Narikovna.
+        </P>
+        <Figure shots={[SHOTS.jaryqTeam, SHOTS.jaryqAudience]} />
+
+        <Sub>Concert at the Children&rsquo;s Oncology Hospital</Sub>
+        <P>
+          Our second concert, held on September 16, was organized differently. We intentionally made
+          it non commercial. Instead of raising funds, we simply wanted to give the children
+          undergoing treatment a short break from their hospital routine. Following the
+          doctor&rsquo;s recommendation, we did not bring sweets.
+        </P>
+        <P>
+          The parents and medical staff thanked us for bringing this kind of entertainment directly
+          to the hospital. There was no financial result, but there was direct contact with the
+          children and their sincere, warm reaction. This experience taught us that supporting
+          people facing cancer is not limited to fundraising or science. Sometimes, it is simply
+          about bringing a little joy during treatment.
+        </P>
+        <Figure shots={[SHOTS.concertMagic]} />
+        <Figure shots={[SHOTS.concertDance]} />
+
+        <Sub>Second JARYQ: NIS Abay</Sub>
+        <P>
+          On October 9, we held our third concert at NIS Abay Shymkent to raise funds for the
+          treatment of Aliya Tulendiyevna Khanazarova, a school staff member. The concert raised
+          500,000 tenge (~$1,050).
+        </P>
+        <P>
+          Together, the two fundraising concerts raised 900,000 tenge (around $1,900) and, equally
+          importantly, showed us that our initiative could continue rather than remain a one time
+          gesture.
+        </P>
+      </Section>
+
+      <Section id="chapter-8" title="Chapter 8. Beyond Kazakhstan">
+        <Sub>International Team</Sub>
+        <P>
+          Our team is international from the beginning: it includes a student from Vietnam alongside
+          students from Kazakhstan. This is part of how the team itself is structured and helps us
+          look at the problem more broadly from the very beginning, rather than only within the
+          borders of one country.
+        </P>
+        <Sub>BK Denmark</Sub>
+        <P>
+          On August 27, we held an online meeting via Google Meet with two members of the BK Denmark
+          team. We shared our project topic through a short presentation, while the Danish team
+          presented their idea, which focused on preventing methanol poisoning through synthetic
+          biology in the context of addressing alcohol addiction.
+        </P>
+        <P>
+          Although our topics were fundamentally different, this did not prevent us from sharing
+          real experiences and challenges. The atmosphere of the meeting was very friendly despite
+          the differences in language, culture and the subject areas of our projects.
+        </P>
+        <P>
+          We shared our online book with them for translation, and they kindly agreed to help. The
+          BK Denmark team also promised to let us know if any ideas or opportunities for further
+          collaboration came up.
+        </P>
+        <Figure shots={[SHOTS.denmark]} />
+        <Sub>YouTube Channel</Sub>
+        <P>
+          To make pharmacogenetics accessible to a much wider audience, including school students
+          preparing for A-Level Biology and Chemistry, we developed a content strategy for our own
+          YouTube channel: 3-5 minute videos twice a week, with a schedule covering more than 30
+          topics.
+        </P>
+        <P>
+          While developing this content plan, we learned a surprising amount ourselves. We explored
+          the history of cancer treatment more deeply and looked into the complex mechanism of
+          action of 5-fluorouracil, then searched for ways to explain it in simple language for our
+          viewers. Filming the videos together also became an unexpectedly valuable experience for
+          strengthening our team.
+        </P>
+        <Figure shots={[SHOTS.youtube]} />
+        <P>
+          <a
+            href="https://youtube.com/@nis-kazakhstan?si=t3BjPpXhovZHdRg0"
+            className={link}
+            style={{ color: C.ink }}
+          >
+            youtube.com/@nis-kazakhstan
+          </a>
+        </P>
+      </Section>
+
+      <Section id="chapter-9" title="Chapter 9. From a Scientific Idea to a Working Solution">
+        <P>
+          A good test is not enough to simply invent. It needs to be brought to a real patient. To
+          take the entrepreneurial and implementation side of ChemoGuard seriously, we applied to
+          the NIS StartUP Incubator, a 12-week program for students and graduates of Nazarbayev
+          Intellectual Schools, supported by the Corporate Fund Damu Qory.
+        </P>
+        <P>
+          Out of 224 applications, the expert committee selected only 35 projects for the main
+          program, and ours was among them. The program includes a full educational course,
+          workshops, individual mentoring, work with product and pitching experts, and continues all
+          the way to Demo Day in Astana.
+        </P>
+        <P>
+          For us, this became the first truly independent confirmation that ChemoGuard is not just
+          an idea on paper, but a project that people outside our own team believe has real
+          potential.
+        </P>
+        <Figure shots={[SHOTS.incubator]} />
+      </Section>
+
+      <Section id="conclusion" title="Conclusion">
+        <P>
+          When we put everything together, it becomes not a list of activities, but one continuous
+          journey.
+        </P>
+        <P>
+          We started with a question on social media and received not data, but silence, which
+          taught us more than any number could have. We turned to patient advocates and doctors and
+          realized that creating an accurate test is not enough if no one is ready to use it. We
+          went to laboratories and regulatory consultants in Kazakhstan and learned that the path
+          from a prototype to a patient goes not only through science, but also through risk
+          classification, a software registry, and eight to eleven months of paperwork. We went to
+          children in a kindergarten, a hospital, and a school for blind students and realized that
+          accessibility means not only &ldquo;affordable&rdquo;, but also
+          &ldquo;understandable&rdquo; and &ldquo;reaching everyone&rdquo;. We organized debates for
+          fifty school students in three languages and saw that even the most advanced solution is
+          meaningless if it remains available only to those who already have access to it. We sang,
+          danced, and performed magic tricks to raise almost two million tenge and give a few
+          specific people a few hours of joy.
+        </P>
+        <P>
+          And every time we returned from another conversation, we found ChemoGuard a little
+          different, not because we decided to change it, but because the people we spoke to showed
+          us what we could not see ourselves.
         </P>
       </Section>
 

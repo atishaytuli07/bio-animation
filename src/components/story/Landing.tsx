@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 
 import { Cell, Enzyme, Molecule } from "@/components/hero/elements";
 import { BODY, C, DISPLAY, R, T } from "@/components/hero/palette";
+import { ChromosomeBody, DropBody } from "@/components/story/Critters";
 import { Slot } from "@/components/story/EnzymeSlot";
 import { PAGES } from "@/components/story/site-map";
 import { useSeen } from "@/hooks/use-seen";
@@ -61,16 +62,20 @@ const CARD: Record<string, { art: ReactNode }> = {
   },
   "/engineering": { art: <Enzyme s={0.42} tone={C.green} /> },
   "/human-practices": { art: <Cell s={0.4} tone={C.pink} /> },
-  "/education": { art: <Cell s={0.4} tone={C.blue} /> },
-  // what was not looked for: the Safety page's own picture
+  // the page's one message, that your DNA is an instruction: the chromosome, with the variant's red band
+  "/education": {
+    art: (
+      <svg viewBox="40 40 180 180" className="h-12 w-auto overflow-visible" aria-hidden="true">
+        <ChromosomeBody x={130} y={130} h={170} />
+      </svg>
+    ),
+  },
+  // the Safety page's own character: a drop of the medicine behind its shield
   "/safety-and-security": {
     art: (
-      <span
-        className="grid h-9 w-9 place-items-center text-[18px] font-bold leading-none"
-        style={{ border: `2px dashed ${C.ink}80`, borderRadius: R.sm, color: C.inkBody }}
-      >
-        ?
-      </span>
+      <svg viewBox="-80 -100 172 206" className="h-12 w-auto overflow-visible" aria-hidden="true">
+        <DropBody x={0} y={0} h={190} />
+      </svg>
     ),
   },
   "/team": {

@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useSyncExternalStore } from "react";
 
 import {
   BASES,
@@ -118,6 +118,14 @@ function ribbons(phase: number, radius: number) {
   return { front, back };
 }
 
+const PHONE = "(max-width: 767px)";
+const watchPhone = (changed: () => void) => {
+  const mq = window.matchMedia(PHONE);
+  mq.addEventListener("change", changed);
+  return () => mq.removeEventListener("change", changed);
+};
+const isPhone = () => window.matchMedia(PHONE).matches;
+
 export function Helix({
   onFirstDrag,
   zoom = 0,
@@ -171,7 +179,9 @@ export function Helix({
   const overRef = useRef(false);
   // The rAF closure is created once, so the scroll-driven values reach it through refs rather than by tearing down
   // and rebuilding the loop.
-  const nav = useRef({ zoom: 0, focus: 0, flatten: 0, read: 0, hush: 0 });
+  const nav = useRef({ zoom: 0, focus: 0, flatten: 0, read: 0, hush: 0, phone: false });
+  const phone = useSyncExternalStore(watchPhone, isPhone, () => false);
+  nav.current.phone = phone;
   nav.current.zoom = zoom;
   nav.current.focus = focus;
   nav.current.flatten = flatten;
@@ -281,7 +291,9 @@ export function Helix({
       const vy = HTOP + vt2 * (HBOT - HTOP);
       // The variant orbits the axis, so the scale has to be centred on the base, not on the helix's centreline.
       // Centring on the axis left the strand walking off the right of the frame as the zoom deepened.
-      const vx = HX + Math.cos(vt2 * TURNS * Math.PI * 2 + phase) * radius;
+      // On a phone the strand is the whole frame, so it zooms about its own axis and stays centred; the variant
+      // still stays in view, since a phone shows far more of the drawing's width than the viewBox holds.
+      const vx = nav.current.phone ? HX : HX + Math.cos(vt2 * TURNS * Math.PI * 2 + phase) * radius;
       tilt.current?.setAttribute(
         "transform",
         `translate(${(vx - vx * k).toFixed(1)} ${(vy - vy * k).toFixed(1)}) scale(${k.toFixed(3)}) rotate(${lean.toFixed(2)} ${HX} 380) skewY(${(tx * (1 - z)).toFixed(2)})`,
@@ -466,7 +478,8 @@ export function Helix({
   return (
     <svg
       ref={svg}
-      viewBox="-260 0 680 760"
+      // A phone centres the axis (x = HX) in the frame; a wider screen keeps the composition the layout was built for.
+      viewBox={phone ? `${HX - 340} 0 680 760` : "-260 0 680 760"}
       className="h-full w-full cursor-grab touch-none select-none overflow-visible active:cursor-grabbing"
       onPointerDown={onDown}
       onPointerMove={onMove}

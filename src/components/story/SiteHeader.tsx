@@ -40,7 +40,7 @@ function Panel({ item, end, onGo }: { item: MenuItem; end: boolean; onGo: () => 
               className="menu-row block whitespace-nowrap px-4 py-2 text-[15px] font-bold"
               style={{ color: C.ink }}
             >
-              {pageAt(to).label}
+              {item.names?.[to] ?? pageAt(to).label}
             </Link>
           </li>
         ))}
@@ -104,7 +104,7 @@ export function SiteHeader({
             {MENU.map((item) => {
               const first = item.pages[0] ?? "/";
               const active = item.pages.some(here);
-              const plain = item.pages.length === 1;
+              const plain = item.pages.length === 1 && !item.group;
               const label = (
                 <Link
                   to={first}
@@ -246,7 +246,7 @@ export function SiteHeader({
           {/* The same groups as the desktop bar: a group of several pages gets its name above them. */}
           {MENU.map((item, g) => (
             <div key={item.label} style={{ borderTop: g ? `1.5px solid ${C.ink}22` : undefined }}>
-              {item.pages.length > 1 && (
+              {(item.pages.length > 1 || item.group) && (
                 <span className={`${L.note} block px-5 pt-3`} style={{ color: C.lavenderDeep }}>
                   {item.label}
                 </span>
@@ -257,10 +257,10 @@ export function SiteHeader({
                   to={to}
                   onClick={() => setMenu(false)}
                   aria-current={here(to) ? "page" : undefined}
-                  className={`flex w-full items-center justify-between px-5 text-left text-[15px] font-bold ${item.pages.length > 1 ? "py-2" : "py-3"}`}
+                  className={`flex w-full items-center justify-between px-5 text-left text-[15px] font-bold ${item.pages.length > 1 || item.group ? "py-2" : "py-3"}`}
                   style={{ color: C.ink }}
                 >
-                  {pageAt(to).label}
+                  {item.names?.[to] ?? pageAt(to).label}
                   {/* A phone menu is a stack of rows with no baseline for a rule, so the current page gets a dot. */}
                   {here(to) && (
                     <span

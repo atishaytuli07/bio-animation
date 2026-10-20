@@ -59,6 +59,9 @@ const TUBE = { p0: [74, 162], p1: [74, 232], p2: [34, 294], p3: [-22, 249] } as 
 const CANNULA = { x: -28, y: 244, w: 12, h: 10 } as const;
 /** Space between a figure and its stand, as a share of the figure's height. 16px at the desktop size it was set at. */
 const GAP = "calc(var(--fig2) * 0.034)";
+
+/** The headlines' place on a phone: just under the chapter label, which ends near 124px. */
+const PHONE_HEAD = "max-md:top-[max(128px,16vh)]";
 /** The most drug either figure holds in this scene: the shared uptake plus all of what patient B cannot clear. */
 const PEAK = 0.7;
 
@@ -312,7 +315,7 @@ function PatientTag({
       // the stand as well (the stand is 18% taller than the figure) and crosses neither. From 1024px it
       // moves to the patient's outer side at shoulder height: over the head there it sat 50 to 74px into the
       // headline. Both sets of classes are written out whole, because Tailwind only builds what it can read.
-      className={`absolute bottom-full mb-[calc(var(--fig2)*0.2)] w-[104px] px-2 py-1.5 text-center max-md:[@media(max-height:700px)]:w-[94px] max-md:[@media(max-height:700px)]:px-1 md:mb-3 md:w-max md:px-3 md:py-2 lg:bottom-auto lg:top-[16%] lg:mb-0 ${side === "left" ? "left-0 lg:left-auto lg:right-full lg:mr-4" : "right-0 lg:left-full lg:right-auto lg:ml-4"}`}
+      className={`absolute bottom-full mb-[calc(var(--fig2)*0.2)] max-[339px]:mb-[calc(var(--fig2)*0.1)] w-[104px] px-2 py-1.5 text-center max-md:[@media(max-height:700px)]:w-[88px] max-md:[@media(max-height:700px)]:px-1 md:mb-3 md:w-max md:px-3 md:py-2 lg:bottom-auto lg:top-[16%] lg:mb-0 ${side === "left" ? "left-0 max-md:[@media(max-height:700px)]:-left-5 lg:left-auto lg:right-full lg:mr-4" : "right-0 max-md:[@media(max-height:700px)]:-right-5 lg:left-full lg:right-auto lg:ml-4"}`}
       style={{ background: PANEL, borderRadius: R.sm, color: C.ink }}
     >
       <p className="text-[12px] font-black leading-none md:text-[13px]">{name}</p>
@@ -446,7 +449,7 @@ export function TwoPeople() {
         // A short screen gets smaller figures standing higher, because the card under them does not shrink. A
         // short laptop window gets smaller ones too: at 52vh the stands reached the headline, and the second
         // line of the closing sentence was drawn underneath both bags.
-        className="sticky top-0 h-screen overflow-hidden [--fig2:min(36vh,68vw)] [--feet:22vh] max-md:[@media(max-height:700px)]:[--fig2:min(22vh,68vw)] max-md:[@media(max-height:700px)]:[--feet:200px] md:[--fig2:min(52vh,600px,60vw)] md:[--feet:19vh] lg:[--feet:max(17vh,120px)] lg:[@media(max-height:700px)]:[--fig2:38vh]"
+        className="sticky top-0 h-screen overflow-hidden [--fig2:min(34vh,62vw)] [--feet:22vh] max-md:[@media(max-height:700px)]:[--fig2:min(22vh,68vw)] max-md:[@media(max-height:700px)]:[--feet:200px] md:[--fig2:min(52vh,600px,60vw)] md:[--feet:19vh] lg:[--feet:max(17vh,120px)] lg:[@media(max-height:700px)]:[--fig2:38vh]"
         style={{ opacity: 1 - q(handoff), visibility: handoff > 0.99 ? "hidden" : "visible" }}
       >
         {/* No background and no scattered field here any more; both moved to Ground and World. A scene that paints
@@ -746,10 +749,12 @@ export function TwoPeople() {
           </div>
         </div>
 
-        {/* "The same treatment." — arrives with the drip, leaves before the split */}
-        <div className={L.headline} style={{ opacity: q(title.o) }}>
+        {/* "The same treatment." — arrives with the drip, leaves before the split. On a phone both headlines are set
+            smaller and a little higher: at full size the second one wrapped onto two lines and ran into the
+            patients' cards on screens 360px wide and under. */}
+        <div className={`${L.headline} ${PHONE_HEAD}`} style={{ opacity: q(title.o) }}>
           <p
-            className={`text-center font-black ${L.headlineWidth}`}
+            className={`text-center font-black ${L.headlineWidth} max-md:!text-[1.6rem]`}
             style={{
               ...T.headline,
               color: C.paper,
@@ -763,9 +768,9 @@ export function TwoPeople() {
         {/* The second half of the sentence, only after the split has happened. "Exposure", because that is what
             the picture shows: how much drug is in each body. An outcome is a different thing, and the science
             review asks for the two not to be swapped. */}
-        <div className={L.headline} style={{ opacity: q(outcome.o) }}>
+        <div className={`${L.headline} ${PHONE_HEAD}`} style={{ opacity: q(outcome.o) }}>
           <p
-            className={`text-center font-black ${L.headlineWidth}`}
+            className={`text-center font-black ${L.headlineWidth} max-md:!text-[1.4rem] max-md:[@media(max-height:700px)]:!text-[1.15rem]`}
             style={{
               ...T.headline,
               // Sized to stay on one line inside the width the headline is allowed (see L.headlineWidth). It is

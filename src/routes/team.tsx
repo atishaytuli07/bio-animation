@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import { C, L, R } from "@/components/hero/palette";
+import { asset, C, L, R } from "@/components/hero/palette";
 import { SECTIONS_OF } from "@/components/story/page-sections";
 import { Awaiting, P, PageLink, PageShell, Section } from "@/components/story/PageShell";
 
@@ -30,10 +30,12 @@ export const Route = createFileRoute("/team")({
 // phone downloads 60-80 kB rather than the full frame.
 // The captions say only what the pictures show. Who is who belongs to the roster below, and only the team can
 // write that.
+// The two group photographs, full width behind the title, one after the other. The steps first: it is the one
+// the team chose to open on.
 const PHOTOS = [
   {
     file: "team-steps",
-    alt: "The team standing together in three rows on the steps outside their school, all wearing white ChemoGuard T-shirts.",
+    alt: "The ChemoGuard team standing together in rows on the steps outside their school, all wearing white ChemoGuard T-shirts.",
     caption: "The ChemoGuard team on the school steps.",
   },
   {
@@ -43,14 +45,17 @@ const PHOTOS = [
   },
 ] as const;
 
-/**
- * Placeholder roster slots.
- *
- * A fixed count of empty cards, because the alternative — rendering nothing
- * until data exists — makes an unfinished page look finished. Replace this
- * array with the real roster and the grid below needs no other change.
- */
-const SLOTS = Array.from({ length: 8 }, (_, i) => i);
+// The team, as the team sent it: a name and the portrait each member uploaded to iGEM's server. `role` is the
+// one line on what that person worked on; a card without one shows the name alone rather than an invented line.
+type Member = { name: string; photo: string; role?: string };
+
+const MEMBERS: Member[] = [
+  { name: "Rayana Askarova", photo: "photo-5377676054396347437-y.avif" },
+  { name: "Nazerke Karatay", photo: "photo-5377676054396347452-y.avif" },
+  { name: "Adina Medetkhan", photo: "photo-5379927854210033018-y.avif" },
+  { name: "Aidana Amankul", photo: "photo-5379927854210033027-y.avif" },
+  { name: "Gia Bao Phan", photo: "photo-5379942435624001180-y.avif" },
+];
 
 /** The index rail; ids match the sections below. */
 const SECTIONS = SECTIONS_OF["/team"];
@@ -60,60 +65,58 @@ function Team() {
     <PageShell
       title="Team"
       lede="ChemoGuard is built by students at Nazarbayev Intellectual Schools, Kazakhstan, for iGEM 2026. This page is who we are and what each of us worked on."
-      slides={PHOTOS}
+      photo={PHOTOS}
       sections={SECTIONS}
     >
       <Section id="students" title="The team">
         <div>
-          <P>
-            Each card below takes a name and one line saying what that person actually worked on.
-            The line is the useful part: it tells a judge who to ask about the assay, the modelling
-            or the outreach, and it is where the Attributions page gets its evidence.
-          </P>
+          <P>The students who built ChemoGuard.</P>
         </div>
-        <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 md:gap-4 lg:grid-cols-4">
-          {SLOTS.map((i) => (
-            <div
-              key={i}
+        <ul className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 md:gap-4 lg:grid-cols-4">
+          {MEMBERS.map((m) => (
+            <li
+              key={m.name}
               className="overflow-hidden"
               style={{
-                background: C.paper,
-                border: `2px dashed ${C.ink}2e`,
+                background: "#fff",
+                border: `2px solid ${C.ink}`,
                 borderRadius: R.md,
+                boxShadow: `3px 3px 0 ${C.ink}`,
               }}
             >
-              {/* A 4:5 slot for the photo, sized now so adding the images later cannot reflow the page. */}
-              <div
-                className="grid aspect-[4/5] place-items-center"
+              <img
+                src={asset(m.photo)}
+                alt={`Portrait of ${m.name}`}
+                width={960}
+                height={1200}
+                loading="lazy"
+                decoding="async"
+                className="block aspect-[4/5] h-auto w-full object-cover object-top"
                 style={{ background: `${C.lavender}1a` }}
-              >
-                {/* inkBody, and no second dimming: the note colour at 70% opacity measured 2.63:1 here against the
-                    4.5:1 an 11px label is held to. A placeholder still has to be readable to say it is one. */}
-                <span className={L.note} style={{ color: C.inkBody }}>
-                  portrait
-                </span>
+              />
+              <div className="px-3 py-2.5 md:px-3.5 md:py-3">
+                <p
+                  className="text-[15px] font-bold leading-tight md:text-[16px]"
+                  style={{ color: C.ink }}
+                >
+                  {m.name}
+                </p>
+                {m.role && (
+                  <p
+                    className="mt-1 text-[13px] leading-snug md:text-[14px]"
+                    style={{ color: C.inkBody }}
+                  >
+                    {m.role}
+                  </p>
+                )}
               </div>
-              <div className="px-3 py-3">
-                <div
-                  className="h-[11px] w-3/4 rounded-full"
-                  style={{ background: `${C.ink}1f` }}
-                  aria-hidden="true"
-                />
-                <div
-                  className="mt-2 h-[9px] w-full rounded-full"
-                  style={{ background: `${C.ink}14` }}
-                  aria-hidden="true"
-                />
-              </div>
-            </div>
+            </li>
           ))}
-        </div>
+        </ul>
         <div className="mt-5">
           <Awaiting what="Needs the team: the roster">
-            The group photographs are in. Still needed for each member: their name as it should
-            appear, one line on what they worked on, and a portrait if the team wants individual
-            cards. Say how many members there are: the eight slots above are a placeholder, not a
-            count.
+            The rest of the team, each with their portrait, and one line for every member on what
+            they worked on.
           </Awaiting>
         </div>
       </Section>
